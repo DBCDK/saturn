@@ -17,6 +17,7 @@
         <maven.surefire.version>2.21.0</maven.surefire.version>
         <maven.war.plugin.version>3.2.1</maven.war.plugin.version>
         <mockito.version>2.18.3</mockito.version>
+        <serviceutils.version>0.1-SNAPSHOT</serviceutils.version>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
 
@@ -130,6 +131,11 @@
             <groupId>dk.dbc</groupId>
             <artifactId>ftp-client</artifactId>
             <version>${ftpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>serviceutils</artifactId>
+            <version>${serviceutils.version}</version>
         </dependency>
     </dependencies>
 </project>
