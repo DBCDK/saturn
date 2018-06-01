@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @LocalBean
 @Stateless
-public class HTTPHarvesterBean implements Harvester {
+public class HTTPHarvesterBean {
     protected static RetryPolicy RETRY_POLICY = new RetryPolicy()
         .retryOn(Collections.singletonList(ProcessingException.class))
         .retryIf((Response response) -> response.getStatus() == 404 ||
