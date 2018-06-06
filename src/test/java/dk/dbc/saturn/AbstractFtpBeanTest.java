@@ -8,6 +8,11 @@ import org.mockftpserver.fake.filesystem.DirectoryEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public abstract class AbstractFtpBeanTest {
     static final String USERNAME = "FtpClientTest";
     static final String PASSWORD = "FtpClientTestPass";
@@ -34,5 +39,17 @@ public abstract class AbstractFtpBeanTest {
     @AfterAll
     static void tearDown() {
         fakeFtpServer.stop();
+    }
+
+    protected static String readInputStream(InputStream is) throws IOException {
+        try (final BufferedReader in = new BufferedReader(
+                new InputStreamReader(is))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString().trim();
+        }
     }
 }
