@@ -11,7 +11,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
-import java.sql.Timestamp;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.util.Date;
 
 @MappedSuperclass
 abstract class AbstractHarvesterConfigEntity {
@@ -27,8 +29,9 @@ abstract class AbstractHarvesterConfigEntity {
 
     private String schedule;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastharvested")
-    private Timestamp lastHarvested;
+    private Date lastHarvested;
 
     public int getId() {
         return id;
@@ -42,11 +45,11 @@ abstract class AbstractHarvesterConfigEntity {
         this.schedule = schedule;
     }
 
-    public Timestamp getLastHarvested() {
+    public Date getLastHarvested() {
         return lastHarvested;
     }
 
-    public void setLastHarvested(Timestamp lastHarvested) {
+    public void setLastHarvested(Date lastHarvested) {
         this.lastHarvested = lastHarvested;
     }
 }
