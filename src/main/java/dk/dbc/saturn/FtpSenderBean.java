@@ -48,9 +48,12 @@ public class FtpSenderBean {
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
-        for(int i = 0; i < inputStreams.size(); i++) {
-            ftpClient.put(remoteNames.get(i), inputStreams.get(i));
+        try {
+            for (int i = 0; i < inputStreams.size(); i++) {
+                ftpClient.put(remoteNames.get(i), inputStreams.get(i));
+            }
+        } finally {
+            ftpClient.close();
         }
-        ftpClient.close();
     }
 }
