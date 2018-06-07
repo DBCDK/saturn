@@ -32,7 +32,7 @@ public class CronParserBean {
         CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
     private static CronParser parser = new CronParser(definition);
 
-    public boolean shouldExecute(String expression, Timestamp lastExecution)
+    public boolean shouldExecute(String expression, Date lastExecution)
             throws HarvestException {
         return shouldExecute(expression, lastExecution,
             Timestamp.from(Instant.now()));
@@ -62,6 +62,19 @@ public class CronParserBean {
          * for.
          */
         ZonedDateTime nowDateTime = now.toInstant().atZone(ZoneId.systemDefault());
+        /* there is a possibility of losing an execution here if the
+         * harvester for some reason skips checking at precisely the moment
+         * where the cron expression is supposed to trigger an execution and
+         * and there isn't any last harvested timestamp.
+         * since a harvest will eventually be triggered the next time the
+         * expression matches, we would rather not handle this corner case
+         * at the benefit of having simpler code.
+         */
+        if(executionTime.isMatch(nowDateTime)) {
+            return true;
+        } else if(lastExecution == null) {
+            return false;
+        }
         ZonedDateTime lastExecutionDateTime = lastExecution.toInstant().atZone(ZoneId.systemDefault());
         Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(lastExecutionDateTime);
         if(nextExecution.isPresent()) {
