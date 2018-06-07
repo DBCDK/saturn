@@ -32,7 +32,7 @@ public class CronParserBean {
         CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
     private static CronParser parser = new CronParser(definition);
 
-    public boolean shouldExecute(String expression, Timestamp lastExecution)
+    public boolean shouldExecute(String expression, Date lastExecution)
             throws HarvestException {
         return shouldExecute(expression, lastExecution,
             Timestamp.from(Instant.now()));
