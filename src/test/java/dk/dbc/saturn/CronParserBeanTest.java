@@ -8,8 +8,13 @@ package dk.dbc.saturn;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,10 +42,49 @@ class CronParserBeanTest {
             is(true));
     }
 
+    // this test simulates the situation where there is no last harvested
+    // timestamp in the database
+    @Test
+    void shouldExecute_noLastExecution() throws HarvestException, ParseException {
+        Date last = null;
+        Date now = getDate("2018-06-06T20:30:00.00Z");
+        CronParserBean parserBean = new CronParserBean();
+        assertThat(parserBean.shouldExecute("30 * * * *", last, now),
+            is(true));
+    }
+
+    @Test
+    void shouldExecute_noLastExecutionNoTrigger() throws HarvestException, ParseException {
+        Date last = null;
+        Date now = getDate("2018-06-06T20:20:00.00Z");
+        CronParserBean parserBean = new CronParserBean();
+        assertThat(parserBean.shouldExecute("30 * * * *", last, now),
+            is(false));
+    }
+
+    @Test
+    void shouldExecute_triggerDaily() throws HarvestException, ParseException {
+        Date last = getDate("2018-06-05T20:20:00.00Z");
+        Date now = getDate("2018-06-06T20:20:00.00Z");
+        CronParserBean parserBean = new CronParserBean();
+        assertThat(parserBean.shouldExecute("0 0 * * *", last, now),
+            is(true));
+    }
+
     @Test
     void describe() {
         CronParserBean parserBean = new CronParserBean();
         assertThat(parserBean.describe("3 * 22 3 *"),
             is("every hour at minute 3 at 22 day at March month"));
+    }
+
+    private Date getDate(String date) throws ParseException {
+        return getDate(date, ZoneId.systemDefault().getId());
+    }
+
+    private Date getDate(String date, String timezone) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+        return sdf.parse(date);
     }
 }
