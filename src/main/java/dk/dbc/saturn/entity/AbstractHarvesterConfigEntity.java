@@ -33,6 +33,8 @@ abstract class AbstractHarvesterConfigEntity {
     @Column(name = "lastharvested")
     private Date lastHarvested;
 
+    private String transfile;
+
     public int getId() {
         return id;
     }
@@ -51,5 +53,13 @@ abstract class AbstractHarvesterConfigEntity {
 
     public void setLastHarvested(Date lastHarvested) {
         this.lastHarvested = lastHarvested;
+    }
+
+    public String getTransfile() {
+        return transfile;
+    }
+
+    public void setTransfile(String transfile) {
+        this.transfile = transfile;
     }
 }
