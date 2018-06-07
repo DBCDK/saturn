@@ -58,12 +58,16 @@ public class HarvesterConfigEntityIT {
         HttpHarvesterConfig config1 = new HttpHarvesterConfig();
         config1.setSchedule("0 13 20 * *");
         config1.setUrl("http://skerdernogetiaarhusiaften.dk/");
+        config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
         config2.setSchedule("1 * * * *");
         config2.setUrl("http://nick.com");
         config2.setLastHarvested(getDate("2018-06-06T20:20:20",
             "Europe/Copenhagen"));
+        config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         entityManager.persist(config1);
         entityManager.flush();
@@ -106,6 +110,8 @@ public class HarvesterConfigEntityIT {
         config1.setPassword("blackpearl");
         config1.setDir("tortuga");
         config1.setFilesPattern("treasure-map*.jpg");
+        config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         FtpHarvesterConfig config2 = new FtpHarvesterConfig();
         config2.setSchedule("1 * * * *");
@@ -117,6 +123,8 @@ public class HarvesterConfigEntityIT {
         config2.setFilesPattern("glove-candy.jpg");
         config2.setLastHarvested(Timestamp.from(
             Instant.ofEpochSecond(1234567)));
+        config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         entityManager.persist(config1);
         entityManager.flush();
