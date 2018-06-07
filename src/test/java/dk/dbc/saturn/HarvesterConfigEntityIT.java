@@ -17,16 +17,21 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_URL;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_USER;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -49,7 +54,7 @@ public class HarvesterConfigEntityIT {
     }
 
     @Test
-    public void test_httpHarvesterEntities() {
+    public void test_httpHarvesterEntities() throws ParseException {
         HttpHarvesterConfig config1 = new HttpHarvesterConfig();
         config1.setSchedule("0 13 20 * *");
         config1.setUrl("http://skerdernogetiaarhusiaften.dk/");
@@ -57,8 +62,8 @@ public class HarvesterConfigEntityIT {
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
         config2.setSchedule("1 * * * *");
         config2.setUrl("http://nick.com");
-        config2.setLastHarvested(Timestamp.from(
-            Instant.ofEpochSecond(1234567)));
+        config2.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Europe/Copenhagen"));
 
         entityManager.persist(config1);
         entityManager.flush();
@@ -77,7 +82,10 @@ public class HarvesterConfigEntityIT {
         assertThat("result 1 schedule", result1.getSchedule(),
             is("1 * * * *"));
         assertThat("result 1 last harvested", result1.getLastHarvested(),
-            is(Timestamp.from(Instant.ofEpochSecond(1234567))));
+            is(getDate("2018-06-06T20:20:20", "Europe/Copenhagen")));
+        assertThat("result 1 last harvested wrong time zone",
+            result1.getLastHarvested(), not(getDate("2018-06-06T20:20:20",
+            "Europe/London")));
 
         HttpHarvesterConfig result2 = entities.get(1);
         assertThat("result 2 url", result2.getUrl(),
@@ -168,5 +176,11 @@ public class HarvesterConfigEntityIT {
         EntityManagerFactory factory = Persistence.createEntityManagerFactory(persistenceUnitName,
             entityManagerProperties);
         return factory.createEntityManager(entityManagerProperties);
+    }
+
+    private Date getDate(String date, String timezone) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+        return sdf.parse(date);
     }
 }
