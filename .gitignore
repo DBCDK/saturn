@@ -1,4 +1,6 @@
 *.iml
 *.swp
 .idea
+gui/node
+node_modules
 target
