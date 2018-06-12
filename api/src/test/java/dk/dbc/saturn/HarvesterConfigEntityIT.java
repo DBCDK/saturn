@@ -15,7 +15,6 @@ import org.postgresql.ds.PGSimpleDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,21 +35,25 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvesterConfigEntityIT {
-    private static EntityManager entityManager;
+    private static HarvesterConfigRepository harvesterConfigRepository =
+        new HarvesterConfigRepository();
 
     @BeforeAll
     public static void setUp() {
         final PGSimpleDataSource dataSource = getDataSource();
         migrateDatabase(dataSource);
-        entityManager = createEntityManager(dataSource,
+        EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
+        harvesterConfigRepository.entityManager = entityManager;
     }
 
     @BeforeEach
     public void resetDatabase() {
-        entityManager.getTransaction().begin();
-        entityManager.createNativeQuery("DELETE FROM httpharvester");
-        entityManager.createNativeQuery("DELETE FROM ftpharvester");
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        harvesterConfigRepository.entityManager.createNativeQuery(
+            "DELETE FROM httpharvester");
+        harvesterConfigRepository.entityManager.createNativeQuery(
+            "DELETE FROM ftpharvester");
     }
 
     @Test
@@ -69,17 +72,15 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
-        entityManager.persist(config1);
-        entityManager.flush();
-        entityManager.persist(config2);
+        harvesterConfigRepository.entityManager.persist(config1);
+        harvesterConfigRepository.entityManager.flush();
+        harvesterConfigRepository.entityManager.persist(config2);
 
-        entityManager.getTransaction().commit();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        TypedQuery<HttpHarvesterConfig> query = entityManager
-            .createNamedQuery(HttpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
-            HttpHarvesterConfig.class);
+        List<HttpHarvesterConfig> entities = harvesterConfigRepository
+            .listHttpHarvesterConfigs();
 
-        List<HttpHarvesterConfig> entities = query.getResultList();
         assertThat("results", entities.size(), is(2));
         HttpHarvesterConfig result1 = entities.get(0);
         assertThat("result 1 url", result1.getUrl(), is("http://nick.com"));
@@ -126,17 +127,14 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
-        entityManager.persist(config1);
-        entityManager.flush();
-        entityManager.persist(config2);
+        harvesterConfigRepository.entityManager.persist(config1);
+        harvesterConfigRepository.entityManager.flush();
+        harvesterConfigRepository.entityManager.persist(config2);
 
-        entityManager.getTransaction().commit();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        TypedQuery<FtpHarvesterConfig> query = entityManager
-            .createNamedQuery(FtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
-            FtpHarvesterConfig.class);
-
-        List<FtpHarvesterConfig> entities = query.getResultList();
+        List<FtpHarvesterConfig> entities = harvesterConfigRepository
+            .listFtpHarvesterConfigs();
         assertThat("results", entities.size(), is(2));
 
         FtpHarvesterConfig result1 = entities.get(0);
