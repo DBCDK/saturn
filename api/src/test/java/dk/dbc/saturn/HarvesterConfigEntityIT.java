@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,12 +49,18 @@ public class HarvesterConfigEntityIT {
     }
 
     @BeforeEach
-    public void resetDatabase() {
+    void beginTransaction() {
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+    }
+
+    @AfterEach
+    void resetDatabase() {
         harvesterConfigRepository.entityManager.getTransaction().begin();
         harvesterConfigRepository.entityManager.createNativeQuery(
-            "DELETE FROM httpharvester");
+            "DELETE FROM httpharvester").executeUpdate();
         harvesterConfigRepository.entityManager.createNativeQuery(
-            "DELETE FROM ftpharvester");
+            "DELETE FROM ftpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
     }
 
     @Test
@@ -79,7 +86,7 @@ public class HarvesterConfigEntityIT {
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<HttpHarvesterConfig> entities = harvesterConfigRepository
-            .listHttpHarvesterConfigs();
+            .listHttpHarvesterConfigs(0, 0);
 
         assertThat("results", entities.size(), is(2));
         HttpHarvesterConfig result1 = entities.get(0);
@@ -134,7 +141,7 @@ public class HarvesterConfigEntityIT {
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<FtpHarvesterConfig> entities = harvesterConfigRepository
-            .listFtpHarvesterConfigs();
+            .listFtpHarvesterConfigs(0, 0);
         assertThat("results", entities.size(), is(2));
 
         FtpHarvesterConfig result1 = entities.get(0);
@@ -152,6 +159,51 @@ public class HarvesterConfigEntityIT {
         FtpHarvesterConfig result2 = entities.get(1);
         assertThat("result 2 last harvested", result2.getLastHarvested(),
             is(nullValue()));
+    }
+
+    @Test
+    void test_harvesterConfigStartLimitHttp() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            HttpHarvesterConfig config = new HttpHarvesterConfig();
+            config.setUrl(name);
+            config.setSchedule(name);
+            config.setTransfile(name);
+            harvesterConfigRepository.entityManager.persist(config);
+            harvesterConfigRepository.entityManager.flush();
+        }
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository.listHttpHarvesterConfigs(4, 2);
+
+        assertThat("limit results", configs.size(), is(2));
+        assertThat("first result id", configs.get(0).getUrl(), is("gary"));
+    }
+
+    @Test
+    void test_harvesterConfigStartLimitFtp() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            FtpHarvesterConfig config = new FtpHarvesterConfig();
+            config.setHost(name);
+            config.setSchedule(name);
+            config.setTransfile(name);
+            config.setPort(5432);
+            config.setUsername(name);
+            config.setPassword(name);
+            config.setDir(name);
+            config.setFilesPattern(name);
+            harvesterConfigRepository.entityManager.persist(config);
+            harvesterConfigRepository.entityManager.flush();
+        }
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<FtpHarvesterConfig> configs = harvesterConfigRepository.listFtpHarvesterConfigs(0, 3);
+
+        assertThat("limit results", configs.size(), is(3));
+        assertThat("first result id", configs.get(2).getHost(), is("squidward"));
     }
 
 

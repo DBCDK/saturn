@@ -23,10 +23,12 @@ public class HarvesterConfigRepository {
      * list http harvester configs
      * @return list of http harvester configs
      */
-    public List<HttpHarvesterConfig> listHttpHarvesterConfigs() {
+    public List<HttpHarvesterConfig> listHttpHarvesterConfigs(int start, int limit) {
         TypedQuery<HttpHarvesterConfig> query = entityManager
             .createNamedQuery(HttpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
                 HttpHarvesterConfig.class);
+        query.setParameter("start", start);
+        query.setMaxResults(limit);
         return query.getResultList();
     }
 
@@ -34,10 +36,12 @@ public class HarvesterConfigRepository {
      * list ftp harvester configs
      * @return list of ftp harvester configs
      */
-    public List<FtpHarvesterConfig> listFtpHarvesterConfigs() {
+    public List<FtpHarvesterConfig> listFtpHarvesterConfigs(int start, int limit) {
         TypedQuery<FtpHarvesterConfig> query = entityManager
             .createNamedQuery(FtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
                 FtpHarvesterConfig.class);
+        query.setParameter("start", start);
+        query.setMaxResults(limit);
         return query.getResultList();
     }
 }

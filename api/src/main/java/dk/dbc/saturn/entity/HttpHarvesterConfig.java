@@ -22,7 +22,8 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public static final String GET_HARVESTER_CONFIGS_NAME =
         "HttpHarvesterConfig.getHarvesterConfigs";
     public static final String GET_HARVESTER_CONFIGS_QUERY =
-        "SELECT config FROM HttpHarvesterConfig config ORDER BY config.id DESC";
+        "SELECT config FROM HttpHarvesterConfig config WHERE config.id >= :start " +
+        "ORDER BY config.id DESC";
 
     private String url;
 
