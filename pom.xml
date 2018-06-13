@@ -24,6 +24,7 @@
         <jackson.version>2.9.5</jackson.version>
         <javaee.api.version>7.0</javaee.api.version>
         <jersey.version>2.22.2</jersey.version>
+        <json.binding.version>0.1-SNAPSHOT</json.binding.version>
         <junit.version>5.2.0</junit.version>
         <junit.surefire.provider.version>1.1.0</junit.surefire.provider.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
