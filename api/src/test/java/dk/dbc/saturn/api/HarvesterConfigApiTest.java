@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
 import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,9 +23,12 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class HarvesterConfigApiTest {
@@ -134,5 +137,83 @@ class HarvesterConfigApiTest {
         assertThat("configs size", resultsConfigs.size(), is(3));
         assertThat("result 1 url", resultsConfigs.get(0).getHost(),
             is("jack_sparrow"));
+    }
+
+    @Test
+    void test_add_httpHarvester() {
+        runWithSpiedHarvesterConfigRepository(() -> {
+            harvesterConfigApi.harvesterConfigRepository =
+                spy(new HarvesterConfigRepository());
+            doNothing().when(harvesterConfigApi.harvesterConfigRepository)
+                .add(any(AbstractHarvesterConfigEntity.class));
+
+            final String harvesterConfig = "{\"url\": \"spongebob\", " +
+                "\"schedule\": \"!!\", \"transfile\": \"squarepants\"}";
+            Response response = harvesterConfigApi.addHttpHarvesterConfig(
+                harvesterConfig);
+            assertThat("status", response.getStatus(), is(200));
+        });
+    }
+
+    @Test
+    void test_add_httpHarvesterBadRequest() {
+        runWithSpiedHarvesterConfigRepository(() -> {
+            harvesterConfigApi.harvesterConfigRepository =
+                spy(new HarvesterConfigRepository());
+            doNothing().when(harvesterConfigApi.harvesterConfigRepository)
+                .add(any(AbstractHarvesterConfigEntity.class));
+
+            final String harvesterConfig = "{\"url\": \"patrick\", " +
+                "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
+            Response response = harvesterConfigApi.addHttpHarvesterConfig(
+                harvesterConfig);
+            assertThat("status", response.getStatus(), is(400));
+        });
+    }
+
+    @Test
+    void test_add_ftpHarvester() {
+        runWithSpiedHarvesterConfigRepository(() -> {
+            harvesterConfigApi.harvesterConfigRepository =
+                spy(new HarvesterConfigRepository());
+            doNothing().when(harvesterConfigApi.harvesterConfigRepository)
+                .add(any(AbstractHarvesterConfigEntity.class));
+
+            final String harvesterConfig = "{\"host\": \"bikini_bottom\", " +
+                "\"port\": 5432, \"username\": \"patrick\", \"password\": " +
+                "\"*\", \"schedule\": \"uuuh nothing..\", \"transfile\": " +
+                "\"tartar sauce\", \"dir\": \"season_1\", \"filesPattern\": " +
+                "\"hawaii*.mp3\"}";
+            Response response = harvesterConfigApi.addFtpHarvesterConfig(
+                harvesterConfig);
+            assertThat("status", response.getStatus(), is(200));
+        });
+    }
+
+    @Test
+    void test_add_ftpHarvesterBadRequest() {
+        runWithSpiedHarvesterConfigRepository(() -> {
+            harvesterConfigApi.harvesterConfigRepository =
+                spy(new HarvesterConfigRepository());
+            doNothing().when(harvesterConfigApi.harvesterConfigRepository)
+                .add(any(AbstractHarvesterConfigEntity.class));
+
+            final String harvesterConfig = "{\"url\": \"patrick\", " +
+                "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
+            Response response = harvesterConfigApi.addFtpHarvesterConfig(
+                harvesterConfig);
+            assertThat("status", response.getStatus(), is(400));
+        });
+    }
+
+    private void runWithSpiedHarvesterConfigRepository(Runnable f) {
+        final HarvesterConfigRepository harvesterConfigRepositoryOriginal =
+            harvesterConfigApi.harvesterConfigRepository;
+        try {
+            f.run();
+        } finally {
+            harvesterConfigApi.harvesterConfigRepository =
+                harvesterConfigRepositoryOriginal;
+        }
     }
 }
