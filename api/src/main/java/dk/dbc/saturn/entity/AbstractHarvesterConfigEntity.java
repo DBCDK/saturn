@@ -16,7 +16,7 @@ import javax.persistence.TemporalType;
 import java.util.Date;
 
 @MappedSuperclass
-abstract class AbstractHarvesterConfigEntity {
+public abstract class AbstractHarvesterConfigEntity {
     @Id
     @SequenceGenerator(
         name = "harvesterconfig_id_seq",

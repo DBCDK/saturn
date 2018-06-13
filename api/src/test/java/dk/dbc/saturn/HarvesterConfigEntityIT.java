@@ -86,7 +86,7 @@ public class HarvesterConfigEntityIT {
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<HttpHarvesterConfig> entities = harvesterConfigRepository
-            .listHttpHarvesterConfigs(0, 0);
+            .list(HttpHarvesterConfig.class, 0, 0);
 
         assertThat("results", entities.size(), is(2));
         HttpHarvesterConfig result1 = entities.get(0);
@@ -141,7 +141,7 @@ public class HarvesterConfigEntityIT {
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<FtpHarvesterConfig> entities = harvesterConfigRepository
-            .listFtpHarvesterConfigs(0, 0);
+            .list(FtpHarvesterConfig.class, 0, 0);
         assertThat("results", entities.size(), is(2));
 
         FtpHarvesterConfig result1 = entities.get(0);
@@ -175,7 +175,8 @@ public class HarvesterConfigEntityIT {
         }
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> configs = harvesterConfigRepository.listHttpHarvesterConfigs(4, 2);
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 4, 2);
 
         assertThat("limit results", configs.size(), is(2));
         assertThat("first result id", configs.get(0).getUrl(), is("gary"));
@@ -200,7 +201,8 @@ public class HarvesterConfigEntityIT {
         }
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        List<FtpHarvesterConfig> configs = harvesterConfigRepository.listFtpHarvesterConfigs(0, 3);
+        List<FtpHarvesterConfig> configs = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 3);
 
         assertThat("limit results", configs.size(), is(3));
         assertThat("first result id", configs.get(2).getHost(), is("squidward"));
