@@ -208,6 +208,60 @@ public class HarvesterConfigEntityIT {
         assertThat("first result id", configs.get(2).getHost(), is("squidward"));
     }
 
+    @Test
+    void test_add_httpHarvesterConfig() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            HttpHarvesterConfig httpHarvesterConfig = new HttpHarvesterConfig();
+            httpHarvesterConfig.setUrl(name);
+            httpHarvesterConfig.setSchedule(name);
+            httpHarvesterConfig.setTransfile(name);
+            harvesterConfigRepository.add(httpHarvesterConfig);
+        }
+
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+
+        assertThat("list size", configs.size(), is(5));
+        assertThat("entity 1 url", configs.get(0).getUrl(), is("gary"));
+        assertThat("entity 2 schedule", configs.get(1).getSchedule(),
+            is("larry"));
+        assertThat("entity 3 transfile", configs.get(2).getTransfile(),
+            is("squidward"));
+    }
+
+    @Test
+    void test_add_ftpHarvesterConfig() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            FtpHarvesterConfig ftpHarvesterConfig = new FtpHarvesterConfig();
+            ftpHarvesterConfig.setHost(name);
+            ftpHarvesterConfig.setPort(5432);
+            ftpHarvesterConfig.setUsername(name);
+            ftpHarvesterConfig.setPassword(name);
+            ftpHarvesterConfig.setFilesPattern(name);
+            ftpHarvesterConfig.setDir(name);
+            ftpHarvesterConfig.setSchedule(name);
+            ftpHarvesterConfig.setTransfile(name);
+            harvesterConfigRepository.add(ftpHarvesterConfig);
+        }
+
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<FtpHarvesterConfig> configs = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 0);
+
+        assertThat("list size", configs.size(), is(5));
+        assertThat("entity 1 host", configs.get(0).getHost(), is("gary"));
+        assertThat("entity 2 schedule", configs.get(1).getSchedule(),
+            is("larry"));
+        assertThat("entity 3 transfile", configs.get(2).getTransfile(),
+            is("squidward"));
+    }
 
     private static PGSimpleDataSource getDataSource() {
         final PGSimpleDataSource datasource = new PGSimpleDataSource();

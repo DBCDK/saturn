@@ -46,4 +46,13 @@ public class HarvesterConfigRepository {
         query.setMaxResults(limit);
         return query.getResultList();
     }
+
+    /**
+     * persist harvester config entity in database
+     * @param entity harvester config entity
+     * @param <T> entity type parameter
+     */
+    public <T extends AbstractHarvesterConfigEntity> void add(T entity) {
+        entityManager.persist(entity);
+    }
 }
