@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Stateless
-@Path("harvester")
+@Path("configs")
 public class HarvesterConfigApi {
     private final static String HTTP_LIST_ENDPOINT = "http/list";
     private final static String HTTP_ADD_ENDPOINT = "http/add";
