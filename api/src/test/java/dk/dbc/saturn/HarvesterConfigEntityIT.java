@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,6 @@ import org.postgresql.ds.PGSimpleDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,21 +36,31 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvesterConfigEntityIT {
-    private static EntityManager entityManager;
+    private static HarvesterConfigRepository harvesterConfigRepository =
+        new HarvesterConfigRepository();
 
     @BeforeAll
     public static void setUp() {
         final PGSimpleDataSource dataSource = getDataSource();
         migrateDatabase(dataSource);
-        entityManager = createEntityManager(dataSource,
+        EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
+        harvesterConfigRepository.entityManager = entityManager;
     }
 
     @BeforeEach
-    public void resetDatabase() {
-        entityManager.getTransaction().begin();
-        entityManager.createNativeQuery("DELETE FROM httpharvester");
-        entityManager.createNativeQuery("DELETE FROM ftpharvester");
+    void beginTransaction() {
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+    }
+
+    @AfterEach
+    void resetDatabase() {
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        harvesterConfigRepository.entityManager.createNativeQuery(
+            "DELETE FROM httpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.createNativeQuery(
+            "DELETE FROM ftpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
     }
 
     @Test
@@ -69,17 +79,15 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
-        entityManager.persist(config1);
-        entityManager.flush();
-        entityManager.persist(config2);
+        harvesterConfigRepository.entityManager.persist(config1);
+        harvesterConfigRepository.entityManager.flush();
+        harvesterConfigRepository.entityManager.persist(config2);
 
-        entityManager.getTransaction().commit();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        TypedQuery<HttpHarvesterConfig> query = entityManager
-            .createNamedQuery(HttpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
-            HttpHarvesterConfig.class);
+        List<HttpHarvesterConfig> entities = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
 
-        List<HttpHarvesterConfig> entities = query.getResultList();
         assertThat("results", entities.size(), is(2));
         HttpHarvesterConfig result1 = entities.get(0);
         assertThat("result 1 url", result1.getUrl(), is("http://nick.com"));
@@ -126,17 +134,14 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
-        entityManager.persist(config1);
-        entityManager.flush();
-        entityManager.persist(config2);
+        harvesterConfigRepository.entityManager.persist(config1);
+        harvesterConfigRepository.entityManager.flush();
+        harvesterConfigRepository.entityManager.persist(config2);
 
-        entityManager.getTransaction().commit();
+        harvesterConfigRepository.entityManager.getTransaction().commit();
 
-        TypedQuery<FtpHarvesterConfig> query = entityManager
-            .createNamedQuery(FtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
-            FtpHarvesterConfig.class);
-
-        List<FtpHarvesterConfig> entities = query.getResultList();
+        List<FtpHarvesterConfig> entities = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 0);
         assertThat("results", entities.size(), is(2));
 
         FtpHarvesterConfig result1 = entities.get(0);
@@ -156,6 +161,107 @@ public class HarvesterConfigEntityIT {
             is(nullValue()));
     }
 
+    @Test
+    void test_harvesterConfigStartLimitHttp() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            HttpHarvesterConfig config = new HttpHarvesterConfig();
+            config.setUrl(name);
+            config.setSchedule(name);
+            config.setTransfile(name);
+            harvesterConfigRepository.entityManager.persist(config);
+            harvesterConfigRepository.entityManager.flush();
+        }
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 4, 2);
+
+        assertThat("limit results", configs.size(), is(2));
+        assertThat("first result id", configs.get(0).getUrl(), is("gary"));
+    }
+
+    @Test
+    void test_harvesterConfigStartLimitFtp() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            FtpHarvesterConfig config = new FtpHarvesterConfig();
+            config.setHost(name);
+            config.setSchedule(name);
+            config.setTransfile(name);
+            config.setPort(5432);
+            config.setUsername(name);
+            config.setPassword(name);
+            config.setDir(name);
+            config.setFilesPattern(name);
+            harvesterConfigRepository.entityManager.persist(config);
+            harvesterConfigRepository.entityManager.flush();
+        }
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<FtpHarvesterConfig> configs = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 3);
+
+        assertThat("limit results", configs.size(), is(3));
+        assertThat("first result id", configs.get(2).getHost(), is("squidward"));
+    }
+
+    @Test
+    void test_add_httpHarvesterConfig() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            HttpHarvesterConfig httpHarvesterConfig = new HttpHarvesterConfig();
+            httpHarvesterConfig.setUrl(name);
+            httpHarvesterConfig.setSchedule(name);
+            httpHarvesterConfig.setTransfile(name);
+            harvesterConfigRepository.add(httpHarvesterConfig);
+        }
+
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+
+        assertThat("list size", configs.size(), is(5));
+        assertThat("entity 1 url", configs.get(0).getUrl(), is("gary"));
+        assertThat("entity 2 schedule", configs.get(1).getSchedule(),
+            is("larry"));
+        assertThat("entity 3 transfile", configs.get(2).getTransfile(),
+            is("squidward"));
+    }
+
+    @Test
+    void test_add_ftpHarvesterConfig() {
+        String[] names = {"spongebob", "patrick", "squidward", "larry",
+            "gary"};
+        for(String name : names) {
+            FtpHarvesterConfig ftpHarvesterConfig = new FtpHarvesterConfig();
+            ftpHarvesterConfig.setHost(name);
+            ftpHarvesterConfig.setPort(5432);
+            ftpHarvesterConfig.setUsername(name);
+            ftpHarvesterConfig.setPassword(name);
+            ftpHarvesterConfig.setFilesPattern(name);
+            ftpHarvesterConfig.setDir(name);
+            ftpHarvesterConfig.setSchedule(name);
+            ftpHarvesterConfig.setTransfile(name);
+            harvesterConfigRepository.add(ftpHarvesterConfig);
+        }
+
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<FtpHarvesterConfig> configs = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 0);
+
+        assertThat("list size", configs.size(), is(5));
+        assertThat("entity 1 host", configs.get(0).getHost(), is("gary"));
+        assertThat("entity 2 schedule", configs.get(1).getSchedule(),
+            is("larry"));
+        assertThat("entity 3 transfile", configs.get(2).getTransfile(),
+            is("squidward"));
+    }
 
     private static PGSimpleDataSource getDataSource() {
         final PGSimpleDataSource datasource = new PGSimpleDataSource();

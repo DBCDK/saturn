@@ -158,6 +158,16 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>saturn-gui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>json-binding</artifactId>
+            <version>${json.binding.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
