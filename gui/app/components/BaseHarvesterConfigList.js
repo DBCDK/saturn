@@ -17,14 +17,14 @@ class ConfigEntry extends React.Component {
     render() {
         return (
             <tr>
-                <td>{this.props.url}</td>
+                <td>{this.props.name}</td>
             </tr>
         )
     }
 }
 
 ConfigEntry.propTypes = {
-    url: PropTypes.string.isRequired
+    name: PropTypes.string.isRequired
 };
 
 class BaseHarvesterConfigList extends React.Component {
@@ -44,7 +44,7 @@ class BaseHarvesterConfigList extends React.Component {
         return (
             <table>
                 <tbody>
-                    {this.state.configs.map(item => <ConfigEntry key={item.id} url={item.url}/>)}
+                    {this.state.configs.map(item => <ConfigEntry key={item.id} name={item.name}/>)}
                 </tbody>
             </table>
         )

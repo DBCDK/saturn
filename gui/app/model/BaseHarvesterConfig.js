@@ -18,6 +18,7 @@ class BaseHarvesterConfig {
          */
         const config = new this();
         config.id = json.id;
+        config.name = json.name;
         config.schedule = json.schedule;
         config.transfile = json.transfile;
         return config;
