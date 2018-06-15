@@ -27,6 +27,8 @@ public abstract class AbstractHarvesterConfigEntity {
         generator = "harvesterconfig_id_seq")
     private int id;
 
+    private String name;
+
     private String schedule;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -37,6 +39,14 @@ public abstract class AbstractHarvesterConfigEntity {
 
     public int getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSchedule() {

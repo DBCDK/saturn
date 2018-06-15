@@ -66,12 +66,14 @@ public class HarvesterConfigEntityIT {
     @Test
     public void test_httpHarvesterEntities() throws ParseException {
         HttpHarvesterConfig config1 = new HttpHarvesterConfig();
+        config1.setName("Patar");
         config1.setSchedule("0 13 20 * *");
         config1.setUrl("http://skerdernogetiaarhusiaften.dk/");
         config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
+        config2.setName("MyName'sNotRick!");
         config2.setSchedule("1 * * * *");
         config2.setUrl("http://nick.com");
         config2.setLastHarvested(getDate("2018-06-06T20:20:20",
@@ -111,6 +113,7 @@ public class HarvesterConfigEntityIT {
     @Test
     public void test_ftpHarvesterEntities() {
         FtpHarvesterConfig config1 = new FtpHarvesterConfig();
+        config1.setName("Patar");
         config1.setSchedule("0 13 20 * *");
         config1.setHost("skerdernogetiaarhusiaften.dk");
         config1.setPort(1234);
@@ -122,6 +125,7 @@ public class HarvesterConfigEntityIT {
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
 
         FtpHarvesterConfig config2 = new FtpHarvesterConfig();
+        config2.setName("MyName'sNotRick!");
         config2.setSchedule("1 * * * *");
         config2.setHost("nick.com");
         config2.setPort(1234);
@@ -167,6 +171,7 @@ public class HarvesterConfigEntityIT {
             "gary"};
         for(String name : names) {
             HttpHarvesterConfig config = new HttpHarvesterConfig();
+            config.setName(name);
             config.setUrl(name);
             config.setSchedule(name);
             config.setTransfile(name);
@@ -188,6 +193,7 @@ public class HarvesterConfigEntityIT {
             "gary"};
         for(String name : names) {
             FtpHarvesterConfig config = new FtpHarvesterConfig();
+            config.setName(name);
             config.setHost(name);
             config.setSchedule(name);
             config.setTransfile(name);
@@ -214,6 +220,7 @@ public class HarvesterConfigEntityIT {
             "gary"};
         for(String name : names) {
             HttpHarvesterConfig httpHarvesterConfig = new HttpHarvesterConfig();
+            httpHarvesterConfig.setName(name);
             httpHarvesterConfig.setUrl(name);
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
@@ -239,6 +246,7 @@ public class HarvesterConfigEntityIT {
             "gary"};
         for(String name : names) {
             FtpHarvesterConfig ftpHarvesterConfig = new FtpHarvesterConfig();
+            ftpHarvesterConfig.setName(name);
             ftpHarvesterConfig.setHost(name);
             ftpHarvesterConfig.setPort(5432);
             ftpHarvesterConfig.setUsername(name);
