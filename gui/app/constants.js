@@ -4,7 +4,7 @@
  */
 
 const endpoints = {
-    listHttpHarvesterConfigs: "api/configs/http/list"
+    listHttpHarvesterConfigs: "/api/configs/http/list",
 };
 Object.freeze(endpoints);
 
