@@ -10,6 +10,12 @@ import {HttpClient} from "../HttpClient";
 import {getArgValue} from "../utils";
 
 class HttpHarvesterConfig extends BaseHarvesterConfig {
+    static fetchConfig(id) {
+        const params = new Map();
+        params.set("id", id);
+        return new HttpClient()
+            .get(constants.endpoints.getHttpHarvesterById, params);
+    }
     static listHttpHarvesterConfigs(start, limit) {
         start = getArgValue(start);
         limit = getArgValue(limit);
