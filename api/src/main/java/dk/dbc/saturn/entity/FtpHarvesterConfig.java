@@ -17,6 +17,10 @@ import javax.persistence.Table;
     @NamedQuery(
         name = FtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME,
         query = FtpHarvesterConfig.GET_HARVESTER_CONFIGS_QUERY
+    ),
+    @NamedQuery(
+        name = FtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME,
+        query = FtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_QUERY
     )
 })
 public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
@@ -25,6 +29,10 @@ public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public static final String GET_HARVESTER_CONFIGS_QUERY =
         "SELECT config FROM FtpHarvesterConfig config WHERE config.id >= :start " +
         "ORDER BY config.id DESC";
+    public static final String GET_HARVESTER_CONFIG_BY_ID_NAME =
+        "FtpHarvesterConfig.getHarvesterConfigById";
+    public static final String GET_HARVESTER_CONFIG_BY_ID_QUERY =
+        "SELECT config FROM FtpHarvesterConfig config WHERE config.id = :id";
     private String host;
     private int port;
     private String username;

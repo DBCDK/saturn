@@ -18,19 +18,23 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
 @Path("configs")
 public class HarvesterConfigApi {
     private final static String HTTP_LIST_ENDPOINT = "http/list";
     private final static String HTTP_ADD_ENDPOINT = "http/add";
+    private final static String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
     private final static String FTP_LIST_ENDPOINT = "ftp/list";
     private final static String FTP_ADD_ENDPOINT = "ftp/add";
+    private final static String FTP_GET_SINGLE_CONFIG_ENDPOINT = "ftp/get/{id}";
     private final static JSONBContext jsonbContext = new JSONBContext();
 
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -95,6 +99,48 @@ public class HarvesterConfigApi {
     public Response addFtpHarvesterConfig(String harvesterConfigString) {
         return addHarvesterConfig(FtpHarvesterConfig.class,
             harvesterConfigString);
+    }
+
+    /**
+     * get a single http harvester config
+     * @param id harvester config id
+     * @return 200 OK with http harvester config json
+     *         404 Not Found if no config with the given id is found
+     * @throws JSONBException on marshalling failure
+     */
+    @GET
+    @Path(HTTP_GET_SINGLE_CONFIG_ENDPOINT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getHttpHarvesterConfig(@PathParam("id") int id)
+            throws JSONBException {
+        Optional<HttpHarvesterConfig> config = harvesterConfigRepository
+            .getHarvesterConfig(HttpHarvesterConfig.class, id);
+        if(config.isPresent()) {
+            return Response.ok(jsonbContext.marshall(config.get())).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    /**
+     * get a single ftp harvester config
+     * @param id harvester config id
+     * @return 200 OK with ftp harvester config json
+     *         404 Not Found if no config with the given id is found
+     * @throws JSONBException on marshalling failure
+     */
+    @GET
+    @Path(FTP_GET_SINGLE_CONFIG_ENDPOINT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFtpHarvesterConfig(@PathParam("id") int id)
+            throws JSONBException {
+        Optional<FtpHarvesterConfig> config = harvesterConfigRepository
+            .getHarvesterConfig(FtpHarvesterConfig.class, id);
+        if(config.isPresent()) {
+            return Response.ok(jsonbContext.marshall(config.get())).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 
     private <T extends AbstractHarvesterConfigEntity> Response
