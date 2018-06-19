@@ -21,8 +21,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,9 +85,11 @@ public class HarvesterConfigApi {
     @POST
     @Path(HTTP_ADD_ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addHttpHarvesterConfig(String harvesterConfigString) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addHttpHarvesterConfig(@Context UriInfo uriInfo,
+            String harvesterConfigString) {
         return addHarvesterConfig(HttpHarvesterConfig.class,
-            harvesterConfigString);
+            harvesterConfigString, uriInfo);
     }
 
     /**
@@ -96,9 +101,11 @@ public class HarvesterConfigApi {
     @POST
     @Path(FTP_ADD_ENDPOINT)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addFtpHarvesterConfig(String harvesterConfigString) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addFtpHarvesterConfig(@Context UriInfo uriInfo,
+            String harvesterConfigString) {
         return addHarvesterConfig(FtpHarvesterConfig.class,
-            harvesterConfigString);
+            harvesterConfigString, uriInfo);
     }
 
     /**
@@ -144,12 +151,14 @@ public class HarvesterConfigApi {
     }
 
     private <T extends AbstractHarvesterConfigEntity> Response
-            addHarvesterConfig(Class<T> type, String harvesterConfigString) {
+            addHarvesterConfig(Class<T> type, String harvesterConfigString,
+            UriInfo uriInfo) {
         try {
             T httpHarvesterConfig = jsonbContext.unmarshall(
                 harvesterConfigString, type);
-            harvesterConfigRepository.add(type, httpHarvesterConfig);
-            return Response.ok().build();
+            URI uri = harvesterConfigRepository.add(type, httpHarvesterConfig,
+                uriInfo.getAbsolutePathBuilder());
+            return Response.created(uri).build();
         } catch (JSONBException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(e.toString())

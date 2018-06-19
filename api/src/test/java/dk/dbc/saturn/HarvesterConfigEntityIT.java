@@ -16,6 +16,9 @@ import org.postgresql.ds.PGSimpleDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,18 +37,24 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class HarvesterConfigEntityIT {
     private static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
+    private final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws URISyntaxException {
         final PGSimpleDataSource dataSource = getDataSource();
         migrateDatabase(dataSource);
         EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
         harvesterConfigRepository.entityManager = entityManager;
+        when(mockedUriBuilder.path(anyString())).thenReturn(mockedUriBuilder);
+        when(mockedUriBuilder.build()).thenReturn(new URI("location"));
     }
 
     @BeforeEach
@@ -225,7 +234,7 @@ public class HarvesterConfigEntityIT {
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
             harvesterConfigRepository.add(HttpHarvesterConfig.class,
-                httpHarvesterConfig);
+                httpHarvesterConfig, mockedUriBuilder);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -257,7 +266,7 @@ public class HarvesterConfigEntityIT {
             ftpHarvesterConfig.setSchedule(name);
             ftpHarvesterConfig.setTransfile(name);
             harvesterConfigRepository.add(FtpHarvesterConfig.class,
-                ftpHarvesterConfig);
+                ftpHarvesterConfig, mockedUriBuilder);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -281,7 +290,8 @@ public class HarvesterConfigEntityIT {
         config.setSchedule("* * * * *");
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
-        harvesterConfigRepository.add(HttpHarvesterConfig.class, config);
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config,
+            mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<HttpHarvesterConfig> preliminaryList = harvesterConfigRepository
@@ -298,7 +308,8 @@ public class HarvesterConfigEntityIT {
         config2.setSchedule("1 * 12 * 31");
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
-        harvesterConfigRepository.add(HttpHarvesterConfig.class, config2);
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config2,
+            mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
         List<HttpHarvesterConfig> configs = harvesterConfigRepository
