@@ -10,6 +10,11 @@ import {HttpClient} from "../HttpClient";
 import {getArgValue} from "../utils";
 
 class HttpHarvesterConfig extends BaseHarvesterConfig {
+    static addHttpHarvesterConfig(config) {
+        return new HttpClient()
+            .addHeaders({"Content-type": "application/json"})
+            .post(constants.endpoints.addHttpHarvesterConfig, null, null, config);
+    }
     static fetchConfig(id) {
         const params = new Map();
         params.set("id", id);
