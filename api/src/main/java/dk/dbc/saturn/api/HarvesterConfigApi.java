@@ -148,7 +148,7 @@ public class HarvesterConfigApi {
         try {
             T httpHarvesterConfig = jsonbContext.unmarshall(
                 harvesterConfigString, type);
-            harvesterConfigRepository.add(httpHarvesterConfig);
+            harvesterConfigRepository.add(type, httpHarvesterConfig);
             return Response.ok().build();
         } catch (JSONBException e) {
             return Response.status(Response.Status.BAD_REQUEST)

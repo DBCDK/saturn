@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
 import dk.dbc.saturn.HarvesterConfigRepository;
-import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -147,7 +146,8 @@ class HarvesterConfigApiTest {
             harvesterConfigApi.harvesterConfigRepository =
                 spy(new HarvesterConfigRepository());
             doNothing().when(harvesterConfigApi.harvesterConfigRepository)
-                .add(any(AbstractHarvesterConfigEntity.class));
+                .add(eq(HttpHarvesterConfig.class),
+                    any(HttpHarvesterConfig.class));
 
             final String harvesterConfig = "{\"url\": \"spongebob\", " +
                 "\"schedule\": \"!!\", \"transfile\": \"squarepants\"}";
@@ -163,7 +163,8 @@ class HarvesterConfigApiTest {
             harvesterConfigApi.harvesterConfigRepository =
                 spy(new HarvesterConfigRepository());
             doNothing().when(harvesterConfigApi.harvesterConfigRepository)
-                .add(any(AbstractHarvesterConfigEntity.class));
+                .add(eq(HttpHarvesterConfig.class),
+                    any(HttpHarvesterConfig.class));
 
             final String harvesterConfig = "{\"url\": \"patrick\", " +
                 "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
@@ -179,7 +180,8 @@ class HarvesterConfigApiTest {
             harvesterConfigApi.harvesterConfigRepository =
                 spy(new HarvesterConfigRepository());
             doNothing().when(harvesterConfigApi.harvesterConfigRepository)
-                .add(any(AbstractHarvesterConfigEntity.class));
+                .add(eq(FtpHarvesterConfig.class),
+                    any(FtpHarvesterConfig.class));
 
             final String harvesterConfig = "{\"host\": \"bikini_bottom\", " +
                 "\"port\": 5432, \"username\": \"patrick\", \"password\": " +
@@ -198,7 +200,8 @@ class HarvesterConfigApiTest {
             harvesterConfigApi.harvesterConfigRepository =
                 spy(new HarvesterConfigRepository());
             doNothing().when(harvesterConfigApi.harvesterConfigRepository)
-                .add(any(AbstractHarvesterConfigEntity.class));
+                .add(eq(FtpHarvesterConfig.class),
+                    any(FtpHarvesterConfig.class));
 
             final String harvesterConfig = "{\"url\": \"patrick\", " +
                 "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";

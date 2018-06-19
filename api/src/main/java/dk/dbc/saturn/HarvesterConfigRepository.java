@@ -79,10 +79,19 @@ public class HarvesterConfigRepository {
 
     /**
      * persist harvester config entity in database
+     * @param type type of harvester config
      * @param entity harvester config entity
      * @param <T> entity type parameter
      */
-    public <T extends AbstractHarvesterConfigEntity> void add(T entity) {
-        entityManager.persist(entity);
+    public <T extends AbstractHarvesterConfigEntity> void add(Class<T> type,
+            T entity) {
+        InvariantUtil.checkNotNullOrThrow(type, "type");
+        T originalEntity = entityManager.find(type, entity.getId());
+        if(originalEntity == null) {
+            entityManager.persist(entity);
+        } else {
+            entityManager.detach(originalEntity);
+            entityManager.merge(entity);
+        }
     }
 }

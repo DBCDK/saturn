@@ -224,7 +224,8 @@ public class HarvesterConfigEntityIT {
             httpHarvesterConfig.setUrl(name);
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
-            harvesterConfigRepository.add(httpHarvesterConfig);
+            harvesterConfigRepository.add(HttpHarvesterConfig.class,
+                httpHarvesterConfig);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -255,7 +256,8 @@ public class HarvesterConfigEntityIT {
             ftpHarvesterConfig.setDir(name);
             ftpHarvesterConfig.setSchedule(name);
             ftpHarvesterConfig.setTransfile(name);
-            harvesterConfigRepository.add(ftpHarvesterConfig);
+            harvesterConfigRepository.add(FtpHarvesterConfig.class,
+                ftpHarvesterConfig);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -269,6 +271,49 @@ public class HarvesterConfigEntityIT {
             is("larry"));
         assertThat("entity 3 transfile", configs.get(2).getTransfile(),
             is("squidward"));
+    }
+
+    @Test
+    void test_add_updateHttpHarvesterConfig() {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setName("plankton");
+        config.setUrl("chumbucket.ru");
+        config.setSchedule("* * * * *");
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> preliminaryList = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat(preliminaryList.size(), is(1));
+        final int entityId = preliminaryList.get(0).getId();
+
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        HttpHarvesterConfig config2 = new HttpHarvesterConfig();
+        // same name and id:
+        config2.setId(entityId);
+        config2.setName("plankton");
+        config2.setUrl("chumbucket.com");
+        config2.setSchedule("1 * 12 * 31");
+        config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config2);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat("results size", configs.size(), is(1));
+
+        HttpHarvesterConfig resultConfig = configs.get(0);
+        assertThat("result id", resultConfig.getId(), is(entityId));
+        assertThat("result name", resultConfig.getName(), is("plankton"));
+        assertThat("result url", resultConfig.getUrl(), is("chumbucket.com"));
+        assertThat("result schedule", resultConfig.getSchedule(),
+            is("1 * 12 * 31"));
+        assertThat("result transfile", resultConfig.getTransfile(),
+            is("b=databroendpr3,f=$DATAFIL,t=abmxml,c=latin-1,o=littsiden," +
+            "m=kildepost@dbc.dk"));
     }
 
     private static PGSimpleDataSource getDataSource() {

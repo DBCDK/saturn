@@ -37,6 +37,10 @@ public abstract class AbstractHarvesterConfigEntity {
 
     private String transfile;
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
