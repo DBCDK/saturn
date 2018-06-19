@@ -5,14 +5,14 @@
 
 import React from "react";
 
-import BaseHarvesterConfigList from "./BaseHarvesterConfigList";
+import Main from "./Main";
 
 class App extends React.Component {
     render() {
         return (
             <div>
                 <p>saturn</p>
-                <BaseHarvesterConfigList/>
+                <Main/>
             </div>
         )
     }

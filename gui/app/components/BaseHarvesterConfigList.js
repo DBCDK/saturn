@@ -5,6 +5,7 @@
 
 import React from "react";
 import PropTypes from "prop-types";
+import {Link} from "react-router-dom";
 
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 
@@ -17,7 +18,7 @@ class ConfigEntry extends React.Component {
     render() {
         return (
             <tr>
-                <td>{this.props.name}</td>
+                <td><Link to={`configs/${this.props.id}/edit/`}>{this.props.name}</Link></td>
             </tr>
         )
     }
@@ -44,7 +45,7 @@ class BaseHarvesterConfigList extends React.Component {
         return (
             <table>
                 <tbody>
-                    {this.state.configs.map(item => <ConfigEntry key={item.id} name={item.name}/>)}
+                    {this.state.configs.map(item => <ConfigEntry key={item.id} id={item.id} name={item.name}/>)}
                 </tbody>
             </table>
         )

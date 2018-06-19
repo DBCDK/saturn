@@ -18,10 +18,12 @@ import org.junit.jupiter.api.Test;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -204,6 +206,64 @@ class HarvesterConfigApiTest {
                 harvesterConfig);
             assertThat("status", response.getStatus(), is(400));
         });
+    }
+
+    @Test
+    void test_getHttpHarvesterConfig() throws JSONBException {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setUrl("BubbleBuddy!");
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.of(config));
+        Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(200));
+        assertThat("has entity", response.hasEntity(), is(true));
+
+        final String configsJson = (String) response.getEntity();
+        final HttpHarvesterConfig configResult = jsonbContext.unmarshall(
+            configsJson, HttpHarvesterConfig.class);
+        assertThat("result entity is not null", configResult, notNullValue());
+        assertThat("name", configResult.getUrl(), is("BubbleBuddy!"));
+    }
+
+    @Test
+    void test_getFtpHarvesterConfig() throws JSONBException {
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setHost("Tartar sauce!");
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.of(config));
+        Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(200));
+        assertThat("has entity", response.hasEntity(), is(true));
+
+        final String configsJson = (String) response.getEntity();
+        final FtpHarvesterConfig configResult = jsonbContext.unmarshall(
+            configsJson, FtpHarvesterConfig.class);
+        assertThat("result entity is not null", configResult, notNullValue());
+        assertThat("name", configResult.getHost(), is("Tartar sauce!"));
+    }
+
+    @Test
+    void test_getHttpHarvesterConfig_notFound() throws JSONBException {
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.empty());
+        Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(404));
+    }
+
+    @Test
+    void test_getFtpHarvesterConfig_notFound() throws JSONBException {
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.empty());
+        Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(404));
     }
 
     private void runWithSpiedHarvesterConfigRepository(Runnable f) {
