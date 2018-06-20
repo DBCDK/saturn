@@ -3,12 +3,33 @@
  * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
  */
 
+import {HttpClient} from "../HttpClient";
+import {getArgValue} from "../utils";
+
 const mapResponseToConfigList = (type, response) => {
     const list = JSON.parse(response);
     return list.map(item => type.fromJson(item));
 };
 
 class BaseHarvesterConfig {
+    static addHarvesterConfig(endpoint, config) {
+        return new HttpClient()
+            .addHeaders({"Content-type": "application/json"})
+            .post(endpoint, null, null, config);
+    }
+    static fetchConfig(endpoint, id) {
+        const params = new Map();
+        params.set("id", id);
+        return new HttpClient()
+            .get(endpoint, params);
+    }
+    static listHarvesterConfigs(endpoint, start, limit) {
+        start = getArgValue(start);
+        limit = getArgValue(limit);
+        const query = {start, limit};
+        return new HttpClient()
+            .get(endpoint, null, query);
+    }
     static fromJson(json) {
         /*
          * to enable inheriting this method properly, use `new this()`
