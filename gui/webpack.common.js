@@ -3,6 +3,7 @@
  * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
  */
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require("path");
 
 const BUILD_PATH = path.resolve(__dirname, "target", "classes", "META-INF",
@@ -26,5 +27,14 @@ module.exports = {
                 ]
             }
         ]
-    }
+    },
+    plugins: [
+        new CopyWebpackPlugin([
+            {
+                from: "static/css/style.css",
+                to: "style.css",
+                toType: "file"
+            }
+        ])
+    ]
 };
