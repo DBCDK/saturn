@@ -9,8 +9,6 @@ import {Link} from "react-router-dom";
 
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 
-import {mapResponseToConfigList} from "../model/BaseHarvesterConfig";
-
 class ConfigEntry extends React.Component {
     constructor(props) {
         super(props);
@@ -29,18 +27,6 @@ ConfigEntry.propTypes = {
 };
 
 class BaseHarvesterConfigList extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {"configs": []};
-    }
-    componentWillMount() {
-        HttpHarvesterConfig.listHttpHarvesterConfigs().end().then(
-                response => {
-            const configs = mapResponseToConfigList(
-                HttpHarvesterConfig, response.text);
-            this.setState({configs});
-        });
-    }
     render() {
         return (
             <div>
@@ -48,7 +34,7 @@ class BaseHarvesterConfigList extends React.Component {
                     onClick={this.props.onNewClicked}/>
                 <table>
                     <tbody>
-                        {this.state.configs.map(item => <ConfigEntry key={item.id} id={item.id} name={item.name}/>)}
+                        {this.props.children}
                     </tbody>
                 </table>
             </div>
@@ -65,4 +51,4 @@ BaseHarvesterConfigList.defaultProps = {
         "no-op for BaseHarvesterConfigList.onNewClicked"),
 };
 
-export default BaseHarvesterConfigList;
+export {BaseHarvesterConfigList,ConfigEntry};
