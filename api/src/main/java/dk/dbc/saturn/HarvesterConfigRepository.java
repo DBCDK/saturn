@@ -14,6 +14,9 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,10 +82,32 @@ public class HarvesterConfigRepository {
 
     /**
      * persist harvester config entity in database
+     * @param type type of harvester config
      * @param entity harvester config entity
      * @param <T> entity type parameter
      */
-    public <T extends AbstractHarvesterConfigEntity> void add(T entity) {
-        entityManager.persist(entity);
+    public <T extends AbstractHarvesterConfigEntity> URI add(Class<T> type,
+            T entity, UriBuilder uriBuilder) {
+        InvariantUtil.checkNotNullOrThrow(type, "type");
+        T originalEntity = entityManager.find(type, entity.getId());
+        if(originalEntity == null) {
+            entityManager.persist(entity);
+        } else {
+            entityManager.detach(originalEntity);
+            entityManager.merge(entity);
+        }
+        return uriFromId(uriBuilder, entity.getId());
+    }
+
+    private URI uriFromId(UriBuilder uriBuilder, int id) {
+        URI uri = uriBuilder.path(String.valueOf(id)).build();
+        // to make the uri return the correct location for getting the
+        // created entity
+        final String uriString = uri.toString().replace("/add/", "/get/");
+        try {
+            return new URI(uriString);
+        } catch (URISyntaxException e) {
+            return uri;
+        }
     }
 }

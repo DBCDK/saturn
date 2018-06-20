@@ -32,7 +32,32 @@ class HttpHarvesterConfigEdit extends React.Component {
         this.setState({config});
     }
     onSave(form) {
-        console.log("no-op for HttpHarvesterConfigEdit.onSave");
+        const config = new HttpHarvesterConfig();
+        // if id is undefined, a new entity will be created in the database
+        // by the backend
+        config.id = this.state.config.id;
+        for(let i = 0; i < form.length; i++) {
+            if(form[i] === undefined) continue;
+            switch(form[i].name) {
+            case "url":
+                config.url = form[i].value;
+                break;
+            case "name":
+                config.name = form[i].value;
+                break;
+            case "schedule":
+                config.schedule = form[i].value;
+                break;
+            case "transfile":
+                config.transfile = form[i].value;
+                break;
+            default:
+                break;
+            }
+        }
+        HttpHarvesterConfig.addHttpHarvesterConfig(config).end()
+            .catch(err => console.error("unexpected error when adding config",
+            config, err));
     }
     componentWillMount() {
         this.fetchConfig(this.props.match.params.id);

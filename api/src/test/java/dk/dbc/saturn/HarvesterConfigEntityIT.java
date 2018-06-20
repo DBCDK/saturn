@@ -16,6 +16,9 @@ import org.postgresql.ds.PGSimpleDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,18 +37,24 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class HarvesterConfigEntityIT {
     private static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
+    private final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws URISyntaxException {
         final PGSimpleDataSource dataSource = getDataSource();
         migrateDatabase(dataSource);
         EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
         harvesterConfigRepository.entityManager = entityManager;
+        when(mockedUriBuilder.path(anyString())).thenReturn(mockedUriBuilder);
+        when(mockedUriBuilder.build()).thenReturn(new URI("location"));
     }
 
     @BeforeEach
@@ -224,7 +233,8 @@ public class HarvesterConfigEntityIT {
             httpHarvesterConfig.setUrl(name);
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
-            harvesterConfigRepository.add(httpHarvesterConfig);
+            harvesterConfigRepository.add(HttpHarvesterConfig.class,
+                httpHarvesterConfig, mockedUriBuilder);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -255,7 +265,8 @@ public class HarvesterConfigEntityIT {
             ftpHarvesterConfig.setDir(name);
             ftpHarvesterConfig.setSchedule(name);
             ftpHarvesterConfig.setTransfile(name);
-            harvesterConfigRepository.add(ftpHarvesterConfig);
+            harvesterConfigRepository.add(FtpHarvesterConfig.class,
+                ftpHarvesterConfig, mockedUriBuilder);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -269,6 +280,51 @@ public class HarvesterConfigEntityIT {
             is("larry"));
         assertThat("entity 3 transfile", configs.get(2).getTransfile(),
             is("squidward"));
+    }
+
+    @Test
+    void test_add_updateHttpHarvesterConfig() {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setName("plankton");
+        config.setUrl("chumbucket.ru");
+        config.setSchedule("* * * * *");
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config,
+            mockedUriBuilder);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> preliminaryList = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat(preliminaryList.size(), is(1));
+        final int entityId = preliminaryList.get(0).getId();
+
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        HttpHarvesterConfig config2 = new HttpHarvesterConfig();
+        // same name and id:
+        config2.setId(entityId);
+        config2.setName("plankton");
+        config2.setUrl("chumbucket.com");
+        config2.setSchedule("1 * 12 * 31");
+        config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        harvesterConfigRepository.add(HttpHarvesterConfig.class, config2,
+            mockedUriBuilder);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> configs = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat("results size", configs.size(), is(1));
+
+        HttpHarvesterConfig resultConfig = configs.get(0);
+        assertThat("result id", resultConfig.getId(), is(entityId));
+        assertThat("result name", resultConfig.getName(), is("plankton"));
+        assertThat("result url", resultConfig.getUrl(), is("chumbucket.com"));
+        assertThat("result schedule", resultConfig.getSchedule(),
+            is("1 * 12 * 31"));
+        assertThat("result transfile", resultConfig.getTransfile(),
+            is("b=databroendpr3,f=$DATAFIL,t=abmxml,c=latin-1,o=littsiden," +
+            "m=kildepost@dbc.dk"));
     }
 
     private static PGSimpleDataSource getDataSource() {

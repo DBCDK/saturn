@@ -43,13 +43,26 @@ class BaseHarvesterConfigList extends React.Component {
     }
     render() {
         return (
-            <table>
-                <tbody>
-                    {this.state.configs.map(item => <ConfigEntry key={item.id} id={item.id} name={item.name}/>)}
-                </tbody>
-            </table>
+            <div>
+                <input type="button" value="new"
+                    onClick={this.props.onNewClicked}/>
+                <table>
+                    <tbody>
+                        {this.state.configs.map(item => <ConfigEntry key={item.id} id={item.id} name={item.name}/>)}
+                    </tbody>
+                </table>
+            </div>
         )
     }
 }
+
+BaseHarvesterConfigList.propTypes = {
+    onNewClicked: PropTypes.func,
+};
+
+BaseHarvesterConfigList.defaultProps = {
+    onNewClicked: (event) => console.log(
+        "no-op for BaseHarvesterConfigList.onNewClicked"),
+};
 
 export default BaseHarvesterConfigList;
