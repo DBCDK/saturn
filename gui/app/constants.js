@@ -9,6 +9,7 @@ const endpoints = {
     getHttpHarvesterById: "/api/configs/http/get/:id",
     getFtpHarvesterById: "/api/configs/ftp/get/:id",
     listHttpHarvesterConfigs: "/api/configs/http/list",
+    listFtpHarvesterConfigs: "/api/configs/ftp/list",
 };
 Object.freeze(endpoints);
 

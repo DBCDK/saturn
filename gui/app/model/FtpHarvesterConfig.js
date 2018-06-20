@@ -4,8 +4,21 @@
  */
 
 import {BaseHarvesterConfig} from "./BaseHarvesterConfig";
+import constants from "../constants";
 
 class FtpHarvesterConfig extends BaseHarvesterConfig {
+    static addFtpHarvesterConfig(config) {
+        return BaseHarvesterConfig.addHarvesterConfig(
+            constants.endpoints.addFtpHarvesterConfig, config);
+    }
+    static fetchConfig(id) {
+        return BaseHarvesterConfig.fetchConfig(
+            constants.endpoints.getFtpHarvesterById, id);
+    }
+    static listFtpHarvesterConfigs(start, limit) {
+        return BaseHarvesterConfig.listHarvesterConfigs(
+            constants.endpoints.listFtpHarvesterConfigs, start, limit);
+    }
     static fromJson(json) {
         const config = super.fromJson(json);
         config.host = json.host;
