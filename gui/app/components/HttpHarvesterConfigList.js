@@ -6,7 +6,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+import constants from "../constants";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
+import Path from "../Path";
 import {BaseHarvesterConfigList,ConfigEntry} from "./BaseHarvesterConfigList";
 
 import {mapResponseToConfigList} from "../model/BaseHarvesterConfig";
@@ -27,8 +29,14 @@ class HttpHarvesterConfigList extends React.Component {
     render() {
         return (
             <BaseHarvesterConfigList>
-                {this.state.configs.map(item => <ConfigEntry key={item.id}
-                    id={item.id} name={item.name}/>)}
+                {this.state.configs.map(item => {
+                    const path = new Path(
+                        constants.paths.editHttpHarvesterConfig);
+                    path.bind("id", item.id);
+                    return <ConfigEntry key={item.id}
+                        id={item.id} name={item.name} url={path.path}/>;
+                    })
+                }
             </BaseHarvesterConfigList>
         )
     }

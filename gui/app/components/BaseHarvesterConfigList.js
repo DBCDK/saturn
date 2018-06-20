@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 import {Link} from "react-router-dom";
 
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
+import constants from "../constants";
 
 class ConfigEntry extends React.Component {
     constructor(props) {
@@ -16,14 +17,15 @@ class ConfigEntry extends React.Component {
     render() {
         return (
             <tr>
-                <td><Link to={`configs/${this.props.id}/edit/`}>{this.props.name}</Link></td>
+                <td><Link to={this.props.url}>{this.props.name}</Link></td>
             </tr>
         )
     }
 }
 
 ConfigEntry.propTypes = {
-    name: PropTypes.string.isRequired
+    name: PropTypes.string.isRequired,
+    url: PropTypes.string.isRequired,
 };
 
 class BaseHarvesterConfigList extends React.Component {
