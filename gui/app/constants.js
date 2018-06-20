@@ -16,6 +16,8 @@ Object.freeze(endpoints);
 const paths = {
     httpConfigList: "/http/",
     ftpConfigList: "/ftp/",
+    editHttpHarvesterConfig: "/configs/http/:id/edit/",
+    editFtpHarvesterConfig: "/configs/ftp/:id/edit/",
 };
 Object.freeze(paths);
 
