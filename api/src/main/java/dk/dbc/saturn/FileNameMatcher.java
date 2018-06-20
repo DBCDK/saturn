@@ -5,6 +5,9 @@
 
 package dk.dbc.saturn;
 
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPFileFilter;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +15,7 @@ import java.util.regex.Pattern;
  * This class parses a simple glob pattern with * and ?
  * and matches it against strings
  */
-public class FileNameMatcher {
+public class FileNameMatcher implements FTPFileFilter {
     private final Pattern pattern;
 
     public FileNameMatcher(String globPattern) {
@@ -35,5 +38,15 @@ public class FileNameMatcher {
     public boolean matches(String filename) {
         Matcher matcher = pattern.matcher(filename);
         return matcher.matches();
+    }
+
+    /**
+     * checks if the given pattern matches an ftp file
+     * @param ftpFile ftp file
+     * @return true if the glob pattern matches the name of the file
+     */
+    @Override
+    public boolean accept(FTPFile ftpFile) {
+        return matches(ftpFile.getName());
     }
 }

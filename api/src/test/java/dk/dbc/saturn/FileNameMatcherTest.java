@@ -5,6 +5,7 @@
 
 package dk.dbc.saturn;
 
+import org.apache.commons.net.ftp.FTPFile;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -34,5 +35,33 @@ public class FileNameMatcherTest {
             "spongebob.jpg");
         assertThat("literal dot", fileNameMatcher.matches("spongebob-jpg"),
             is(false));
+    }
+
+    @Test
+    public void test_accept() {
+        FileNameMatcher fileNameMatcher = new FileNameMatcher(
+            "spongebob*-1.j?g");
+
+        final FTPFile ftpFile = new FTPFile();
+        ftpFile.setName("spongebob-squarepants-1.jpg");
+
+        assertThat("matches 1", fileNameMatcher.accept(
+            ftpFile), is(true));
+
+        ftpFile.setName("spongebob-squarepants-1.jog");
+        assertThat("matches 2", fileNameMatcher.accept(
+            ftpFile), is(true));
+
+        ftpFile.setName("spongebob-1.jpg");
+        assertThat("matches 3", fileNameMatcher.accept(
+            ftpFile), is(true));
+
+        ftpFile.setName("spongebob-squarepants-2.jpg");
+        assertThat("doesn't match 1", fileNameMatcher.accept(
+            ftpFile), is(false));
+
+        ftpFile.setName("spongebob-squarepants-1.jg");
+        assertThat("doesn't match 2", fileNameMatcher.accept(
+            ftpFile), is(false));
     }
 }
