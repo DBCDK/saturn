@@ -8,13 +8,20 @@ import {Route, Switch} from "react-router-dom";
 
 import BaseHarvesterConfigList from "./BaseHarvesterConfigList";
 import HttpHarvesterConfigEdit from "./HttpHarvesterConfigEdit";
+import HttpHarvesterConfigList from "./HttpHarvesterConfigList";
+import FtpHarvesterConfigList from "./FtpHarvesterConfigList";
 import NotFound from "./NotFound";
+import constants from "../constants";
 
 const Main = () => (
     <div id="main">
         <Switch>
             <Route exact path="/" component={BaseHarvesterConfigList}/>
             <Route exact path="/configs/:id/edit/" component={HttpHarvesterConfigEdit}/>
+            <Route exact path={constants.paths.httpConfigList}
+                component={HttpHarvesterConfigList}/>
+            <Route exact path={constants.paths.ftpConfigList}
+                component={FtpHarvesterConfigList}/>
             <Route path="*" component={NotFound}/>
         </Switch>
     </div>
