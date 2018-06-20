@@ -18,6 +18,8 @@ const paths = {
     ftpConfigList: "/ftp/",
     editHttpHarvesterConfig: "/configs/http/:id/edit/",
     editFtpHarvesterConfig: "/configs/ftp/:id/edit/",
+    newHttpHarvesterConfig: "/http/new",
+    newFtpHarvesterConfig: "/ftp/new",
 };
 Object.freeze(paths);
 

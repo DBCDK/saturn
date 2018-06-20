@@ -28,7 +28,8 @@ class FtpHarvesterConfigList extends React.Component {
     }
     render() {
         return (
-            <BaseHarvesterConfigList>
+            <BaseHarvesterConfigList
+                    newConfigPath={constants.paths.newFtpHarvesterConfig}>
                 {this.state.configs.map(item => {
                     const path = new Path(
                         constants.paths.editFtpHarvesterConfig);

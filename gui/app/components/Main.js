@@ -26,6 +26,10 @@ const Main = () => (
                 component={HttpHarvesterConfigEdit}/>
             <Route exact path={constants.paths.editFtpHarvesterConfig}
                 component={FtpHarvesterConfigEdit}/>
+            <Route exact path={constants.paths.newHttpHarvesterConfig}
+                component={HttpHarvesterConfigEdit}/>
+            <Route exact path={constants.paths.newFtpHarvesterConfig}
+                component={FtpHarvesterConfigEdit}/>
             <Route path="*" component={NotFound}/>
         </Switch>
     </div>

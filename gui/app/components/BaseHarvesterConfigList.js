@@ -32,8 +32,7 @@ class BaseHarvesterConfigList extends React.Component {
     render() {
         return (
             <div>
-                <input type="button" value="new"
-                    onClick={this.props.onNewClicked}/>
+                <Link to={this.props.newConfigPath}><button>new</button></Link>
                 <table>
                     <tbody>
                         {this.props.children}
@@ -45,12 +44,7 @@ class BaseHarvesterConfigList extends React.Component {
 }
 
 BaseHarvesterConfigList.propTypes = {
-    onNewClicked: PropTypes.func,
-};
-
-BaseHarvesterConfigList.defaultProps = {
-    onNewClicked: (event) => console.log(
-        "no-op for BaseHarvesterConfigList.onNewClicked"),
+    newConfigPath: PropTypes.string.isRequired,
 };
 
 export {BaseHarvesterConfigList,ConfigEntry};
