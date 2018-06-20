@@ -12,8 +12,15 @@ const endpoints = {
 };
 Object.freeze(endpoints);
 
+const paths = {
+    httpConfigList: "/http/",
+    ftpConfigList: "/ftp/",
+};
+Object.freeze(paths);
+
 const constants = {
-    endpoints
+    endpoints,
+    paths,
 };
 Object.freeze(constants);
 
