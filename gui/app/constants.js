@@ -9,11 +9,23 @@ const endpoints = {
     getHttpHarvesterById: "/api/configs/http/get/:id",
     getFtpHarvesterById: "/api/configs/ftp/get/:id",
     listHttpHarvesterConfigs: "/api/configs/http/list",
+    listFtpHarvesterConfigs: "/api/configs/ftp/list",
 };
 Object.freeze(endpoints);
 
+const paths = {
+    httpConfigList: "/http/",
+    ftpConfigList: "/ftp/",
+    editHttpHarvesterConfig: "/configs/http/:id/edit/",
+    editFtpHarvesterConfig: "/configs/ftp/:id/edit/",
+    newHttpHarvesterConfig: "/http/new",
+    newFtpHarvesterConfig: "/ftp/new",
+};
+Object.freeze(paths);
+
 const constants = {
-    endpoints
+    endpoints,
+    paths,
 };
 Object.freeze(constants);
 

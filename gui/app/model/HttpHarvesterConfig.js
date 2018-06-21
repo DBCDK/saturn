@@ -5,27 +5,19 @@
 
 import {BaseHarvesterConfig} from "./BaseHarvesterConfig";
 import constants from "../constants";
-import {HttpClient} from "../HttpClient";
-
-import {getArgValue} from "../utils";
 
 class HttpHarvesterConfig extends BaseHarvesterConfig {
     static addHttpHarvesterConfig(config) {
-        return new HttpClient()
-            .addHeaders({"Content-type": "application/json"})
-            .post(constants.endpoints.addHttpHarvesterConfig, null, null, config);
+        return BaseHarvesterConfig.addHarvesterConfig(
+            constants.endpoints.addHttpHarvesterConfig, config);
     }
     static fetchConfig(id) {
-        const params = new Map();
-        params.set("id", id);
-        return new HttpClient()
-            .get(constants.endpoints.getHttpHarvesterById, params);
+        return BaseHarvesterConfig.fetchConfig(
+            constants.endpoints.getHttpHarvesterById, id);
     }
     static listHttpHarvesterConfigs(start, limit) {
-        start = getArgValue(start);
-        limit = getArgValue(limit);
-        return new HttpClient()
-            .get(constants.endpoints.listHttpHarvesterConfigs);
+        return BaseHarvesterConfig.listHarvesterConfigs(
+            constants.endpoints.listHttpHarvesterConfigs, start, limit);
     }
     static fromJson(json) {
         const config = super.fromJson(json);

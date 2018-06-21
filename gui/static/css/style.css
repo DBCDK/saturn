@@ -1,0 +1,48 @@
+html body {
+    background-color: #e8e8e8;
+    font-family: "Noto Sans", Arial, sans-serif;
+}
+
+.wrapper {
+    display: flex;
+}
+
+#sidebar {
+    height: 100vh;
+    padding-top: 1.25rem;
+    position: fixed;
+    font-size: 130%;
+}
+
+#main {
+    float: right;
+    width: 85%;
+}
+
+.error {
+    color: red;
+    font-size: 130%;
+}
+
+input[type=text] {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.5rem;
+    resize: vertical;
+    width: 100%;
+}
+
+button[type=submit] {
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    float: left;
+    padding: 1.0rem;
+}
+
+button[type=submit]:hover {
+    background-color: #45a049;
+}
