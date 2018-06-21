@@ -94,6 +94,29 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
+    public void test_harvest_noFilenameHeaderUrlEndingInSlash() throws HarvestException, IOException {
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("barnacles!")
+            ));
+
+        HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
+            "/spongebob/squarepants/");
+        assertThat("map has filename key", result.containsKey("squarepants"),
+            is(true));
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            result.get("squarepants")));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = in.readLine()) != null) {
+            sb.append(line);
+        }
+        assertThat(sb.toString(), is("barnacles!"));
+    }
+
+    @Test
     public void test_harvest_nullPointer() throws HarvestException {
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
