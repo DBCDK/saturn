@@ -13,6 +13,8 @@ import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ws.rs.ProcessingException;
@@ -22,6 +24,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +42,8 @@ public class HTTPHarvesterBean {
     private static Pattern filenamePattern =
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
-    public Map<String, InputStream> harvest(String url) throws HarvestException {
+    @Asynchronous
+    public Future<Map<String, InputStream>> harvest(String url) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
 
         final Client client = HttpClient.newClient(new ClientConfig()
@@ -60,9 +64,11 @@ public class HTTPHarvesterBean {
                 InputStream is = response.readEntity(InputStream.class);
                 final Optional<String> filename = getFilenameFromResponse(response);
                 if(filename.isPresent()) {
-                    return Collections.singletonMap(filename.get(), is);
+                    return new AsyncResult<>(Collections.singletonMap(
+                        filename.get(), is));
                 } else {
-                    return Collections.singletonMap(getFilename(url), is);
+                    return new AsyncResult<>(Collections.singletonMap(
+                        getFilename(url), is));
                 }
             } else {
                 throw new HarvestException(String.format(
