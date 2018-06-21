@@ -18,7 +18,24 @@ import java.util.regex.Pattern;
 public class FileNameMatcher implements FTPFileFilter {
     private final Pattern pattern;
 
+    /**
+     * a filename matcher which evalutes every input as a match
+     */
+    public FileNameMatcher() {
+        this("");
+    }
+
+    /**
+     * a filename matcher based on a glob pattern
+     * * matches an zero or more occurrences of any character
+     * ? matches zero or one occurrence of any character
+     * @param globPattern
+     */
     public FileNameMatcher(String globPattern) {
+        // empty pattern matches all
+        if(globPattern == null || globPattern.isEmpty()) {
+            globPattern = "*";
+        }
         final String regex = globPatternToRegex(globPattern);
         pattern = Pattern.compile(regex);
     }
