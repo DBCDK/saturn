@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
@@ -49,13 +50,41 @@ public class HTTPHarvesterBeanTest {
         wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
             .willReturn(aResponse()
                 .withStatus(200)
+                .withHeader("Content-Disposition",
+                    "attachment; filename=\"squarepants.jpg\"")
                 .withBody("barnacles!")
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        InputStream is = httpHarvesterBean.harvest(wireMockHost +
+        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
             "/spongebob/squarepants");
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        assertThat("map has filename key", result.containsKey("squarepants.jpg"),
+            is(true));
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            result.get("squarepants.jpg")));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = in.readLine()) != null) {
+            sb.append(line);
+        }
+        assertThat(sb.toString(), is("barnacles!"));
+    }
+
+    @Test
+    public void test_harvest_noFilenameHeader() throws HarvestException, IOException {
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("barnacles!")
+            ));
+
+        HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
+            "/spongebob/squarepants");
+        assertThat("map has filename key", result.containsKey("squarepants"),
+            is(true));
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            result.get("squarepants")));
         StringBuilder sb = new StringBuilder();
         String line;
         while((line = in.readLine()) != null) {
