@@ -32,13 +32,11 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.close();
 
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        List<String> files = new ArrayList<>();
-        files.add(putFile1);
-        files.add(putFile2);
         List<InputStream> inputStreams = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, PUT_DIR, files);
+            PASSWORD, PUT_DIR, new FileNameMatcher());
 
+        assertThat("result size", inputStreams.size(), is(2));
         assertThat(readInputStream(inputStreams.get(0)),
             is("Barnacle Boy!"));
         assertThat(readInputStream(inputStreams.get(1)),

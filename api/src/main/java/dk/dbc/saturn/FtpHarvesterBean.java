@@ -17,7 +17,7 @@ import java.util.List;
 @Stateless
 public class FtpHarvesterBean {
     public List<InputStream> harvest(String host, int port, String username,
-            String password, String dir, List<String> files) {
+            String password, String dir, FileNameMatcher fileNameMatcher) {
         List<InputStream> inputStreams = new ArrayList<>();
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
@@ -25,7 +25,7 @@ public class FtpHarvesterBean {
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
-        for(String file : files) {
+        for(String file : ftpClient.list(fileNameMatcher)) {
             inputStreams.add(ftpClient.get(file));
         }
         ftpClient.close();
