@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.io.InputStream;
-import java.util.List;
+import java.util.Map;
 
 @LocalBean
 @Stateless
@@ -33,15 +33,9 @@ public class FtpSenderBean {
 
     /**
      * send files to an ftp server
-     * @param inputStreams list of inputstream to send
-     * @param remoteNames list of filenames corresponding to the inputstreams
+     * @param files map of filenames and corresponding input streams
      */
-    public void send(List<InputStream> inputStreams, List<String> remoteNames) {
-        if(inputStreams.size() != remoteNames.size()) {
-            throw new IllegalArgumentException(String.format("number of filenames " +
-                "(%s) does not match number of files (%s)",
-                remoteNames.size(), inputStreams.size()));
-        }
+    public void send(Map<String, InputStream> files) {
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(Integer.parseInt(port))
@@ -49,8 +43,8 @@ public class FtpSenderBean {
             .withPassword(password)
             .cd(dir);
         try {
-            for (int i = 0; i < inputStreams.size(); i++) {
-                ftpClient.put(remoteNames.get(i), inputStreams.get(i));
+            for(Map.Entry<String, InputStream> entry : files.entrySet()) {
+                ftpClient.put(entry.getKey(), entry.getValue());
             }
         } finally {
             ftpClient.close();
