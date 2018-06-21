@@ -40,6 +40,10 @@ public class FileNameMatcher implements FTPFileFilter {
         pattern = Pattern.compile(regex);
     }
 
+    public Pattern getPattern() {
+        return pattern;
+    }
+
     private String globPatternToRegex(String globPattern) {
         return globPattern
             .replace(".", "\\.")
