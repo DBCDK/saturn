@@ -12,6 +12,8 @@ import dk.dbc.invariant.InvariantUtil;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -21,6 +23,7 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +35,9 @@ import java.util.regex.Pattern;
 @LocalBean
 @Stateless
 public class HTTPHarvesterBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        HTTPHarvesterBean.class);
+
     protected static RetryPolicy RETRY_POLICY = new RetryPolicy()
         .retryOn(Collections.singletonList(ProcessingException.class))
         .retryIf((Response response) -> response.getStatus() == 404 ||
@@ -45,6 +51,8 @@ public class HTTPHarvesterBean {
     @Asynchronous
     public Future<Map<String, InputStream>> harvest(String url) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
+        long start = Instant.now().toEpochMilli();
+        LOGGER.info("harvesting {}", url);
 
         final Client client = HttpClient.newClient(new ClientConfig()
             .register(new JacksonFeature()));
@@ -75,6 +83,8 @@ public class HTTPHarvesterBean {
                     "no entity found on response for url \"%s\"", url));
             }
         } finally {
+            LOGGER.info("harvesting of {} took {} ms", url,
+                (Instant.now().toEpochMilli() - start));
             client.close();
         }
     }

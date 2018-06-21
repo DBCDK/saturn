@@ -6,12 +6,15 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -19,10 +22,16 @@ import java.util.concurrent.Future;
 @LocalBean
 @Stateless
 public class FtpHarvesterBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        FtpHarvesterBean.class);
+
     @Asynchronous
     public Future<Map<String, InputStream>> harvest(String host, int port,
             String username, String password, String dir,
             FileNameMatcher fileNameMatcher) {
+        long start = Instant.now().toEpochMilli();
+        LOGGER.info("harvesting {}@{}:{}/{} with pattern \"{}\"", username,
+            host, port, dir, fileNameMatcher.getPattern());
         Map<String, InputStream> inputStreams = new HashMap<>();
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
@@ -36,6 +45,8 @@ public class FtpHarvesterBean {
             }
         }
         ftpClient.close();
+        LOGGER.info("harvesting for {}@{}:{}/{} took {} ms", username,
+            host, port, dir, (Instant.now().toEpochMilli()) - start);
         return new AsyncResult<>(inputStreams);
     }
 }
