@@ -88,4 +88,32 @@ public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public void setFilesPattern(String filesPattern) {
         this.filesPattern = filesPattern;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FtpHarvesterConfig)) return false;
+
+        FtpHarvesterConfig that = (FtpHarvesterConfig) o;
+
+        return super.equals(o)
+            && host.equals(that.host)
+            && port == that.port
+            && username.equals(that.username)
+            && password.equals(that.username)
+            && dir.equals(that.dir)
+            && filesPattern.equals(that.filesPattern);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + host.hashCode();
+        result = 31 * result + port;
+        result = 31 * result + username.hashCode();
+        result = 31 * result + password.hashCode();
+        result = 31 * result + dir.hashCode();
+        result = 31 * result + filesPattern.hashCode();
+        return result;
+    }
 }
