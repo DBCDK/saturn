@@ -50,6 +50,11 @@ public class ScheduledHarvesterBean {
             LOGGER.info("got {} ftp configs, {} http configs", ftpResults.size(),
                 httpResults.size());
             for(FtpHarvesterConfig ftpConfig : ftpResults) {
+                if(harvestTasks.containsKey(ftpConfig)) {
+                    LOGGER.info("still harvesting {}, not scheduling new " +
+                        "harvest", ftpConfig.getName());
+                    continue;
+                }
                 try {
                     FileNameMatcher fileNameMatcher = new FileNameMatcher(
                         ftpConfig.getFilesPattern());
@@ -68,6 +73,11 @@ public class ScheduledHarvesterBean {
                 }
             }
             for(HttpHarvesterConfig httpConfig : httpResults) {
+                if(harvestTasks.containsKey(httpConfig)) {
+                    LOGGER.info("still harvesting {}, not scheduling new " +
+                        "harvest", httpConfig.getName());
+                    continue;
+                }
                 try {
                     if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
                         httpConfig.getLastHarvested())) {
@@ -87,26 +97,25 @@ public class ScheduledHarvesterBean {
     }
 
     private void sendResults() {
-        try {
-            Iterator<? extends Map.Entry<? super AbstractHarvesterConfigEntity,
-                Future<Map<String, InputStream>>>> iterator = harvestTasks
-                .entrySet().iterator();
-            while(iterator.hasNext()) {
-                Map.Entry<? super AbstractHarvesterConfigEntity,
-                    Future<Map<String, InputStream>>> configEntry =
-                    iterator.next();
-                final AbstractHarvesterConfigEntity config =
-                    (AbstractHarvesterConfigEntity) configEntry.getKey();
-                try {
-                    Future<Map<String, InputStream>> result = configEntry.getValue();
+        Iterator<? extends Map.Entry<? super AbstractHarvesterConfigEntity,
+            Future<Map<String, InputStream>>>> iterator = harvestTasks
+            .entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry<? super AbstractHarvesterConfigEntity,
+                Future<Map<String, InputStream>>> configEntry =
+                iterator.next();
+            final AbstractHarvesterConfigEntity config =
+                (AbstractHarvesterConfigEntity) configEntry.getKey();
+            try {
+                Future<Map<String, InputStream>> result = configEntry.getValue();
+                if(result.isDone()) {
+                    iterator.remove();
                     ftpSenderBean.send(result.get());
                     config.setLastHarvested(Date.from(Instant.now()));
-                } catch (InterruptedException | ExecutionException e) {
-                    LOGGER.warn("harvest task for {} interrupted", config.getName(), e);
                 }
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.warn("harvest task for {} interrupted", config.getName(), e);
             }
-        } finally {
-            harvestTasks.clear();
         }
     }
 }
