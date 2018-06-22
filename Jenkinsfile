@@ -37,7 +37,7 @@ pipeline {
 		stage("verify") {
 			steps {
 				sh "mvn verify pmd:pmd"
-				junit "target/surefire-reports/TEST-*.xml,target/failsafe-reports/TEST-*.xml"
+				junit "**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/TEST-*.xml"
 			}
 		}
 		stage("warnings") {
