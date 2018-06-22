@@ -42,13 +42,14 @@ public class ScheduledHarvesterBean {
 
     @Schedule(minute = "*", hour = "*")
     public void harvest() {
-        List<FtpHarvesterConfig> ftpResults = harvesterConfigRepository
-            .list(FtpHarvesterConfig.class, 0, 0);
-        List<HttpHarvesterConfig> httpResults = harvesterConfigRepository
-            .list(HttpHarvesterConfig.class, 0, 0);
-        LOGGER.info("got {} ftp configs, {} http configs", ftpResults.size(),
-            httpResults.size());
-        for(FtpHarvesterConfig ftpConfig : ftpResults) {
+        try {
+            List<FtpHarvesterConfig> ftpResults = harvesterConfigRepository
+                .list(FtpHarvesterConfig.class, 0, 0);
+            List<HttpHarvesterConfig> httpResults = harvesterConfigRepository
+                .list(HttpHarvesterConfig.class, 0, 0);
+            LOGGER.info("got {} ftp configs, {} http configs", ftpResults.size(),
+                httpResults.size());
+            for(FtpHarvesterConfig ftpConfig : ftpResults) {
                 try {
                     FileNameMatcher fileNameMatcher = new FileNameMatcher(
                         ftpConfig.getFilesPattern());
@@ -56,30 +57,33 @@ public class ScheduledHarvesterBean {
                         ftpConfig.getLastHarvested())) {
                         Future<Map<String, InputStream>> result =
                             ftpHarvesterBean.harvest(ftpConfig.getHost(),
-                            ftpConfig.getPort(), ftpConfig.getUsername(),
-                            ftpConfig.getPassword(), ftpConfig.getDir(),
-                            fileNameMatcher);
+                                ftpConfig.getPort(), ftpConfig.getUsername(),
+                                ftpConfig.getPassword(), ftpConfig.getDir(),
+                                fileNameMatcher);
                         harvestTasks.put(ftpConfig, result);
                     }
                 } catch (HarvestException e) {
                     LOGGER.error("error while harvesting for ftp {}",
                         ftpConfig.getName(), e);
                 }
-        }
-        for(HttpHarvesterConfig httpConfig : httpResults) {
-            try {
-                if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
-                        httpConfig.getLastHarvested())) {
-                    Future<Map<String, InputStream>> result =
-                        httpHarvesterBean.harvest(httpConfig.getUrl());
-                    harvestTasks.put(httpConfig, result);
-                }
-            } catch (HarvestException e) {
-                LOGGER.error("error while harvesting for http {}",
-                    httpConfig.getName(), e);
             }
+            for(HttpHarvesterConfig httpConfig : httpResults) {
+                try {
+                    if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
+                        httpConfig.getLastHarvested())) {
+                        Future<Map<String, InputStream>> result =
+                            httpHarvesterBean.harvest(httpConfig.getUrl());
+                        harvestTasks.put(httpConfig, result);
+                    }
+                } catch (HarvestException e) {
+                    LOGGER.error("error while harvesting for http {}",
+                        httpConfig.getName(), e);
+                }
+            }
+            sendResults();
+        } catch (Exception e) {
+            LOGGER.error("caught unexpected exception while harvesting", e);
         }
-        sendResults();
     }
 
     private void sendResults() {
