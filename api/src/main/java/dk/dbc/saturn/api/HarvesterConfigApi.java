@@ -32,13 +32,13 @@ import java.util.Optional;
 @Stateless
 @Path("configs")
 public class HarvesterConfigApi {
-    private final static String HTTP_LIST_ENDPOINT = "http/list";
-    private final static String HTTP_ADD_ENDPOINT = "http/add";
-    private final static String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
-    private final static String FTP_LIST_ENDPOINT = "ftp/list";
-    private final static String FTP_ADD_ENDPOINT = "ftp/add";
-    private final static String FTP_GET_SINGLE_CONFIG_ENDPOINT = "ftp/get/{id}";
-    private final static JSONBContext jsonbContext = new JSONBContext();
+    private static final String HTTP_LIST_ENDPOINT = "http/list";
+    private static final String HTTP_ADD_ENDPOINT = "http/add";
+    private static final String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
+    private static final String FTP_LIST_ENDPOINT = "ftp/list";
+    private static final String FTP_ADD_ENDPOINT = "ftp/add";
+    private static final String FTP_GET_SINGLE_CONFIG_ENDPOINT = "ftp/get/{id}";
+    private static final JSONBContext jsonbContext = new JSONBContext();
 
     @EJB HarvesterConfigRepository harvesterConfigRepository;
 
