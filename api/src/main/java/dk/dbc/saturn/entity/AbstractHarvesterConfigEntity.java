@@ -40,6 +40,8 @@ public abstract class AbstractHarvesterConfigEntity {
     private Integer seqno;
     private String seqnoExtract;
 
+    private String agency;
+
     public void setId(int id) {
         this.id = id;
     }
@@ -96,6 +98,14 @@ public abstract class AbstractHarvesterConfigEntity {
         this.seqnoExtract = seqnoExtract;
     }
 
+    public String getAgency() {
+        return agency;
+    }
+
+    public void setAgency(String agency) {
+        this.agency = agency;
+    }
+
     @SuppressWarnings("PMD.UselessParentheses")
     @Override
     public boolean equals(Object o) {
@@ -110,6 +120,7 @@ public abstract class AbstractHarvesterConfigEntity {
             && name.equals(that.name)
             && schedule.equals(that.schedule)
             && lastHarvestedEquals
+            && agency.equals(that.agency)
             && transfile.equals(that.transfile);
     }
 
@@ -122,6 +133,7 @@ public abstract class AbstractHarvesterConfigEntity {
             result = 31 * result + lastHarvested.hashCode();
         }
         result = 31 * result + transfile.hashCode();
+        result = 31 * result + agency.hashCode();
         return result;
     }
 }

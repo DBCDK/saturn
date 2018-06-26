@@ -80,6 +80,7 @@ public class HarvesterConfigEntityIT {
         config1.setUrl("http://skerdernogetiaarhusiaften.dk/");
         config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config1.setAgency("010100");
 
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
         config2.setName("MyName'sNotRick!");
@@ -89,6 +90,7 @@ public class HarvesterConfigEntityIT {
             "Europe/Copenhagen"));
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config2.setAgency("010100");
 
         harvesterConfigRepository.entityManager.persist(config1);
         harvesterConfigRepository.entityManager.flush();
@@ -109,6 +111,7 @@ public class HarvesterConfigEntityIT {
         assertThat("result 1 last harvested wrong time zone",
             result1.getLastHarvested(), not(getDate("2018-06-06T20:20:20",
             "Europe/London")));
+        assertThat("result 1 agency", result1.getAgency(), is("010100"));
 
         HttpHarvesterConfig result2 = entities.get(1);
         assertThat("result 2 url", result2.getUrl(),
@@ -132,6 +135,7 @@ public class HarvesterConfigEntityIT {
         config1.setFilesPattern("treasure-map*.jpg");
         config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config1.setAgency("010100");
 
         FtpHarvesterConfig config2 = new FtpHarvesterConfig();
         config2.setName("MyName'sNotRick!");
@@ -146,6 +150,7 @@ public class HarvesterConfigEntityIT {
             Instant.ofEpochSecond(1234567)));
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config2.setAgency("010100");
 
         harvesterConfigRepository.entityManager.persist(config1);
         harvesterConfigRepository.entityManager.flush();
@@ -184,6 +189,7 @@ public class HarvesterConfigEntityIT {
             config.setUrl(name);
             config.setSchedule(name);
             config.setTransfile(name);
+            config.setAgency("010100");
             harvesterConfigRepository.entityManager.persist(config);
             harvesterConfigRepository.entityManager.flush();
         }
@@ -211,6 +217,7 @@ public class HarvesterConfigEntityIT {
             config.setPassword(name);
             config.setDir(name);
             config.setFilesPattern(name);
+            config.setAgency("010100");
             harvesterConfigRepository.entityManager.persist(config);
             harvesterConfigRepository.entityManager.flush();
         }
@@ -233,6 +240,7 @@ public class HarvesterConfigEntityIT {
             httpHarvesterConfig.setUrl(name);
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
+            httpHarvesterConfig.setAgency("010100");
             harvesterConfigRepository.add(HttpHarvesterConfig.class,
                 httpHarvesterConfig, mockedUriBuilder);
         }
@@ -265,6 +273,7 @@ public class HarvesterConfigEntityIT {
             ftpHarvesterConfig.setDir(name);
             ftpHarvesterConfig.setSchedule(name);
             ftpHarvesterConfig.setTransfile(name);
+            ftpHarvesterConfig.setAgency("010100");
             harvesterConfigRepository.add(FtpHarvesterConfig.class,
                 ftpHarvesterConfig, mockedUriBuilder);
         }
@@ -290,6 +299,7 @@ public class HarvesterConfigEntityIT {
         config.setSchedule("* * * * *");
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
         harvesterConfigRepository.add(HttpHarvesterConfig.class, config,
             mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -308,6 +318,7 @@ public class HarvesterConfigEntityIT {
         config2.setSchedule("1 * 12 * 31");
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
+        config2.setAgency("010100");
         harvesterConfigRepository.add(HttpHarvesterConfig.class, config2,
             mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
