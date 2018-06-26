@@ -112,6 +112,13 @@ public class ScheduledHarvesterBean {
                     iterator.remove();
                     ftpSenderBean.send(result.get());
                     config.setLastHarvested(Date.from(Instant.now()));
+                    if (config instanceof HttpHarvesterConfig) {
+                        harvesterConfigRepository.save(HttpHarvesterConfig.class,
+                                (HttpHarvesterConfig) config);
+                    } else {
+                        harvesterConfigRepository.save(FtpHarvesterConfig.class,
+                                (FtpHarvesterConfig) config);
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.warn("harvest task for {} interrupted", config.getName(), e);

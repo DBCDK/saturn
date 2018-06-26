@@ -11,6 +11,8 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -88,15 +90,29 @@ public class HarvesterConfigRepository {
      */
     public <T extends AbstractHarvesterConfigEntity> URI add(Class<T> type,
             T entity, UriBuilder uriBuilder) {
-        InvariantUtil.checkNotNullOrThrow(type, "type");
-        T originalEntity = entityManager.find(type, entity.getId());
-        if(originalEntity == null) {
+        return uriFromId(uriBuilder, save(type, entity).getId());
+    }
+
+    /**
+     * Persists harvester config entity in database in its own
+     * transactional scope
+     * @param type type of harvester config
+     * @param entity harvester config entity
+     * @param <T> entity type parameter
+     * @return managed entity
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public <T extends AbstractHarvesterConfigEntity> T save(Class<T> type,
+            T entity) {
+        final T originalEntity = entityManager.find(
+                InvariantUtil.checkNotNullOrThrow(type, "type"),
+                entity.getId());
+        if (originalEntity == null) {
             entityManager.persist(entity);
-        } else {
-            entityManager.detach(originalEntity);
-            entityManager.merge(entity);
+            return entity;
         }
-        return uriFromId(uriBuilder, entity.getId());
+        entityManager.detach(originalEntity);
+        return entityManager.merge(entity);
     }
 
     private URI uriFromId(UriBuilder uriBuilder, int id) {
