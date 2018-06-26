@@ -44,6 +44,7 @@ class BaseHarvesterConfig {
         config.transfile = json.transfile;
         config.seqno = json.seqno;
         config.seqnoExtract = json.seqnoExtract;
+        config.agency = json.agency;
         return config;
     }
 }

@@ -72,6 +72,9 @@ class FtpHarvesterConfigEdit extends React.Component {
             case "seqnoExtract":
                 config.seqnoExtract = form[i].value;
                 break;
+            case "agency":
+                config.agency = form[i].value;
+                break;
             default:
                 break;
             }
