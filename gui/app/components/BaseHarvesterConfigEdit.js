@@ -45,6 +45,11 @@ class BaseHarvesterConfigEdit extends React.Component {
     }
     onClick(event) {
         event.preventDefault();
+        for(let key in this.props.config) {
+            if(this.props.config.hasOwnProperty(key) && !this.validate(key, this.props.config[key])) {
+                return false;
+            }
+        }
         this.props.onSave(event.target.form);
     }
     onChangeCallback(name, value) {
@@ -52,6 +57,19 @@ class BaseHarvesterConfigEdit extends React.Component {
         const config = this.props.config;
         config[name] = value;
         this.props.onConfigChanged(config);
+    }
+    validate(name, value) {
+        switch(name) {
+        case "transfile":
+            if(value === undefined || value === null || value.length === 0) {
+                alert("transfile cannot have empty content");
+                return false;
+            } else if(value.indexOf("f=") !== -1) {
+                alert("transfile cannot contain f=");
+                return false;
+            }
+        }
+        return true;
     }
     render() {
         const config = this.props.config;
