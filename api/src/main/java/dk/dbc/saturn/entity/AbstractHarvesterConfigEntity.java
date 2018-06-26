@@ -37,6 +37,9 @@ public abstract class AbstractHarvesterConfigEntity {
 
     private String transfile;
 
+    private Integer seqno;
+    private String seqnoExtract;
+
     public void setId(int id) {
         this.id = id;
     }
@@ -75,6 +78,22 @@ public abstract class AbstractHarvesterConfigEntity {
 
     public void setTransfile(String transfile) {
         this.transfile = transfile;
+    }
+
+    public Integer getSeqno() {
+        return seqno;
+    }
+
+    public void setSeqno(Integer seqno) {
+        this.seqno = seqno;
+    }
+
+    public String getSeqnoExtract() {
+        return seqnoExtract;
+    }
+
+    public void setSeqnoExtract(String seqnoExtract) {
+        this.seqnoExtract = seqnoExtract;
     }
 
     @SuppressWarnings("PMD.UselessParentheses")
