@@ -42,6 +42,8 @@ class BaseHarvesterConfig {
         config.name = json.name;
         config.schedule = json.schedule;
         config.transfile = json.transfile;
+        config.seqno = json.seqno;
+        config.seqnoExtract = json.seqnoExtract;
         return config;
     }
 }

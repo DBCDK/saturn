@@ -63,6 +63,10 @@ class BaseHarvesterConfigEdit extends React.Component {
                     onChangeCallback={this.onChangeCallback}/>
                 <FormEntry name="transfile" value={config.transfile}
                     onChangeCallback={this.onChangeCallback}/>
+                <FormEntry name="seqno" value={config.seqno || "0"}
+                    onChangeCallback={this.onChangeCallback}/>
+                <FormEntry name="seqnoExtract" value={config.seqnoExtract || ""}
+                    onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
                 <button type="submit" onClick={this.onClick}>save</button>
             </form>
