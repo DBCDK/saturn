@@ -76,4 +76,29 @@ public abstract class AbstractHarvesterConfigEntity {
     public void setTransfile(String transfile) {
         this.transfile = transfile;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof HttpHarvesterConfig)) return false;
+
+        AbstractHarvesterConfigEntity that = (AbstractHarvesterConfigEntity) o;
+
+        return id == that.id
+            && name.equals(that.name)
+            && schedule.equals(that.schedule)
+            && (lastHarvested != null && lastHarvested.equals(that.lastHarvested))
+            && transfile.equals(that.transfile);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + schedule.hashCode();
+        if(lastHarvested != null) {
+            result = 31 * result + lastHarvested.hashCode();
+        }
+        result = 31 * result + transfile.hashCode();
+        return result;
+    }
 }

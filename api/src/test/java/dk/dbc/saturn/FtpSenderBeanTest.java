@@ -13,21 +13,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class FtpSenderBeanTest extends AbstractFtpBeanTest {
     @Test
     void send() throws IOException  {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
-        List<String> names = Arrays.asList("sponge", "bob");
-        List<InputStream> inputStreams = getInputStreams(names);
-        ftpSenderBean.send(inputStreams, names);
+        Map<String, InputStream> inputStreams = getInputStreams("sponge",
+            "bob");
+        ftpSenderBean.send(inputStreams);
 
         FtpClient ftpClient = getFtpClient();
 
@@ -37,17 +36,6 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
             is("bob"));
 
         ftpClient.close();
-    }
-
-    @Test
-    void send_fileNumberMismatch() {
-        FtpSenderBean ftpSenderBean = getFtpSenderBean();
-        List<InputStream> inputStreams = Collections.emptyList();
-        List<String> names = Collections.singletonList("Larry");
-        try {
-            ftpSenderBean.send(inputStreams, names);
-            fail("expected illegal argument exception");
-        } catch(IllegalArgumentException e) {}
     }
 
     private FtpSenderBean getFtpSenderBean() {
@@ -70,13 +58,16 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
             .cd(PUT_DIR);
     }
 
-    private List<InputStream> getInputStreams(List<String> contentList) {
-        return contentList.stream().map(name -> {
-            try {
-                return new ByteArrayInputStream(name.getBytes("utf8"));
-            } catch(UnsupportedEncodingException e) {
-                return new ByteArrayInputStream(e.toString().getBytes());
+    private Map<String, InputStream> getInputStreams(String ...contentList) {
+        return Arrays.stream(contentList).collect(Collectors.toMap(
+                Function.identity(),
+            name -> {
+                try {
+                    return new ByteArrayInputStream(name.getBytes("utf8"));
+                } catch(UnsupportedEncodingException e) {
+                    return new ByteArrayInputStream(e.toString().getBytes());
+                }
             }
-        }).collect(Collectors.toList());
+        ));
     }
 }

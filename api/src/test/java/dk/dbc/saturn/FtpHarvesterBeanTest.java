@@ -10,15 +10,15 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     @Test
-    public void test_harvest() throws IOException {
+    public void test_harvest() throws IOException, ExecutionException, InterruptedException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
         final FtpClient ftpClient = new FtpClient()
@@ -32,16 +32,14 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.close();
 
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        List<String> files = new ArrayList<>();
-        files.add(putFile1);
-        files.add(putFile2);
-        List<InputStream> inputStreams = ftpHarvesterBean.harvest(
+        Map<String, InputStream> inputStreams = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, PUT_DIR, files);
+            PASSWORD, PUT_DIR, new FileNameMatcher()).get();
 
-        assertThat(readInputStream(inputStreams.get(0)),
+        assertThat("result size", inputStreams.size(), is(2));
+        assertThat(readInputStream(inputStreams.get("bb.txt")),
             is("Barnacle Boy!"));
-        assertThat(readInputStream(inputStreams.get(1)),
+        assertThat(readInputStream(inputStreams.get("mm.txt")),
             is("Mermaid Man!"));
     }
 

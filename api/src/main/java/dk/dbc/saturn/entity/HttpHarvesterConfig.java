@@ -42,4 +42,22 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HttpHarvesterConfig)) return false;
+
+        HttpHarvesterConfig that = (HttpHarvesterConfig) o;
+
+        return super.equals(o)
+            && url.equals(that.url);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + url.hashCode();
+        return result;
+    }
 }

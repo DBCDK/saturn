@@ -38,6 +38,20 @@ public class FileNameMatcherTest {
     }
 
     @Test
+    void test_matches_emptyPattern() {
+        FileNameMatcher fileNameMatcher = new FileNameMatcher();
+        assertThat("empty constructor", fileNameMatcher.matches("sponge.bob"));
+
+        fileNameMatcher = new FileNameMatcher("");
+        assertThat("constructor with empty string",
+            fileNameMatcher.matches("i'm-ready"));
+
+        fileNameMatcher = new FileNameMatcher(null);
+        assertThat("constructor with null argument",
+            fileNameMatcher.matches("bubble-buddy!"));
+    }
+
+    @Test
     public void test_accept() {
         FileNameMatcher fileNameMatcher = new FileNameMatcher(
             "spongebob*-1.j?g");

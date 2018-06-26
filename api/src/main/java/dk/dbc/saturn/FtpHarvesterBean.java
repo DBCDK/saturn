@@ -6,29 +6,47 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 @LocalBean
 @Stateless
 public class FtpHarvesterBean {
-    public List<InputStream> harvest(String host, int port, String username,
-            String password, String dir, List<String> files) {
-        List<InputStream> inputStreams = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        FtpHarvesterBean.class);
+
+    @Asynchronous
+    public Future<Map<String, InputStream>> harvest(String host, int port,
+            String username, String password, String dir,
+            FileNameMatcher fileNameMatcher) {
+        long start = Instant.now().toEpochMilli();
+        LOGGER.info("harvesting {}@{}:{}/{} with pattern \"{}\"", username,
+            host, port, dir, fileNameMatcher.getPattern());
+        Map<String, InputStream> inputStreams = new HashMap<>();
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(port)
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
-        for(String file : files) {
-            inputStreams.add(ftpClient.get(file));
+        for(String file : ftpClient.list(fileNameMatcher)) {
+            if(file != null && !file.isEmpty()) {
+                inputStreams.put(file, ftpClient.get(file));
+            }
         }
         ftpClient.close();
-        return inputStreams;
+        LOGGER.info("harvesting for {}@{}:{}/{} took {} ms", username,
+            host, port, dir, (Instant.now().toEpochMilli()) - start);
+        return new AsyncResult<>(inputStreams);
     }
 }
