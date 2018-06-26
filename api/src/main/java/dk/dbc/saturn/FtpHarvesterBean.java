@@ -46,7 +46,7 @@ public class FtpHarvesterBean {
         }
         ftpClient.close();
         LOGGER.info("harvesting for {}@{}:{}/{} took {} ms", username,
-            host, port, dir, (Instant.now().toEpochMilli()) - start);
+            host, port, dir, Instant.now().toEpochMilli() - start);
         return new AsyncResult<>(inputStreams);
     }
 }

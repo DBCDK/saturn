@@ -83,10 +83,13 @@ public abstract class AbstractHarvesterConfigEntity {
 
         AbstractHarvesterConfigEntity that = (AbstractHarvesterConfigEntity) o;
 
+        final boolean lastHarvestedEquals = (lastHarvested == null &&
+            that.lastHarvested == null) || (lastHarvested != null &&
+            lastHarvested.equals(that.lastHarvested));
         return id == that.id
             && name.equals(that.name)
             && schedule.equals(that.schedule)
-            && (lastHarvested != null && lastHarvested.equals(that.lastHarvested))
+            && lastHarvestedEquals
             && transfile.equals(that.transfile);
     }
 
