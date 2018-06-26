@@ -34,7 +34,7 @@ public class FtpSenderBean {
      * send files to an ftp server
      * @param files map of filenames and corresponding input streams
      */
-    public void send(Set<FileHarvest> files) {
+    public void send(Set<FileHarvest> files, String transfileName, String transfile) {
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(Integer.parseInt(port))
@@ -45,6 +45,7 @@ public class FtpSenderBean {
             for(FileHarvest fileHarvest : files) {
                 ftpClient.put(fileHarvest.getFilename(), fileHarvest.getContent());
             }
+            ftpClient.put(transfileName, transfile);
         } finally {
             ftpClient.close();
         }

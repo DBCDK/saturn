@@ -22,7 +22,9 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     void send() throws IOException  {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
         Set<FileHarvest> inputStreams = getFileHarvests("sponge", "bob");
-        ftpSenderBean.send(inputStreams);
+        final String transfile = "transfile";
+        final String transfileName = "pat.trans";
+        ftpSenderBean.send(inputStreams, transfileName, transfile);
 
         FtpClient ftpClient = getFtpClient();
 
@@ -30,6 +32,8 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
             is("sponge"));
         assertThat("file 2", readInputStream(ftpClient.get("bob")),
             is("bob"));
+        assertThat("transfile", readInputStream(ftpClient.get(transfileName)),
+            is("transfile"));
 
         ftpClient.close();
     }

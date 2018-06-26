@@ -26,12 +26,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Startup
 @Singleton
 public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
+
+    private static final String APPLICATION_ID = "saturn";
 
     final private HashMap<? super AbstractHarvesterConfigEntity,
         Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
@@ -113,7 +116,14 @@ public class ScheduledHarvesterBean {
                 if(result.isDone()) {
                     iterator.remove();
                     final Set<FileHarvest> fileHarvests = result.get();
-                    ftpSenderBean.send(fileHarvests);
+                    final List<String> filenames = fileHarvests.stream().map(
+                        FileHarvest::getFilename).collect(Collectors.toList());
+                    final String transfile = TransfileGenerator
+                        .generateTransfile(config.getTransfile(),
+                        filenames);
+                    final String transfileName = String.format("%s.%s.trans",
+                        config.getAgency(), APPLICATION_ID);
+                    ftpSenderBean.send(fileHarvests, transfileName, transfile);
                     config.setLastHarvested(Date.from(Instant.now()));
                     config.setSeqno(fileHarvests.stream()
                             .map(FileHarvest::getSeqno)
