@@ -77,6 +77,7 @@ public abstract class AbstractHarvesterConfigEntity {
         this.transfile = transfile;
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof HttpHarvesterConfig)) return false;
