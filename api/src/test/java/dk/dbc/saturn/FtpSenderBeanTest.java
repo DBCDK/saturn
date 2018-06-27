@@ -10,12 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,8 +21,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     @Test
     void send() throws IOException  {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
-        Map<String, InputStream> inputStreams = getInputStreams("sponge",
-            "bob");
+        Set<FileHarvest> inputStreams = getFileHarvests("sponge", "bob");
         ftpSenderBean.send(inputStreams);
 
         FtpClient ftpClient = getFtpClient();
@@ -58,16 +54,18 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
             .cd(PUT_DIR);
     }
 
-    private Map<String, InputStream> getInputStreams(String ...contentList) {
-        return Arrays.stream(contentList).collect(Collectors.toMap(
-                Function.identity(),
-            name -> {
-                try {
-                    return new ByteArrayInputStream(name.getBytes("utf8"));
-                } catch(UnsupportedEncodingException e) {
-                    return new ByteArrayInputStream(e.toString().getBytes());
-                }
-            }
-        ));
+    private Set<FileHarvest> getFileHarvests(String ...contentList) {
+        final Set<FileHarvest> fileHarvests = new HashSet<>(contentList.length);
+        for (String content : contentList) {
+            try {
+                fileHarvests.add(new FileHarvest(content,
+                        new ByteArrayInputStream(content.getBytes("utf8")),
+                        null));
+            } catch (UnsupportedEncodingException e) {
+                fileHarvests.add(new FileHarvest(content,
+                        new ByteArrayInputStream(e.toString().getBytes()), null));
+                    }
+        }
+        return fileHarvests;
     }
 }

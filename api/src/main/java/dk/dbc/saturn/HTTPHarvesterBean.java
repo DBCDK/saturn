@@ -25,8 +25,9 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -49,7 +50,7 @@ public class HTTPHarvesterBean {
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
     @Asynchronous
-    public Future<Map<String, InputStream>> harvest(String url) throws HarvestException {
+    public Future<Set<FileHarvest>> harvest(String url) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
         long start = Instant.now().toEpochMilli();
         LOGGER.info("harvesting {}", url);
@@ -71,13 +72,17 @@ public class HTTPHarvesterBean {
             if (response.hasEntity()) {
                 InputStream is = response.readEntity(InputStream.class);
                 final Optional<String> filename = getFilenameFromResponse(response);
-                if(filename.isPresent()) {
-                    return new AsyncResult<>(Collections.singletonMap(
-                        filename.get(), is));
+                final Set<FileHarvest> fileHarvests = new HashSet<>();
+                if (filename.isPresent()) {
+                    final FileHarvest fileHarvest = new FileHarvest(
+                        filename.get(), is, null);
+                    fileHarvests.add(fileHarvest);
                 } else {
-                    return new AsyncResult<>(Collections.singletonMap(
-                        getFilename(url), is));
+                    final FileHarvest fileHarvest = new FileHarvest(
+                        getFilename(url), is, null);
+                    fileHarvests.add(fileHarvest);
                 }
+                return new AsyncResult<>(fileHarvests);
             } else {
                 throw new HarvestException(String.format(
                     "no entity found on response for url \"%s\"", url));

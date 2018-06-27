@@ -13,9 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -31,6 +30,11 @@ public class HTTPHarvesterBeanTest {
 
     private static WireMockServer wireMockServer;
     private static String wireMockHost;
+
+    private final FileHarvest squarepantsFileHarvest =
+            new FileHarvest("squarepants.jpg", null, null);
+    private final FileHarvest squarepantsNoHeaderFileHarvest =
+            new FileHarvest("squarepants", null, null);
 
     @BeforeAll
     public static void setUp() {
@@ -58,12 +62,13 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
+        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
             "/spongebob/squarepants").get();
-        assertThat("map has filename key", result.containsKey("squarepants.jpg"),
+        assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
             is(true));
+        final FileHarvest fileHarvest = result.iterator().next();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            result.get("squarepants.jpg")));
+            fileHarvest.getContent()));
         StringBuilder sb = new StringBuilder();
         String line;
         while((line = in.readLine()) != null) {
@@ -82,12 +87,13 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
+        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
             "/spongebob/squarepants").get();
-        assertThat("map has filename key", result.containsKey("squarepants"),
+        assertThat("has squarepants harvest", result.contains(squarepantsNoHeaderFileHarvest),
             is(true));
+        final FileHarvest fileHarvest = result.iterator().next();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            result.get("squarepants")));
+            fileHarvest.getContent()));
         StringBuilder sb = new StringBuilder();
         String line;
         while((line = in.readLine()) != null) {
@@ -106,12 +112,13 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Map<String, InputStream> result = httpHarvesterBean.harvest(wireMockHost +
+        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
             "/spongebob/squarepants/").get();
-        assertThat("map has filename key", result.containsKey("squarepants"),
+        assertThat("has squarepants harvest", result.contains(squarepantsNoHeaderFileHarvest),
             is(true));
+        final FileHarvest fileHarvest = result.iterator().next();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            result.get("squarepants")));
+            fileHarvest.getContent()));
         StringBuilder sb = new StringBuilder();
         String line;
         while((line = in.readLine()) != null) {

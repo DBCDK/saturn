@@ -15,13 +15,13 @@ import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import java.io.InputStream;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -32,7 +32,7 @@ public class ScheduledHarvesterBean {
         ScheduledHarvesterBean.class);
 
     final private HashMap<? super AbstractHarvesterConfigEntity,
-        Future<Map<String, InputStream>>> harvestTasks = new HashMap<>();
+        Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
     @EJB CronParserBean cronParserBean;
     @EJB HTTPHarvesterBean httpHarvesterBean;
@@ -60,7 +60,7 @@ public class ScheduledHarvesterBean {
                         ftpConfig.getFilesPattern());
                     if (cronParserBean.shouldExecute(ftpConfig.getSchedule(),
                         ftpConfig.getLastHarvested())) {
-                        Future<Map<String, InputStream>> result =
+                        Future<Set<FileHarvest>> result =
                             ftpHarvesterBean.harvest(ftpConfig.getHost(),
                                 ftpConfig.getPort(), ftpConfig.getUsername(),
                                 ftpConfig.getPassword(), ftpConfig.getDir(),
@@ -81,7 +81,7 @@ public class ScheduledHarvesterBean {
                 try {
                     if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
                         httpConfig.getLastHarvested())) {
-                        Future<Map<String, InputStream>> result =
+                        Future<Set<FileHarvest>> result =
                             httpHarvesterBean.harvest(httpConfig.getUrl());
                         harvestTasks.put(httpConfig, result);
                     }
@@ -98,16 +98,16 @@ public class ScheduledHarvesterBean {
 
     private void sendResults() {
         Iterator<? extends Map.Entry<? super AbstractHarvesterConfigEntity,
-            Future<Map<String, InputStream>>>> iterator = harvestTasks
+            Future<Set<FileHarvest>>>> iterator = harvestTasks
             .entrySet().iterator();
         while(iterator.hasNext()) {
             Map.Entry<? super AbstractHarvesterConfigEntity,
-                Future<Map<String, InputStream>>> configEntry =
+                Future<Set<FileHarvest>>> configEntry =
                 iterator.next();
             final AbstractHarvesterConfigEntity config =
                 (AbstractHarvesterConfigEntity) configEntry.getKey();
             try {
-                Future<Map<String, InputStream>> result = configEntry.getValue();
+                Future<Set<FileHarvest>> result = configEntry.getValue();
                 if(result.isDone()) {
                     iterator.remove();
                     ftpSenderBean.send(result.get());
