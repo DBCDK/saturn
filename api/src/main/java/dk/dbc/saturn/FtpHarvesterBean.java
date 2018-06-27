@@ -13,10 +13,10 @@ import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import java.io.InputStream;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 @LocalBean
@@ -26,27 +26,32 @@ public class FtpHarvesterBean {
         FtpHarvesterBean.class);
 
     @Asynchronous
-    public Future<Map<String, InputStream>> harvest(String host, int port,
-            String username, String password, String dir,
-            FileNameMatcher fileNameMatcher) {
+    public Future<Set<FileHarvest>> harvest(String host, int port,
+                                            String username, String password, String dir,
+                                            FileNameMatcher fileNameMatcher,
+                                            SeqnoMatcher seqnoMatcher) {
         long start = Instant.now().toEpochMilli();
         LOGGER.info("harvesting {}@{}:{}/{} with pattern \"{}\"", username,
             host, port, dir, fileNameMatcher.getPattern());
-        Map<String, InputStream> inputStreams = new HashMap<>();
+        Set<FileHarvest> fileHarvests = new HashSet<>();
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(port)
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
-        for(String file : ftpClient.list(fileNameMatcher)) {
-            if(file != null && !file.isEmpty()) {
-                inputStreams.put(file, ftpClient.get(file));
+        for (String file : ftpClient.list(fileNameMatcher)) {
+            if (file != null && !file.isEmpty()) {
+                if (seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
+                    final FileHarvest fileHarvest = new FileHarvest(
+                            file, ftpClient.get(file), seqnoMatcher.getSeqno());
+                    fileHarvests.add(fileHarvest);
+                }
             }
         }
         ftpClient.close();
         LOGGER.info("harvesting for {}@{}:{}/{} took {} ms", username,
             host, port, dir, Instant.now().toEpochMilli() - start);
-        return new AsyncResult<>(inputStreams);
+        return new AsyncResult<>(fileHarvests);
     }
 }

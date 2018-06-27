@@ -10,8 +10,7 @@ import dk.dbc.ftp.FtpClient;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import java.io.InputStream;
-import java.util.Map;
+import java.util.Set;
 
 @LocalBean
 @Stateless
@@ -35,7 +34,7 @@ public class FtpSenderBean {
      * send files to an ftp server
      * @param files map of filenames and corresponding input streams
      */
-    public void send(Map<String, InputStream> files) {
+    public void send(Set<FileHarvest> files) {
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(Integer.parseInt(port))
@@ -43,8 +42,8 @@ public class FtpSenderBean {
             .withPassword(password)
             .cd(dir);
         try {
-            for(Map.Entry<String, InputStream> entry : files.entrySet()) {
-                ftpClient.put(entry.getKey(), entry.getValue());
+            for(FileHarvest fileHarvest : files) {
+                ftpClient.put(fileHarvest.getFilename(), fileHarvest.getContent());
             }
         } finally {
             ftpClient.close();

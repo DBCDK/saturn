@@ -6,11 +6,13 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,15 +34,19 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.close();
 
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        Map<String, InputStream> inputStreams = ftpHarvesterBean.harvest(
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, PUT_DIR, new FileNameMatcher()).get();
+            PASSWORD, PUT_DIR, new FileNameMatcher(),
+                new SeqnoMatcher(new FtpHarvesterConfig())).get();
 
-        assertThat("result size", inputStreams.size(), is(2));
-        assertThat(readInputStream(inputStreams.get("bb.txt")),
-            is("Barnacle Boy!"));
-        assertThat(readInputStream(inputStreams.get("mm.txt")),
-            is("Mermaid Man!"));
+        assertThat("result size", fileHarvests.size(), is(2));
+        final Map<String, String> contentMap = new HashMap<>(2);
+        contentMap.put("bb.txt", "Barnacle Boy!");
+        contentMap.put("mm.txt", "Mermaid Man!");
+        for (FileHarvest fileHarvest : fileHarvests) {
+            assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
+                is(contentMap.get(fileHarvest.getFilename())));
+        }
     }
 
     private static FtpHarvesterBean getFtpHarvesterBean() {
