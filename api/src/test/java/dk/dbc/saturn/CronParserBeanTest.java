@@ -78,6 +78,15 @@ class CronParserBeanTest {
             is("every hour at minute 3 at 22 day at March month"));
     }
 
+    @Test
+    void validate() {
+        CronParserBean parserBean = new CronParserBean();
+        assertThat("invalid expression", parserBean.validate("* 12 X 13 *"),
+            is(false));
+        assertThat("valid expression", parserBean.validate("* 23 31 1 3"),
+            is(true));
+    }
+
     private Date getDate(String date) throws ParseException {
         return getDate(date, ZoneId.systemDefault().getId());
     }

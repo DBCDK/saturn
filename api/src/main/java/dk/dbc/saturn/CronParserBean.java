@@ -13,6 +13,8 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import dk.dbc.invariant.InvariantUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -28,6 +30,8 @@ import java.util.Optional;
 @LocalBean
 @Stateless
 public class CronParserBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        ScheduledHarvesterBean.class);
     private static CronDefinition definition =
         CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
     private static CronParser parser = new CronParser(definition);
@@ -98,5 +102,20 @@ public class CronParserBean {
         // it without localization
         CronDescriptor descriptor = CronDescriptor.instance();
         return descriptor.describe(parser.parse(expression));
+    }
+
+    /**
+     * validate a cron expression
+     * @param expression cron expression
+     * @return true if the expression is a valid cron expression
+     */
+    public boolean validate(String expression) {
+        try {
+            parser.parse(expression);
+            return true;
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("validation failed for expression \"{}\"", expression);
+        }
+        return false;
     }
 }
