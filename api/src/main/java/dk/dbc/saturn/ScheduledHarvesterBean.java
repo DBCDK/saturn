@@ -17,10 +17,12 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -64,7 +66,7 @@ public class ScheduledHarvesterBean {
                             ftpHarvesterBean.harvest(ftpConfig.getHost(),
                                 ftpConfig.getPort(), ftpConfig.getUsername(),
                                 ftpConfig.getPassword(), ftpConfig.getDir(),
-                                fileNameMatcher);
+                                fileNameMatcher, new SeqnoMatcher(ftpConfig));
                         harvestTasks.put(ftpConfig, result);
                     }
                 } catch (HarvestException e) {
@@ -110,8 +112,15 @@ public class ScheduledHarvesterBean {
                 Future<Set<FileHarvest>> result = configEntry.getValue();
                 if(result.isDone()) {
                     iterator.remove();
-                    ftpSenderBean.send(result.get());
+                    final Set<FileHarvest> fileHarvests = result.get();
+                    ftpSenderBean.send(fileHarvests);
                     config.setLastHarvested(Date.from(Instant.now()));
+                    config.setSeqno(fileHarvests.stream()
+                            .map(FileHarvest::getSeqno)
+                            .filter(Objects::nonNull)
+                            .max(Comparator.comparing(Integer::valueOf))
+                            .orElse(0));
+
                     if (config instanceof HttpHarvesterConfig) {
                         harvesterConfigRepository.save(HttpHarvesterConfig.class,
                                 (HttpHarvesterConfig) config);

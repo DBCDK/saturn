@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -35,7 +36,8 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, PUT_DIR, new FileNameMatcher()).get();
+            PASSWORD, PUT_DIR, new FileNameMatcher(),
+                new SeqnoMatcher(new FtpHarvesterConfig())).get();
 
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);

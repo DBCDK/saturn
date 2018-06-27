@@ -13,6 +13,7 @@ import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,8 +27,9 @@ public class FtpHarvesterBean {
 
     @Asynchronous
     public Future<Set<FileHarvest>> harvest(String host, int port,
-                                                    String username, String password, String dir,
-                                                    FileNameMatcher fileNameMatcher) {
+                                            String username, String password, String dir,
+                                            FileNameMatcher fileNameMatcher,
+                                            SeqnoMatcher seqnoMatcher) {
         long start = Instant.now().toEpochMilli();
         LOGGER.info("harvesting {}@{}:{}/{} with pattern \"{}\"", username,
             host, port, dir, fileNameMatcher.getPattern());
@@ -38,11 +40,13 @@ public class FtpHarvesterBean {
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
-        for(String file : ftpClient.list(fileNameMatcher)) {
+        for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()) {
-                final FileHarvest fileHarvest = new FileHarvest(
-                        file, ftpClient.get(file), null);
-                fileHarvests.add(fileHarvest);
+                if (seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
+                    final FileHarvest fileHarvest = new FileHarvest(
+                            file, ftpClient.get(file), seqnoMatcher.getSeqno());
+                    fileHarvests.add(fileHarvest);
+                }
             }
         }
         ftpClient.close();
