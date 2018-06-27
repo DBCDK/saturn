@@ -14,7 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 @Stateless
-@Path("configs")
+@Path("fields")
 public class ConfigFieldApi {
     private static final String VALIDATE_CRON_ENDPOINT = "cron/validate";
 
