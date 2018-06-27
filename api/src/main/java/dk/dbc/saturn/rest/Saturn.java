@@ -5,6 +5,7 @@
 
 package dk.dbc.saturn.rest;
 
+import dk.dbc.saturn.api.ConfigFieldApi;
 import dk.dbc.saturn.api.HarvesterConfigApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ public class Saturn extends Application {
     static {
         classes.add(StatusBean.class);
         classes.add(HarvesterConfigApi.class);
+        classes.add(ConfigFieldApi.class);
     }
 
     @Override
