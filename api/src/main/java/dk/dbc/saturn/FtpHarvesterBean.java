@@ -41,12 +41,11 @@ public class FtpHarvesterBean {
             .withPassword(password)
             .cd(dir);
         for (String file : ftpClient.list(fileNameMatcher)) {
-            if (file != null && !file.isEmpty()) {
-                if (seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
-                    final FileHarvest fileHarvest = new FileHarvest(
-                            file, ftpClient.get(file), seqnoMatcher.getSeqno());
-                    fileHarvests.add(fileHarvest);
-                }
+            if (file != null && !file.isEmpty()
+                    && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
+                final FileHarvest fileHarvest = new FileHarvest(
+                        file, ftpClient.get(file), seqnoMatcher.getSeqno());
+                fileHarvests.add(fileHarvest);
             }
         }
         ftpClient.close();
