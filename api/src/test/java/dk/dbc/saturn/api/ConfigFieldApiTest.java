@@ -36,6 +36,27 @@ class ConfigFieldApiTest {
         assertThat("status", response.getStatus(), is(400));
     }
 
+    @Test
+    void test_describeCron() {
+        when(cronParserBean.validate(anyString())).thenReturn(true);
+        when(cronParserBean.describe(anyString())).thenReturn("description");
+        ConfigFieldApi configFieldApi = getConfigFieldApi();
+        final Response response = configFieldApi.describeCron("* * * * *");
+        assertThat("status", response.getStatus(), is(200));
+        assertThat("has entity", response.hasEntity(), is(true));
+        assertThat("response entity", response.getEntity(), is("description"));
+    }
+
+    @Test
+    void test_describeCron_invalidCronExpression() {
+        when(cronParserBean.validate(anyString())).thenReturn(false);
+        when(cronParserBean.describe(anyString())).thenReturn("description");
+        ConfigFieldApi configFieldApi = getConfigFieldApi();
+        final Response response = configFieldApi.describeCron("* * * * *");
+        assertThat("status", response.getStatus(), is(400));
+        assertThat("has entity", response.hasEntity(), is(false));
+    }
+
     private ConfigFieldApi getConfigFieldApi() {
         final ConfigFieldApi configFieldApi = new ConfigFieldApi();
         configFieldApi.cronParserBean = cronParserBean;

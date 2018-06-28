@@ -11,12 +11,15 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Stateless
 @Path("fields")
 public class ConfigFieldApi {
     private static final String VALIDATE_CRON_ENDPOINT = "cron/validate";
+    private static final String DESCRIBE_CRON_ENDPOINT = "cron/describe";
 
     @EJB CronParserBean cronParserBean;
 
@@ -33,5 +36,21 @@ public class ConfigFieldApi {
             return Response.ok().build();
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    /**
+     * describe a cron expression in human words
+     * @param cronExpression cron expression
+     * @return human language description of cron expression
+     */
+    @POST
+    @Path(DESCRIBE_CRON_ENDPOINT)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response describeCron(String cronExpression) {
+        if(!cronParserBean.validate(cronExpression)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        final String description = cronParserBean.describe(cronExpression);
+        return Response.ok(description).build();
     }
 }
