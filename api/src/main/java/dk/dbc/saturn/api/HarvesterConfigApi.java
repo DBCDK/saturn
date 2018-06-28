@@ -15,6 +15,7 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -38,6 +39,8 @@ public class HarvesterConfigApi {
     private static final String FTP_LIST_ENDPOINT = "ftp/list";
     private static final String FTP_ADD_ENDPOINT = "ftp/add";
     private static final String FTP_GET_SINGLE_CONFIG_ENDPOINT = "ftp/get/{id}";
+    private static final String HTTP_DELETE_ENDPOINT = "http/delete/{id}";
+    private static final String FTP_DELETE_ENDPOINT = "ftp/delete/{id}";
     private static final JSONBContext jsonbContext = new JSONBContext();
 
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -148,6 +151,20 @@ public class HarvesterConfigApi {
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+    }
+
+    @DELETE
+    @Path(HTTP_DELETE_ENDPOINT)
+    public Response deleteHttpHarvesterConfig(@PathParam("id") int id) {
+        harvesterConfigRepository.delete(HttpHarvesterConfig.class, id);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path(FTP_DELETE_ENDPOINT)
+    public Response deleteFtpHarvesterConfig(@PathParam("id") int id) {
+        harvesterConfigRepository.delete(FtpHarvesterConfig.class, id);
+        return Response.noContent().build();
     }
 
     private <T extends AbstractHarvesterConfigEntity> Response
