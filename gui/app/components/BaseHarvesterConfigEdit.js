@@ -45,12 +45,12 @@ class BaseHarvesterConfigEdit extends React.Component {
     }
     onClick(event) {
         event.preventDefault();
-        for(let key in this.props.config) {
-            if(this.props.config.hasOwnProperty(key) && !this.validate(key, this.props.config[key])) {
-                return false;
+        Promise.all(Object.keys(this.props.config).map(key => {
+            if(this.props.config.hasOwnProperty(key)) {
+                return this.validate(key, this.props.config[key]);
             }
-        }
-        this.props.onSave(event.target.form);
+        })).then(this.props.onSave(event.target.form))
+            .catch(err => alert(err));
     }
     onChangeCallback(name, value) {
         // we could use spread syntax here
@@ -62,15 +62,13 @@ class BaseHarvesterConfigEdit extends React.Component {
         switch(name) {
         case "transfile":
             if(value === undefined || value === null || value.length === 0) {
-                alert("transfile cannot have empty content");
-                return false;
+                return Promise.reject("transfile cannot have empty content");
             } else if(value.indexOf("f=") !== -1) {
-                alert("transfile cannot contain f=");
-                return false;
+                return Promise.reject("transfile cannot contain f=");
             }
             break;
         }
-        return true;
+        return Promise.resolve();
     }
     render() {
         const config = this.props.config;
