@@ -43,6 +43,7 @@ class BaseHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
+        this.onDelete = this.onDelete.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
     }
     onClick(event) {

@@ -6,7 +6,9 @@
 import React from "react";
 
 import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
+import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
+import constants from "../constants";
 
 class HttpHarvesterConfigEdit extends React.Component {
     constructor(props) {
@@ -14,6 +16,7 @@ class HttpHarvesterConfigEdit extends React.Component {
         this.state = {"config": {}};
         this.fetchConfig = this.fetchConfig.bind(this);
         this.onSave = this.onSave.bind(this);
+        this.onDelete = this.onDelete.bind(this);
         this.onConfigChanged = this.onConfigChanged.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
     }
@@ -68,6 +71,10 @@ class HttpHarvesterConfigEdit extends React.Component {
             .catch(err => console.error("unexpected error when adding config",
             config, err));
     }
+    onDelete(id) {
+        BaseHarvesterConfig.deleteConfig(constants.endpoints
+            .deleteHttpHarvesterConfig, id).end().catch(err => alert(err));
+    }
     componentWillMount() {
         this.fetchConfig(this.props.match.params.id);
     }
@@ -75,6 +82,7 @@ class HttpHarvesterConfigEdit extends React.Component {
         return (
             <BaseHarvesterConfigEdit config={this.state.config}
                     onSave={this.onSave}
+                    onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}>
                 <FormEntry name="url" value={this.state.config.url}
                     onChangeCallback={this.onChangeCallback}/>
