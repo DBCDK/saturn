@@ -6,6 +6,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
+
 class FormEntry extends React.Component {
     constructor(props) {
         super(props);
@@ -65,6 +67,15 @@ class BaseHarvesterConfigEdit extends React.Component {
                 return Promise.reject("transfile cannot have empty content");
             } else if(value.indexOf("f=") !== -1) {
                 return Promise.reject("transfile cannot contain f=");
+            }
+            break;
+        case "schedule":
+            if(value === undefined || value === null || value.length === 0) {
+                return Promise.reject("schedule cannot have empty content");
+            } else {
+                return BaseHarvesterConfig.validateScheduleExpression(value)
+                    .end().catch(_ => Promise.reject(
+                    `invalid schedule value "${value}"`));
             }
             break;
         }
