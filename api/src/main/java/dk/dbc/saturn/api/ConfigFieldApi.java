@@ -31,9 +31,10 @@ public class ConfigFieldApi {
      */
     @POST
     @Path(VALIDATE_CRON_ENDPOINT)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response validateCron(String cronExpression) {
         if(cronParserBean.validate(cronExpression)) {
-            return Response.ok().build();
+            return Response.ok("OK").build();
         }
         return Response.status(Response.Status.BAD_REQUEST).build();
     }
