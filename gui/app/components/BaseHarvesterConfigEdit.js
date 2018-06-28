@@ -68,6 +68,7 @@ class BaseHarvesterConfigEdit extends React.Component {
                 alert("transfile cannot contain f=");
                 return false;
             }
+            break;
         }
         return true;
     }
