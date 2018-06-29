@@ -83,6 +83,15 @@ class BaseHarvesterConfigEdit extends React.Component {
                     `invalid schedule value "${value}"`));
             }
             break;
+        case "port":
+            if(value === undefined || value === null || value.length === 0) {
+                return Promise.reject("port cannot have empty content");
+            // Number.parseInt ignores trailing non-numeric characters,
+            // so pattern matching is also needed for validation
+            } else if(!/^[0-9]+$/.test(value) || isNaN(Number.parseInt(value))){
+                return Promise.reject(`port has illegal value "${value}"`);
+            }
+            break;
         }
         return Promise.resolve();
     }
