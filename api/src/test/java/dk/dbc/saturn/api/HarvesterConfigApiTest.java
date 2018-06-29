@@ -244,4 +244,18 @@ class HarvesterConfigApiTest {
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
+
+    @Test
+    void test_deleteHttpHarvesterConfig() {
+        Response response = harvesterConfigApi.deleteHttpHarvesterConfig(0);
+        assertThat("status", response.getStatus(), is(204));
+
+    }
+
+    @Test
+    void test_deleteFtpHarvesterConfig() {
+        Response response = harvesterConfigApi.deleteFtpHarvesterConfig(0);
+        assertThat("status", response.getStatus(), is(204));
+
+    }
 }

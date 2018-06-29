@@ -115,6 +115,23 @@ public class HarvesterConfigRepository {
         return entityManager.merge(entity);
     }
 
+    /**
+     * delete harvester config entity
+     * @param type type of harvester config
+     * @param id id of harvester config to delete
+     * @param <T> entity type parameter
+     */
+    public <T extends AbstractHarvesterConfigEntity> void delete(
+            Class<T> type, int id) {
+        T entity = entityManager.find(type, id);
+        if(entity != null) {
+            entityManager.remove(entity);
+        } else {
+            throw new IllegalArgumentException(
+                String.format("no entity with id %s found", id));
+        }
+    }
+
     private URI uriFromId(UriBuilder uriBuilder, int id) {
         URI uri = uriBuilder.path(String.valueOf(id)).build();
         // to make the uri return the correct location for getting the

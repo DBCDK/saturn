@@ -338,6 +338,65 @@ public class HarvesterConfigEntityIT {
             "m=kildepost@dbc.dk"));
     }
 
+    @Test
+    void test_delete_httpHarvesterConfig() throws ParseException {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setUrl("http://nick.com");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Erope/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        harvesterConfigRepository.entityManager.persist(config);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<HttpHarvesterConfig> listBeforeDelete = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat("list size before delete", listBeforeDelete.size(), is(1));
+        int id = listBeforeDelete.get(0).getId();
+
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        harvesterConfigRepository.delete(HttpHarvesterConfig.class, id);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+        List<HttpHarvesterConfig> listAfterDelete = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat("list size after delete", listAfterDelete.size(), is(0));
+    }
+
+    @Test
+    void test_delete_ftpHarvesterConfig() throws ParseException {
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setHost("http://nick.com");
+        config.setPort(5432);
+        config.setUsername("patrick-squarepants");
+        config.setPassword("secretpants");
+        config.setDir("rock-bottom");
+        config.setFilesPattern("glove-candy.png");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Erope/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        harvesterConfigRepository.entityManager.persist(config);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+
+        List<FtpHarvesterConfig> listBeforeDelete = harvesterConfigRepository
+            .list(FtpHarvesterConfig.class, 0, 0);
+        assertThat("list size before delete", listBeforeDelete.size(), is(1));
+        int id = listBeforeDelete.get(0).getId();
+
+        harvesterConfigRepository.entityManager.getTransaction().begin();
+        harvesterConfigRepository.delete(FtpHarvesterConfig.class, id);
+        harvesterConfigRepository.entityManager.getTransaction().commit();
+        List<HttpHarvesterConfig> listAfterDelete = harvesterConfigRepository
+            .list(HttpHarvesterConfig.class, 0, 0);
+        assertThat("list size after delete", listAfterDelete.size(), is(0));
+    }
+
     private static PGSimpleDataSource getDataSource() {
         final PGSimpleDataSource datasource = new PGSimpleDataSource();
         datasource.setDatabaseName("saturn");

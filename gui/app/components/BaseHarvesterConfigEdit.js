@@ -43,6 +43,7 @@ class BaseHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
+        this.onDelete = this.onDelete.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
     }
     onClick(event) {
@@ -53,6 +54,10 @@ class BaseHarvesterConfigEdit extends React.Component {
             }
         })).then(this.props.onSave(event.target.form))
             .catch(err => alert(err));
+    }
+    onDelete(event) {
+        event.preventDefault();
+        this.props.onDelete(this.props.config.id);
     }
     onChangeCallback(name, value) {
         // we could use spread syntax here
@@ -99,6 +104,9 @@ class BaseHarvesterConfigEdit extends React.Component {
                     onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
                 <button type="submit" onClick={this.onClick}>save</button>
+                {this.props.config.id !== undefined ?
+                    <button type="submit" onClick={this.onDelete}>delete</button>
+                    : <div/> }
             </form>
         )
     }
@@ -107,12 +115,14 @@ class BaseHarvesterConfigEdit extends React.Component {
 BaseHarvesterConfigEdit.propTypes = {
     config: PropTypes.object,
     onSave: PropTypes.func,
+    onDelete: PropTypes.func,
     onConfigChanged: PropTypes.func.isRequired
 };
 
 BaseHarvesterConfigEdit.defaultProps = {
     config: {},
     onSave: (event) => console.log("no-op for BaseHarvesterConfigEdit.onSave"),
+    onDelete: event => console.log("no-op for BaseHarvesterConfigEdit.onDelete"),
 };
 
 export {BaseHarvesterConfigEdit, FormEntry};

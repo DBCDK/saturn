@@ -7,6 +7,8 @@ const endpoints = {
     addHttpHarvesterConfig: "/api/configs/http/add",
     addFtpHarvesterConfig: "/api/configs/ftp/add",
     cronValidate: "/api/fields/cron/validate",
+    deleteHttpHarvesterConfig: "/api/configs/http/delete/:id",
+    deleteFtpHarvesterConfig: "/api/configs/ftp/delete/:id",
     getHttpHarvesterById: "/api/configs/http/get/:id",
     getFtpHarvesterById: "/api/configs/ftp/get/:id",
     listHttpHarvesterConfigs: "/api/configs/http/list",
