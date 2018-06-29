@@ -3,6 +3,7 @@
  * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
  */
 
+import constants from "../constants";
 import {HttpClient} from "../HttpClient";
 import {getArgValue} from "../utils";
 
@@ -22,6 +23,10 @@ class BaseHarvesterConfig {
         params.set("id", id);
         return new HttpClient()
             .get(endpoint, params);
+    }
+    static validateScheduleExpression(expression) {
+        return new HttpClient().post(constants.endpoints.cronValidate, null,
+            null, expression);
     }
     static listHarvesterConfigs(endpoint, start, limit) {
         start = getArgValue(start);
