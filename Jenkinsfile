@@ -72,11 +72,17 @@ pipeline {
 				branch "master"
 			}
 			steps {
-				sh """
-					mvn sonar:sonar \
-					-Dsonar.host.url=$SONARQUBE_HOST \
-					-Dsonar.login=$SONARQUBE_TOKEN
-				"""
+				script {
+					try {
+						sh """
+							mvn sonar:sonar \
+							-Dsonar.host.url=$SONARQUBE_HOST \
+							-Dsonar.login=$SONARQUBE_TOKEN
+						"""
+					} catch(e) {
+						printf "sonarqube connection failed: %s", e.toString()
+					}
+				}
 			}
 		}
 		stage("deploy staging") {
