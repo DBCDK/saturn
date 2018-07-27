@@ -45,6 +45,9 @@ class HttpHarvesterConfigEdit extends React.Component {
             case "url":
                 config.url = form[i].value;
                 break;
+            case "urlPattern":
+                config.urlPattern = form[i].value;
+                break;
             case "name":
                 config.name = form[i].value;
                 break;
@@ -85,6 +88,8 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}>
                 <FormEntry name="url" value={this.state.config.url}
+                    onChangeCallback={this.onChangeCallback}/>
+                <FormEntry name="urlPattern" value={this.state.config.urlPattern}
                     onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )
