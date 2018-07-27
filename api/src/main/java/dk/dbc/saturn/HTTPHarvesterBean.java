@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -58,17 +59,7 @@ public class HTTPHarvesterBean {
         final Client client = HttpClient.newClient(new ClientConfig()
             .register(new JacksonFeature()));
         try {
-            final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(
-                client, RETRY_POLICY);
-            final Response response = new HttpGet(failSafeHttpClient)
-                .withBaseUrl(url)
-                .execute();
-
-            if(response.getStatus() != Response.Status.OK.getStatusCode()) {
-                throw new HarvestException(String.format(
-                    "got status \"%s\" when trying url \"%s\"",
-                    response.getStatus(), url));
-            }
+            final Response response = getResponse(client, url);
             if (response.hasEntity()) {
                 InputStream is = response.readEntity(InputStream.class);
                 final Optional<String> filename = getFilenameFromResponse(response);
@@ -90,6 +81,57 @@ public class HTTPHarvesterBean {
         } finally {
             LOGGER.info("harvesting of {} took {} ms", url,
                 (Instant.now().toEpochMilli() - start));
+            client.close();
+        }
+    }
+
+    private Response getResponse(Client client, String url) throws HarvestException {
+        final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(
+            client, RETRY_POLICY);
+        final Response response = new HttpGet(failSafeHttpClient)
+            .withBaseUrl(url)
+            .execute();
+
+        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new HarvestException(String.format(
+                "got status \"%s\" when trying url \"%s\"",
+                response.getStatus(), url));
+        }
+        return response;
+    }
+
+    // finds a string matching a pattern in the content fetched from the given url
+    protected String findInContent(String url, String pattern) throws HarvestException {
+        final FileNameMatcher fileNameMatcher = new FileNameMatcher(pattern);
+        final Client client = HttpClient.newClient(new ClientConfig()
+            .register(new JacksonFeature()));
+        try {
+            final Response response = getResponse(client, url);
+            if(response.hasEntity()) {
+                final String result = response.readEntity(String.class);
+                final Matcher matcher = fileNameMatcher.getPattern()
+                    .matcher(result);
+                final Set<String> groups = new HashSet<>();
+                while(matcher.find()) {
+                    groups.add(matcher.group());
+                }
+                /* a search for a url where the pattern needs to be contained
+                 * in globable characters (i.e. not having access to lookaround
+                 * and other more advanced regex features) may return several
+                 * matches. we assume the shortest match is the most relevant.
+                 */
+                Optional<String> smallestMatch = groups.stream().min(
+                    Comparator.comparingInt(String::length));
+                if(smallestMatch.isPresent()) {
+                    return smallestMatch.get();
+                }
+                throw new HarvestException(String.format("not matches found " +
+                    "for pattern %s", pattern));
+            } else {
+                throw new HarvestException(String.format("response for url " +
+                    "%s return empty body", url));
+            }
+        } finally {
             client.close();
         }
     }
