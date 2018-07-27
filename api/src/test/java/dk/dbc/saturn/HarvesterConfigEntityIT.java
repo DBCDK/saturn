@@ -243,6 +243,7 @@ public class HarvesterConfigEntityIT {
             httpHarvesterConfig.setAgency("010100");
             harvesterConfigRepository.add(HttpHarvesterConfig.class,
                 httpHarvesterConfig, mockedUriBuilder);
+            httpHarvesterConfig.setUrlPattern("http://" + name);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -252,6 +253,8 @@ public class HarvesterConfigEntityIT {
 
         assertThat("list size", configs.size(), is(5));
         assertThat("entity 1 url", configs.get(0).getUrl(), is("gary"));
+        assertThat("entity 1 urlpattern", configs.get(0).getUrlPattern(),
+            is("http://gary"));
         assertThat("entity 2 schedule", configs.get(1).getSchedule(),
             is("larry"));
         assertThat("entity 3 transfile", configs.get(2).getTransfile(),

@@ -34,13 +34,22 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         "SELECT config FROM HttpHarvesterConfig config WHERE config.id = :id";
 
     private String url;
+    private String urlPattern;
 
     public String getUrl() {
         return url;
     }
 
+    public String getUrlPattern() {
+        return urlPattern;
+    }
+
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public void setUrlPattern(String urlPattern) {
+        this.urlPattern = urlPattern;
     }
 
     @Override
@@ -51,6 +60,7 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         HttpHarvesterConfig that = (HttpHarvesterConfig) o;
 
         return super.equals(o)
+            && (urlPattern == null || urlPattern.equals(that.urlPattern))
             && url.equals(that.url);
     }
 
@@ -58,6 +68,9 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + url.hashCode();
+        if(urlPattern != null) {
+            result = 31 * result + urlPattern.hashCode();
+        }
         return result;
     }
 }
