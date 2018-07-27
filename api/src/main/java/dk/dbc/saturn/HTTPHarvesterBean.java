@@ -85,6 +85,22 @@ public class HTTPHarvesterBean {
         }
     }
 
+    /**
+     * harvest data from a url found in the response from the first url
+     *
+     * @param url url pointing to a page containing a url pointing to a datafile
+     * @param pattern pattern of the url to the datafile
+     * @return a FileHarvest object containing the fetched resource
+     * @throws HarvestException on empty response from the first url or
+     * failure to match the pattern against the response
+     */
+    @Asynchronous
+    public Future<Set<FileHarvest>> harvest(String url, String pattern)
+            throws HarvestException {
+        final String datafileUrl = findInContent(url, pattern);
+        return harvest(datafileUrl);
+    }
+
     private Response getResponse(Client client, String url) throws HarvestException {
         final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(
             client, RETRY_POLICY);

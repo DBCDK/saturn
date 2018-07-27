@@ -86,9 +86,18 @@ public class ScheduledHarvesterBean {
                 try {
                     if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
                         httpConfig.getLastHarvested())) {
-                        Future<Set<FileHarvest>> result =
-                            httpHarvesterBean.harvest(httpConfig.getUrl());
-                        harvestTasks.put(httpConfig, result);
+                        if(httpConfig.getUrlPattern() == null) {
+                            Future<Set<FileHarvest>> result =
+                                httpHarvesterBean.harvest(httpConfig.getUrl());
+                            harvestTasks.put(httpConfig, result);
+                        } else {
+                            // look in response from url to get the real
+                            // url for data harvesting
+                            Future<Set<FileHarvest>> result =
+                                httpHarvesterBean.harvest(httpConfig.getUrl(),
+                                httpConfig.getUrlPattern());
+                            harvestTasks.put(httpConfig, result);
+                        }
                     }
                 } catch (HarvestException e) {
                     LOGGER.error("error while harvesting for http {}",
