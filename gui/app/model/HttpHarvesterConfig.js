@@ -22,6 +22,7 @@ class HttpHarvesterConfig extends BaseHarvesterConfig {
     static fromJson(json) {
         const config = super.fromJson(json);
         config.url = json.url;
+        config.urlPattern = json.urlPattern;
         return config;
     }
 }

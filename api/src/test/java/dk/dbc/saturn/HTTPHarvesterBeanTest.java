@@ -167,6 +167,95 @@ public class HTTPHarvesterBeanTest {
         } catch(HarvestException e) {}
     }
 
+    @Test
+    void test_harvest_urlFromPattern() throws HarvestException, IOException,
+            ExecutionException, InterruptedException {
+        final String targetUrl = String.format(
+            "%s/viaf/data/viaf-20180701-clusters-marc21.iso.gz", wireMockHost);
+        final String html = "<html><body>" +
+            "<a href=\"http://viaf.org/viaf/data/viaf-20180701-clusters-" +
+            "marc21.xml.gz\" resource=\"http://viaf.org/viaf/data/viaf-" +
+            "20180701-clusters-marc21.xml.gz\">http://viaf.org/viaf/data" +
+            "/viaf-20180701-clusters-marc21.xml.gz</a>" +
+            "<a href=\"http://viaf.org/viaf/data/viaf-" +
+            "20180701-clusters-marc21.iso.gz\" resource=\"http://viaf.org" +
+            "/viaf/data/viaf-20180701-clusters-marc21.iso.gz\" " +
+            String.format("rel=\"nofollow\">%s</a>", targetUrl) +
+            "</body></html>";
+        wireMockServer.stubFor(get(urlEqualTo("/patternpants/")).willReturn(
+            aResponse().withStatus(200).withBody(html)));
+        wireMockServer.stubFor(get(urlEqualTo(
+            "/viaf/data/viaf-20180701-clusters-marc21.iso.gz/")).willReturn(
+            aResponse().withStatus(200).withBody("viaf-data")));
+        HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        final Set<FileHarvest> results = httpHarvesterBean.harvest(wireMockHost + "/patternpants",
+            String.format("%s/viaf*iso.gz", wireMockHost)).get();
+        assertThat("results size", results.size(), is(1));
+        final FileHarvest viafHarvest = new FileHarvest(
+            "viaf-20180701-clusters-marc21.iso.gz", null, null);
+        assertThat("contains viaf harvest", results.contains(viafHarvest),
+            is(true));
+
+        final FileHarvest fileHarvest = results.iterator().next();
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            fileHarvest.getContent()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = in.readLine()) != null) {
+            sb.append(line);
+        }
+        assertThat(sb.toString(), is("viaf-data"));
+    }
+
+    @Test
+    void test_findInContent() throws HarvestException {
+        final String html = "<html><body>" +
+            "<a href=\"http://viaf.org/viaf/data/viaf-20180701-clusters-" +
+            "marc21.xml.gz\" resource=\"http://viaf.org/viaf/data/viaf-" +
+            "20180701-clusters-marc21.xml.gz\">http://viaf.org/viaf/data" +
+            "/viaf-20180701-clusters-marc21.xml.gz</a>" +
+            "<a href=\"http://viaf.org/viaf/data/viaf-" +
+            "20180701-clusters-marc21.iso.gz\" resource=\"http://viaf.org" +
+            "/viaf/data/viaf-20180701-clusters-marc21.iso.gz\" " +
+            "rel=\"nofollow\">http://viaf.org/viaf/data/viaf-20180701-" +
+            "clusters-marc21.iso.gz</a>" +
+            "</body></html>";
+        wireMockServer.stubFor(get(urlEqualTo("/viaf/")).willReturn(
+            aResponse().withStatus(200).withBody(html)));
+        final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        final String result = httpHarvesterBean.findInContent(
+            wireMockHost + "/viaf", "http://viaf.org*iso.gz");
+        assertThat(result, is("http://viaf.org/viaf/data/viaf-" +
+            "20180701-clusters-marc21.iso.gz"));
+    }
+
+    @Test
+    void test_findInContent_noMatches() {
+        final String html = "<html><body><blah/></body></html>";
+        wireMockServer.stubFor(get(urlEqualTo("/nothing/")).willReturn(
+            aResponse().withStatus(200).withBody(html)));
+        final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        try {
+            final String result = httpHarvesterBean.findInContent(
+                wireMockHost + "/nothing", "no-match");
+            fail(String.format("expected harvestexception. instead result " +
+                "\"%s\" was returned", result));
+        } catch (HarvestException e) {}
+    }
+
+    @Test
+    void test_findInContent_emptyResponse() {
+        wireMockServer.stubFor(get(urlEqualTo("/empty/")).willReturn(
+            aResponse().withStatus(200)));
+        final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        try {
+            final String result = httpHarvesterBean.findInContent(
+                wireMockHost + "/empty", "PatternPants");
+            fail(String.format("expected harvestexception. instead result " +
+                "\"%s\" was returned", result));
+        } catch (HarvestException e) {}
+    }
+
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
         HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean();
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();

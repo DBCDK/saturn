@@ -47,8 +47,8 @@ public class FileNameMatcher implements FTPFileFilter {
     private String globPatternToRegex(String globPattern) {
         return globPattern
             .replace(".", "\\.")
-            .replace("*", ".*")
-            .replace("?", ".");
+            .replace("?", ".")
+            .replace("*", ".*?");
     }
 
     /**
