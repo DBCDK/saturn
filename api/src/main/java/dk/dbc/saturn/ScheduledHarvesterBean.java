@@ -11,6 +11,7 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ejb.DependsOn;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Startup
 @Singleton
+@DependsOn("ProxyHandlerBean")
 public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);

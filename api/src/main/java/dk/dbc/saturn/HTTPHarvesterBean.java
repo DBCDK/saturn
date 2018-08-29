@@ -11,12 +11,14 @@ import dk.dbc.httpclient.HttpGet;
 import dk.dbc.invariant.InvariantUtil;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ws.rs.ProcessingException;
@@ -37,6 +39,8 @@ import java.util.regex.Pattern;
 @LocalBean
 @Stateless
 public class HTTPHarvesterBean {
+    @EJB ProxyHandlerBean proxyHandlerBean;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(
         HTTPHarvesterBean.class);
 
@@ -56,8 +60,24 @@ public class HTTPHarvesterBean {
         long start = Instant.now().toEpochMilli();
         LOGGER.info("harvesting {}", url);
 
-        final Client client = HttpClient.newClient(new ClientConfig()
-            .register(new JacksonFeature()));
+        final ClientConfig clientConfig = new ClientConfig();
+        if(proxyHandlerBean.getProxyHostname() != null &&
+                proxyHandlerBean.getProxyPort() != 0) {
+            final String proxyHost = proxyHandlerBean.getProxyHostname();
+            final int proxyPort = proxyHandlerBean.getProxyPort();
+            LOGGER.info(String.format(
+                "running through proxy: host = %s port = %s", proxyHost,
+                proxyPort));
+            SocksConnectionFactory connectionFactory =
+                new SocksConnectionFactory(proxyHost, proxyPort);
+            HttpUrlConnectorProvider connectorProvider =
+                new HttpUrlConnectorProvider();
+            connectorProvider.connectionFactory(connectionFactory);
+
+            clientConfig.connectorProvider(connectorProvider);
+        }
+        clientConfig.register(new JacksonFeature());
+        final Client client = HttpClient.newClient(clientConfig);
         try {
             final Response response = getResponse(client, url);
             if (response.hasEntity()) {

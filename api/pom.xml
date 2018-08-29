@@ -295,5 +295,17 @@
             <artifactId>cron-utils</artifactId>
             <version>${cron.utils.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>${mockserver.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
