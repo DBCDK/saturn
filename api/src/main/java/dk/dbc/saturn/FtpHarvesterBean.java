@@ -11,8 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.HashSet;
@@ -22,6 +25,8 @@ import java.util.concurrent.Future;
 @LocalBean
 @Stateless
 public class FtpHarvesterBean {
+    @EJB ProxyHandlerBean proxyHandlerBean;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(
         FtpHarvesterBean.class);
 
@@ -40,6 +45,20 @@ public class FtpHarvesterBean {
             .withUsername(username)
             .withPassword(password)
             .cd(dir);
+        if(proxyHandlerBean.getProxyHostname() != null &&
+                proxyHandlerBean.getProxyPort() != 0) {
+            // mockftpserver doesn't seem to be accessible through a mock
+            // socks proxy so this part is untested for now
+            final InetSocketAddress address = new InetSocketAddress(
+                proxyHandlerBean.getProxyHostname(),
+                proxyHandlerBean.getProxyPort());
+            final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
+            ftpClient.withProxy(proxy);
+            LOGGER.info(String.format(
+                "running with proxy: host = %s port = %s",
+                proxyHandlerBean.getProxyHostname(),
+                proxyHandlerBean.getProxyPort()));
+        }
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()
                     && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
