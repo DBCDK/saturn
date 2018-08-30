@@ -10,10 +10,12 @@ import net.jodah.failsafe.RetryPolicy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockserver.integration.ClientAndProxy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -30,6 +32,7 @@ public class HTTPHarvesterBeanTest {
 
     private static WireMockServer wireMockServer;
     private static String wireMockHost;
+    private static ClientAndProxy mockProxy;
 
     private final FileHarvest squarepantsFileHarvest =
             new FileHarvest("squarepants.jpg", null, null);
@@ -37,17 +40,26 @@ public class HTTPHarvesterBeanTest {
             new FileHarvest("squarepants", null, null);
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         wireMockServer = new WireMockServer(options().dynamicPort()
             .dynamicHttpsPort());
         wireMockServer.start();
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
+
+        // mockserver doesn't seem to be able to dynamically allocate an
+        // available port when started with the maven plugin so therefore we
+        // start it manually.
+        final ServerSocket socket = new ServerSocket(0);
+        final int proxyPort = socket.getLocalPort();
+        socket.close();
+        mockProxy = ClientAndProxy.startClientAndProxy(proxyPort);
     }
 
     @AfterAll
     public static void tearDown() {
         wireMockServer.stop();
+        mockProxy.stop();
     }
 
     @Test
@@ -208,6 +220,34 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
+    void test_harvest_proxy() throws HarvestException, ExecutionException, InterruptedException, IOException {
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Disposition",
+                    "attachment; filename=\"squarepants.jpg\"")
+                .withBody("barnacles!")
+            ));
+
+        HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
+        httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
+        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
+            "/spongebob/squarepants").get();
+        assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
+            is(true));
+        final FileHarvest fileHarvest = result.iterator().next();
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            fileHarvest.getContent()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = in.readLine()) != null) {
+            sb.append(line);
+        }
+        assertThat(sb.toString(), is("barnacles!"));
+    }
+
+    @Test
     void test_findInContent() throws HarvestException {
         final String html = "<html><body>" +
             "<a href=\"http://viaf.org/viaf/data/viaf-20180701-clusters-" +
@@ -258,6 +298,7 @@ public class HTTPHarvesterBeanTest {
 
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
         HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean();
+        httpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;
     }

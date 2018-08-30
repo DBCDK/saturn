@@ -50,6 +50,8 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     private static FtpHarvesterBean getFtpHarvesterBean() {
-        return new FtpHarvesterBean();
+        FtpHarvesterBean ftpHarvesterBean = new FtpHarvesterBean();
+        ftpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
+        return ftpHarvesterBean;
     }
 }
