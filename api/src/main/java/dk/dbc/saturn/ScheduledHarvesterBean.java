@@ -88,7 +88,8 @@ public class ScheduledHarvesterBean {
                 try {
                     if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
                         httpConfig.getLastHarvested())) {
-                        if(httpConfig.getUrlPattern() == null) {
+                        if(httpConfig.getUrlPattern() == null ||
+                                httpConfig.getUrlPattern().isEmpty()) {
                             Future<Set<FileHarvest>> result =
                                 httpHarvesterBean.harvest(httpConfig.getUrl());
                             harvestTasks.put(httpConfig, result);
