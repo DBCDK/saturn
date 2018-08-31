@@ -77,6 +77,9 @@ public class HTTPHarvesterBean {
             clientConfig.connectorProvider(connectorProvider);
         }
         clientConfig.register(new JacksonFeature());
+        // for logging requests and responses (LoggingFilter is deprecated
+        // in jersey 2.23 though)
+        //clientConfig.register(LoggingFilter.class);
         final Client client = HttpClient.newClient(clientConfig);
         try {
             final Response response = getResponse(client, url);

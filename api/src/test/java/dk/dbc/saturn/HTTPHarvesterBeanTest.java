@@ -65,7 +65,7 @@ public class HTTPHarvesterBeanTest {
     @Test
     public void test_harvest() throws HarvestException, IOException,
             ExecutionException, InterruptedException {
-        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Disposition",
@@ -92,7 +92,7 @@ public class HTTPHarvesterBeanTest {
     @Test
     public void test_harvest_noFilenameHeader() throws HarvestException,
             IOException, ExecutionException, InterruptedException {
-        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withBody("barnacles!")
@@ -159,7 +159,7 @@ public class HTTPHarvesterBeanTest {
 
     @Test
     public void test_harvest_noEntity() {
-        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
             .willReturn(aResponse().withStatus(200)));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
@@ -170,7 +170,7 @@ public class HTTPHarvesterBeanTest {
 
     @Test
     public void test_harvest_errorCode() {
-        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
             .willReturn(aResponse().withStatus(404)));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
@@ -194,10 +194,10 @@ public class HTTPHarvesterBeanTest {
             "/viaf/data/viaf-20180701-clusters-marc21.iso.gz\" " +
             String.format("rel=\"nofollow\">%s</a>", targetUrl) +
             "</body></html>";
-        wireMockServer.stubFor(get(urlEqualTo("/patternpants/")).willReturn(
+        wireMockServer.stubFor(get(urlEqualTo("/patternpants")).willReturn(
             aResponse().withStatus(200).withBody(html)));
         wireMockServer.stubFor(get(urlEqualTo(
-            "/viaf/data/viaf-20180701-clusters-marc21.iso.gz/")).willReturn(
+            "/viaf/data/viaf-20180701-clusters-marc21.iso.gz")).willReturn(
             aResponse().withStatus(200).withBody("viaf-data")));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         final Set<FileHarvest> results = httpHarvesterBean.harvest(wireMockHost + "/patternpants",
@@ -221,7 +221,7 @@ public class HTTPHarvesterBeanTest {
 
     @Test
     void test_harvest_proxy() throws HarvestException, ExecutionException, InterruptedException, IOException {
-        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants/"))
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Disposition",
@@ -260,7 +260,7 @@ public class HTTPHarvesterBeanTest {
             "rel=\"nofollow\">http://viaf.org/viaf/data/viaf-20180701-" +
             "clusters-marc21.iso.gz</a>" +
             "</body></html>";
-        wireMockServer.stubFor(get(urlEqualTo("/viaf/")).willReturn(
+        wireMockServer.stubFor(get(urlEqualTo("/viaf")).willReturn(
             aResponse().withStatus(200).withBody(html)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         final String result = httpHarvesterBean.findInContent(
@@ -272,7 +272,7 @@ public class HTTPHarvesterBeanTest {
     @Test
     void test_findInContent_noMatches() {
         final String html = "<html><body><blah/></body></html>";
-        wireMockServer.stubFor(get(urlEqualTo("/nothing/")).willReturn(
+        wireMockServer.stubFor(get(urlEqualTo("/nothing")).willReturn(
             aResponse().withStatus(200).withBody(html)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
@@ -285,7 +285,7 @@ public class HTTPHarvesterBeanTest {
 
     @Test
     void test_findInContent_emptyResponse() {
-        wireMockServer.stubFor(get(urlEqualTo("/empty/")).willReturn(
+        wireMockServer.stubFor(get(urlEqualTo("/empty")).willReturn(
             aResponse().withStatus(200)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
