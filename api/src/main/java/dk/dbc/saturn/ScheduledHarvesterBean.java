@@ -152,7 +152,8 @@ public class ScheduledHarvesterBean {
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
-                LOGGER.warn("harvest task for {} interrupted", config.getName(), e);
+                LOGGER.warn("harvest task for {} interrupted: {}",
+                    config.getName(), e.getMessage());
             }
         }
     }

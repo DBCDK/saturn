@@ -6,15 +6,20 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @LocalBean
 @Stateless
 public class FtpSenderBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        FtpSenderBean.class);
     @Resource(lookup = "java:app/env/ftp/host")
     protected String host;
 
@@ -35,6 +40,11 @@ public class FtpSenderBean {
      * @param files map of filenames and corresponding input streams
      */
     public void send(Set<FileHarvest> files, String transfileName, String transfile) {
+        String filenames = files.stream().map(FileHarvest::getFilename)
+            .collect(Collectors.joining(", "));
+        LOGGER.info(String.format("sending to ftp, files = %s, " +
+            "transfile = %s, transfilename = %s", filenames, transfile,
+            transfileName));
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(Integer.parseInt(port))
