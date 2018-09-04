@@ -43,8 +43,7 @@ public class FtpHarvesterBean {
             .withHost(host)
             .withPort(port)
             .withUsername(username)
-            .withPassword(password)
-            .cd(dir);
+            .withPassword(password);
         if(proxyHandlerBean.getProxyHostname() != null &&
                 proxyHandlerBean.getProxyPort() != 0) {
             // mockftpserver doesn't seem to be accessible through a mock
@@ -59,6 +58,7 @@ public class FtpHarvesterBean {
                 proxyHandlerBean.getProxyHostname(),
                 proxyHandlerBean.getProxyPort()));
         }
+        ftpClient.cd(dir);
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()
                     && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
