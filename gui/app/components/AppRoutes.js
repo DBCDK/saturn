@@ -4,16 +4,24 @@
  */
 
 import React from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {HashRouter, Route, Switch} from "react-router-dom";
 
 import App from "./App";
 
 class AppRoutes extends React.Component {
     render() {
         return (
-            <BrowserRouter>
+            /* use HashRouter as a workaround to handle routing in a payara server.
+             * otherwise the server gives 404 if pages other than the root is
+             * reloaded or accessed directly.
+             * this staskoverflow question has the same problem:
+             * https://stackoverflow.com/questions/39532073/reactjs-how-to-configure-browserhistory-of-react-router-on-glassfish-server
+             * it is not recommended to use HashRouter for projects not
+             * targetting legacy browsers. BrowserRouter should be used instead.
+             */
+            <HashRouter>
                 <App/>
-            </BrowserRouter>
+            </HashRouter>
         );
     }
 }
