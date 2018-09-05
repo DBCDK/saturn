@@ -14,6 +14,7 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.file.Paths;
@@ -43,8 +44,7 @@ public class FtpHarvesterBean {
             .withHost(host)
             .withPort(port)
             .withUsername(username)
-            .withPassword(password)
-            .cd(dir);
+            .withPassword(password);
         if(proxyHandlerBean.getProxyHostname() != null &&
                 proxyHandlerBean.getProxyPort() != 0) {
             // mockftpserver doesn't seem to be accessible through a mock
@@ -59,11 +59,13 @@ public class FtpHarvesterBean {
                 proxyHandlerBean.getProxyHostname(),
                 proxyHandlerBean.getProxyPort()));
         }
+        ftpClient.cd(dir);
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()
                     && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
+                InputStream is = ftpClient.get(file, FtpClient.FileType.BINARY);
                 final FileHarvest fileHarvest = new FileHarvest(
-                        file, ftpClient.get(file), seqnoMatcher.getSeqno());
+                        file, is, seqnoMatcher.getSeqno());
                 fileHarvests.add(fileHarvest);
             }
         }

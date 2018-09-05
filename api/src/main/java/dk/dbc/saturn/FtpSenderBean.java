@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,9 +55,12 @@ public class FtpSenderBean {
             .cd(dir);
         try {
             for(FileHarvest fileHarvest : files) {
-                ftpClient.put(fileHarvest.getFilename(), fileHarvest.getContent());
+                ftpClient.put(fileHarvest.getFilename(),
+                    fileHarvest.getContent(), FtpClient.FileType.BINARY);
             }
-            ftpClient.put(transfileName, transfile);
+            ftpClient.put(transfileName, new ByteArrayInputStream(
+                transfile.getBytes(StandardCharsets.UTF_8)),
+                FtpClient.FileType.BINARY);
         } finally {
             ftpClient.close();
         }
