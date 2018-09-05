@@ -130,6 +130,10 @@ public class ScheduledHarvesterBean {
                     final Set<FileHarvest> fileHarvests = result.get();
                     final List<String> filenames = fileHarvests.stream().map(
                         FileHarvest::getFilename).collect(Collectors.toList());
+                    if(filenames.isEmpty()) {
+                        LOGGER.warn("no files harvested by {}", config.getName());
+                        continue;
+                    }
                     final String transfile = TransfileGenerator
                         .generateTransfile(config.getTransfile(),
                         filenames);
