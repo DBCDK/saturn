@@ -14,6 +14,7 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.file.Paths;
@@ -62,8 +63,9 @@ public class FtpHarvesterBean {
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()
                     && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
+                InputStream is = ftpClient.get(file, FtpClient.FileType.BINARY);
                 final FileHarvest fileHarvest = new FileHarvest(
-                        file, ftpClient.get(file), seqnoMatcher.getSeqno());
+                        file, is, seqnoMatcher.getSeqno());
                 fileHarvests.add(fileHarvest);
             }
         }
