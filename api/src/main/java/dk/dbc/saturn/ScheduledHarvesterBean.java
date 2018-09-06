@@ -126,9 +126,7 @@ public class ScheduledHarvesterBean {
                 if(result.isDone()) {
                     iterator.remove();
                     final Set<FileHarvest> fileHarvests = result.get();
-                    final List<String> filenames = fileHarvests.stream().map(
-                        FileHarvest::getFilename).collect(Collectors.toList());
-                    if(filenames.isEmpty()) {
+                    if(fileHarvests.isEmpty()) {
                         LOGGER.warn("no files harvested by {}", config.getName());
                         continue;
                     }
