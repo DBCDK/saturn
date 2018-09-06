@@ -37,13 +37,24 @@ public class FtpSenderBean {
     @Resource(lookup = "java:app/env/ftp/dir")
     protected String dir;
 
+    private static final String APPLICATION_ID = "saturn";
+
     /**
      * send files to an ftp server
      * @param files map of filenames and corresponding input streams
+     * @param filenamePrefix prefix for data files and transfile
+     * @param transfileTemplate transfile content template
      */
-    public void send(Set<FileHarvest> files, String transfileName, String transfile) {
+    public void send(Set<FileHarvest> files, String filenamePrefix,
+            String transfileTemplate) {
+        files.forEach(f -> f.setFilenamePrefix(filenamePrefix));
         String filenames = files.stream().map(FileHarvest::getFilename)
             .collect(Collectors.joining(", "));
+        final String transfile = TransfileGenerator
+            .generateTransfile(transfileTemplate,
+                files.stream().map(FileHarvest::getFilename).collect(Collectors.toList()));
+        final String transfileName = String.format("%s.%s.trans",
+            filenamePrefix, APPLICATION_ID);
         LOGGER.info(String.format("sending to ftp, files = %s, " +
             "transfile = %s, transfilename = %s", filenames, transfile,
             transfileName));
