@@ -36,8 +36,6 @@ public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
 
-    private static final String APPLICATION_ID = "saturn";
-
     final private HashMap<? super AbstractHarvesterConfigEntity,
         Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
@@ -128,18 +126,11 @@ public class ScheduledHarvesterBean {
                 if(result.isDone()) {
                     iterator.remove();
                     final Set<FileHarvest> fileHarvests = result.get();
-                    final List<String> filenames = fileHarvests.stream().map(
-                        FileHarvest::getFilename).collect(Collectors.toList());
-                    if(filenames.isEmpty()) {
+                    if(fileHarvests.isEmpty()) {
                         LOGGER.warn("no files harvested by {}", config.getName());
                         continue;
                     }
-                    final String transfile = TransfileGenerator
-                        .generateTransfile(config.getTransfile(),
-                        filenames);
-                    final String transfileName = String.format("%s.%s.trans",
-                        config.getAgency(), APPLICATION_ID);
-                    ftpSenderBean.send(fileHarvests, transfileName, transfile);
+                    ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
                     config.setLastHarvested(Date.from(Instant.now()));
                     config.setSeqno(fileHarvests.stream()
                             .map(FileHarvest::getSeqno)

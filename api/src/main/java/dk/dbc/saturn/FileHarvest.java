@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 public class FileHarvest {
-    private final String filename;
+    private String filename;
     private final InputStream content;
     private final Integer seqno;
 
@@ -21,6 +21,10 @@ public class FileHarvest {
 
     public String getFilename() {
         return filename;
+    }
+
+    public void setFilenamePrefix(String prefix) {
+        filename = String.format("%s.%s", prefix, filename);
     }
 
     public InputStream getContent() {
