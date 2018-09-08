@@ -9,6 +9,7 @@ import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import FtpHarvesterConfig from "../model/FtpHarvesterConfig";
 import constants from "../constants";
+import {getStringValue} from "../utils";
 
 const FTP_PORT = "21";
 
@@ -97,23 +98,23 @@ class FtpHarvesterConfigEdit extends React.Component {
     }
     render() {
         return (
-            <BaseHarvesterConfigEdit config={this.state.config}
+            <BaseHarvesterConfigEdit config={getStringValue(this.state.config)}
                     onSave={this.onSave}
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}>
-                <FormEntry name="host" value={this.state.config.host}
+                <FormEntry name="host" value={getStringValue(this.state.config.host)}
                     onChangeCallback={this.onChangeCallback}/>
                 <FormEntry name="port" value={
                     this.state.config.port !== undefined ?
                         this.state.config.port.toString() : FTP_PORT}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="username" value={this.state.config.username}
+                <FormEntry name="username" value={getStringValue(this.state.config.username)}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="password" value={this.state.config.password}
+                <FormEntry name="password" value={getStringValue(this.state.config.password)}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="dir" value={this.state.config.dir}
+                <FormEntry name="dir" value={getStringValue(this.state.config.dir)}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="filesPattern" value={this.state.config.filesPattern}
+                <FormEntry name="filesPattern" value={getStringValue(this.state.config.filesPattern)}
                     onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

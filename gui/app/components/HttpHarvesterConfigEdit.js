@@ -9,6 +9,7 @@ import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 import constants from "../constants";
+import {getStringValue} from "../utils";
 
 class HttpHarvesterConfigEdit extends React.Component {
     constructor(props) {
@@ -87,9 +88,9 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onSave={this.onSave}
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}>
-                <FormEntry name="url" value={this.state.config.url}
+                <FormEntry name="url" value={getStringValue(this.state.config.url)}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="urlPattern" value={this.state.config.urlPattern}
+                <FormEntry name="urlPattern" value={getStringValue(this.state.config.urlPattern)}
                     onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

@@ -10,4 +10,8 @@ function getArgValue(arg) {
     return arg;
 }
 
-export {getArgValue};
+const getStringValue = value => {
+    return value !== null ? value : "";
+};
+
+export {getArgValue, getStringValue};
