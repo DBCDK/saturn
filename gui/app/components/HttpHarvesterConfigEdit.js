@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import ReactDOM from "react-dom";
 
 import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
@@ -77,7 +78,12 @@ class HttpHarvesterConfigEdit extends React.Component {
     }
     onDelete(id) {
         BaseHarvesterConfig.deleteConfig(constants.endpoints
-            .deleteHttpHarvesterConfig, id).end().catch(err => alert(err));
+            .deleteHttpHarvesterConfig, id).end().then(() => {
+                const a = document.createElement("a");
+                a.href = "#/http";
+                ReactDOM.findDOMNode(this).appendChild(a);
+                a.click();
+            }).catch(err => alert(err));
     }
     componentWillMount() {
         this.fetchConfig(this.props.match.params.id);
