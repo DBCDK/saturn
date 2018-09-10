@@ -48,11 +48,12 @@ class BaseHarvesterConfigEdit extends React.Component {
     }
     onClick(event) {
         event.preventDefault();
+        event.persist();
         Promise.all(Object.keys(this.props.config).map(key => {
             if(this.props.config.hasOwnProperty(key)) {
                 return this.validate(key, this.props.config[key]);
             }
-        })).then(this.props.onSave(event.target.form))
+        })).then(() => {this.props.onSave(event.target.form)})
             .catch(err => alert(err));
     }
     onDelete(event) {
