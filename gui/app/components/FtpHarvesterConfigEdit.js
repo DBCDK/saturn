@@ -10,6 +10,8 @@ import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import FtpHarvesterConfig from "../model/FtpHarvesterConfig";
 import constants from "../constants";
 
+const FTP_PORT = "21";
+
 class FtpHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
@@ -103,7 +105,7 @@ class FtpHarvesterConfigEdit extends React.Component {
                     onChangeCallback={this.onChangeCallback}/>
                 <FormEntry name="port" value={
                     this.state.config.port !== undefined ?
-                        this.state.config.port.toString() : "0"}
+                        this.state.config.port.toString() : FTP_PORT}
                     onChangeCallback={this.onChangeCallback}/>
                 <FormEntry name="username" value={this.state.config.username}
                     onChangeCallback={this.onChangeCallback}/>
