@@ -22,7 +22,7 @@ class FormEntry extends React.Component {
         const {name} = this.props;
         return (
             <div className="form-group">
-                <label htmlFor={name}>{name}</label>
+                <label htmlFor={name}>{this.props.label}</label>
                 <input type="text" name={name} value={this.props.value}
                     onChange={this.onChange}/>
             </div>
@@ -99,22 +99,23 @@ class BaseHarvesterConfigEdit extends React.Component {
         const config = this.props.config;
         return (
             <form id="upload-form">
-                <FormEntry name="name" value={config.name}
+                <div class="breadcrumb-title">Saturnhøster >> {this.props.config.id !== undefined ? "Rediger" : "Ny"} {this.props.title}</div>
+                <FormEntry label="Navn" name="name" value={config.name}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="schedule" value={config.schedule}
+                <FormEntry label="Hentningsfrekvens" name="schedule" value={config.schedule}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="transfile" value={config.transfile}
+                <FormEntry label="Transfil" name="transfile" value={config.transfile}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="seqno" value={config.seqno || "0"}
+                <FormEntry label="Løbenummer" name="seqno" value={config.seqno || "0"}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="seqnoExtract" value={config.seqnoExtract || ""}
+                <FormEntry label="Løbenummerdel" name="seqnoExtract" value={config.seqnoExtract || ""}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="agency" value={config.agency}
+                <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency}
                     onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
-                <button type="submit" onClick={this.onClick}>save</button>
+                <button type="submit" class="save-button" onClick={this.onClick}>Gem</button>
                 {this.props.config.id !== undefined ?
-                    <button type="submit" onClick={this.onDelete}>delete</button>
+                    <button type="submit" class="delete-button" onClick={this.onDelete}>Slet</button>
                     : <div/> }
             </form>
         )

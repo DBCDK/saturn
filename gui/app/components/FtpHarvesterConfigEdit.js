@@ -98,20 +98,21 @@ class FtpHarvesterConfigEdit extends React.Component {
             <BaseHarvesterConfigEdit config={this.state.config}
                     onSave={this.onSave}
                     onDelete={this.onDelete}
-                    onConfigChanged={this.onConfigChanged}>
-                <FormEntry name="host" value={this.state.config.host}
+                    onConfigChanged={this.onConfigChanged}
+                    title={"FTP Høster"}>
+                <FormEntry label="FTP adresse" name="host" value={this.state.config.host}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="port" value={
+                <FormEntry label="Port" name="port" value={
                     this.state.config.port !== undefined ?
                         this.state.config.port.toString() : "0"}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="username" value={this.state.config.username}
+                <FormEntry label="Brugerlogin" name="username" value={this.state.config.username}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="password" value={this.state.config.password}
+                <FormEntry label="Password" name="password" value={this.state.config.password}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="dir" value={this.state.config.dir}
+                <FormEntry label="Dir" name="dir" value={this.state.config.dir}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="filesPattern" value={this.state.config.filesPattern}
+                <FormEntry label="Filnavnsstruktur" name="filesPattern" value={this.state.config.filesPattern}
                     onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

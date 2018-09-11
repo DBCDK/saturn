@@ -32,8 +32,12 @@ class BaseHarvesterConfigList extends React.Component {
     render() {
         return (
             <div>
-                <Link to={this.props.newConfigPath}><button>new</button></Link>
-                <table>
+                <div class="breadcrumb-title">Saturnhøster >> {this.props.title}</div>
+                <Link to={this.props.newConfigPath}><button class="action-button">{this.props.button}</button></Link>
+                <table class="harvester-table">
+                    <thead>
+                        <tr><th>Navn</th></tr>
+                    </thead>
                     <tbody>
                         {this.props.children}
                     </tbody>

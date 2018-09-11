@@ -86,10 +86,11 @@ class HttpHarvesterConfigEdit extends React.Component {
             <BaseHarvesterConfigEdit config={this.state.config}
                     onSave={this.onSave}
                     onDelete={this.onDelete}
-                    onConfigChanged={this.onConfigChanged}>
-                <FormEntry name="url" value={this.state.config.url}
+                    onConfigChanged={this.onConfigChanged}
+                    title={"HTTP Høster"}>
+                <FormEntry label="URL" name="url" value={this.state.config.url}
                     onChangeCallback={this.onChangeCallback}/>
-                <FormEntry name="urlPattern" value={this.state.config.urlPattern}
+                <FormEntry label="URL struktur" name="urlPattern" value={this.state.config.urlPattern}
                     onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

@@ -29,7 +29,8 @@ class FtpHarvesterConfigList extends React.Component {
     render() {
         return (
             <BaseHarvesterConfigList
-                    newConfigPath={constants.paths.newFtpHarvesterConfig}>
+                    newConfigPath={constants.paths.newFtpHarvesterConfig}
+                    title="Hentninger via FTP" button="Ny FTP høster">
                 {this.state.configs.map(item => {
                     const path = new Path(
                         constants.paths.editFtpHarvesterConfig);
