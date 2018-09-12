@@ -138,3 +138,17 @@ td {
     overflow: hidden;
 }
 
+.form-group .__react_component_tooltip {
+    width: 40em;
+}
+
+.help-title {
+    font-weight: bold;
+}
+
+.help-text {
+}
+
+.help-indent {
+    margin-left: 2em;
+}
