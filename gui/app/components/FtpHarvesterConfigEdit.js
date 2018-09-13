@@ -4,11 +4,15 @@
  */
 
 import React from "react";
+import ReactDOM from "react-dom";
 
 import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import FtpHarvesterConfig from "../model/FtpHarvesterConfig";
 import constants from "../constants";
+import {getStringValue} from "../utils";
+
+const FTP_PORT = "21";
 
 const hostHelp =
     "<div class='help-title'>Den FTP adresse hvorfra filerne skal hentes</div>" +
@@ -111,30 +115,35 @@ class FtpHarvesterConfigEdit extends React.Component {
     }
     onDelete(id) {
         BaseHarvesterConfig.deleteConfig(constants.endpoints
-            .deleteFtpHarvesterConfig, id).end().catch(err => alert(err));
+            .deleteFtpHarvesterConfig, id).end().then(() => {
+                const a = document.createElement("a");
+                a.href = "#/ftp";
+                ReactDOM.findDOMNode(this).appendChild(a);
+                a.click();
+            }).catch(err => alert(err));
     }
     componentWillMount() {
         this.fetchConfig(this.props.match.params.id);
     }
     render() {
         return (
-            <BaseHarvesterConfigEdit config={this.state.config}
+            <BaseHarvesterConfigEdit config={getStringValue(this.state.config)}
                     onSave={this.onSave}
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}
                     title={"FTP Høster"}>
-                <FormEntry label="FTP adresse" name="host" value={this.state.config.host} help={hostHelp}
+                <FormEntry label="FTP adresse" name="host" value={getStringValue(this.state.config.host)} help={hostHelp}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="Port" name="port" help={portHelp}
-                           value={this.state.config.port !== undefined ? this.state.config.port.toString() : "0"}
+                           value={this.state.config.port !== undefined ? this.state.config.port.toString() : FTP_PORT}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Brugerlogin" name="username" value={this.state.config.username} help={usernameHelp}
+                <FormEntry label="Brugerlogin" name="username" value={getStringValue(this.state.config.username)} help={usernameHelp}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Password" name="password" value={this.state.config.password} help={passwordHelp}
+                <FormEntry label="Password" name="password" value={getStringValue(this.state.config.password)} help={passwordHelp}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Dir" name="dir" value={this.state.config.dir} help={dirHelp}
+                <FormEntry label="Dir" name="dir" value={getStringValue(this.state.config.dir)} help={dirHelp}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Filnavnsstruktur" name="filesPattern" value={this.state.config.filesPattern} help={filesPatternHelp}
+                <FormEntry label="Filnavnsstruktur" name="filesPattern" value={getStringValue(this.state.config.filesPattern)} help={filesPatternHelp}
                            onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

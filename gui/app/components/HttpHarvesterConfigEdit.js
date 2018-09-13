@@ -4,11 +4,13 @@
  */
 
 import React from "react";
+import ReactDOM from "react-dom";
 
 import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 import constants from "../constants";
+import {getStringValue} from "../utils";
 
 const urlHelp =
     "<div class='help-title'>Den URL der skal benyttes mod sitet</div>" +
@@ -83,7 +85,12 @@ class HttpHarvesterConfigEdit extends React.Component {
     }
     onDelete(id) {
         BaseHarvesterConfig.deleteConfig(constants.endpoints
-            .deleteHttpHarvesterConfig, id).end().catch(err => alert(err));
+            .deleteHttpHarvesterConfig, id).end().then(() => {
+                const a = document.createElement("a");
+                a.href = "#/http";
+                ReactDOM.findDOMNode(this).appendChild(a);
+                a.click();
+            }).catch(err => alert(err));
     }
     componentWillMount() {
         this.fetchConfig(this.props.match.params.id);
@@ -95,9 +102,9 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}
                     title={"HTTP Høster"}>
-                <FormEntry label="URL" name="url" value={this.state.config.url} help={urlHelp}
+                <FormEntry label="URL" name="url" value={getStringValue(this.state.config.url)} help={urlHelp}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="URL struktur" name="urlPattern" value={this.state.config.urlPattern} help={urlPatternHelp}
+                <FormEntry label="URL struktur" name="urlPattern" value={getStringValue(this.state.config.urlPattern)} help={urlPatternHelp}
                            onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )
