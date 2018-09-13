@@ -49,6 +49,35 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         }
     }
 
+    @Test
+    public void test_harvest_dirArgumentIsEmpty() throws IOException, ExecutionException, InterruptedException {
+        final String putFile1 = "bb.txt";
+        final String putFile2 = "mm.txt";
+        final FtpClient ftpClient = new FtpClient()
+            .withHost("localhost")
+            .withPort(fakeFtpServer.getServerControlPort())
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD);
+        ftpClient.put(putFile1, "Barnacle Boy!");
+        ftpClient.put(putFile2, "Mermaid Man!");
+        ftpClient.close();
+
+        FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
+            "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
+            PASSWORD, "", new FileNameMatcher("*.txt"),
+            new SeqnoMatcher(new FtpHarvesterConfig())).get();
+
+        assertThat("result size", fileHarvests.size(), is(2));
+        final Map<String, String> contentMap = new HashMap<>(2);
+        contentMap.put("bb.txt", "Barnacle Boy!");
+        contentMap.put("mm.txt", "Mermaid Man!");
+        for (FileHarvest fileHarvest : fileHarvests) {
+            assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
+                is(contentMap.get(fileHarvest.getFilename())));
+        }
+    }
+
     private static FtpHarvesterBean getFtpHarvesterBean() {
         FtpHarvesterBean ftpHarvesterBean = new FtpHarvesterBean();
         ftpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();

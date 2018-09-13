@@ -59,7 +59,9 @@ public class FtpHarvesterBean {
                 proxyHandlerBean.getProxyHostname(),
                 proxyHandlerBean.getProxyPort()));
         }
-        ftpClient.cd(dir);
+        if(!dir.isEmpty()) {
+            ftpClient.cd(dir);
+        }
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()
                     && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
