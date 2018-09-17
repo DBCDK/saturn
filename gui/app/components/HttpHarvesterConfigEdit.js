@@ -12,12 +12,18 @@ import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 import constants from "../constants";
 import {getStringValue} from "../utils";
 
-const urlHelp =
-    "<div class='help-title'>Den URL der skal benyttes mod sitet</div>" +
-    "<div class='help-text'>Eksempel:</div>" +
-    "<div class='help-indent'>http://sa-cdn.clioonline.dk/tx_cliobibex/biblioteksguiden.xml</div>";
-const urlPatternHelp =
-    "<div class='help-title'>URL Struktur</div>";
+const URL_HELP =
+    <div>
+        <div className='help-title'>Den URL der skal benyttes mod sitet</div>
+        <div className='help-text'>Eksempel:</div>
+        <div className='help-indent'>http://sa-cdn.clioonline.dk/tx_cliobibex/biblioteksguiden.xml</div>
+    </div>
+
+const URL_PATTERN_HELP =
+    <div>
+        <div className='help-title'>URL Struktur</div>
+    </div>
+
 
 class HttpHarvesterConfigEdit extends React.Component {
     constructor(props) {
@@ -102,9 +108,9 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}
                     title={"HTTP Høster"}>
-                <FormEntry label="URL" name="url" value={getStringValue(this.state.config.url)} help={urlHelp}
+                <FormEntry label="URL" name="url" value={getStringValue(this.state.config.url)} help={URL_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="URL struktur" name="urlPattern" value={getStringValue(this.state.config.urlPattern)} help={urlPatternHelp}
+                <FormEntry label="URL struktur" name="urlPattern" value={getStringValue(this.state.config.urlPattern)} help={URL_PATTERN_HELP}
                            onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

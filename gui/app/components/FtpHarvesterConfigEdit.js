@@ -14,27 +14,45 @@ import {getStringValue} from "../utils";
 
 const FTP_PORT = "21";
 
-const hostHelp =
-    "<div class='help-title'>Den FTP adresse hvorfra filerne skal hentes</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>rs7.loc.gov</div>" +
-    "<div class='help-indent'>ftp.iacnet.com</div>";
-const portHelp =
-    "<div class='help-title'>Den port, der skal benyttes, hvis den afviger fra standard-fpt-porten</div>" +
-    "<div class='help-text'>Forhåndsudfyldes med standardportnummeret</div>";
-const usernameHelp =
-    "<div class='help-title'>Det navn eller den projektbetegnelse, der benyttes som login til sitet</div>";
-const passwordHelp =
-    "<div class='help-title'>Password der knytter sig til Brugerlogin</div>";
-const dirHelp =
-    "<div class='help-title'>Det (under)katalog som de ønskede filer skal hentes fra.</div>" +
-    "<div class='help-text'>Hvis feltet er tomt hentes direkte den første mappe på ftp-serveren.</div>" +
-    "<div class='help-text'>Eksempel:</div>" +
-    "<div class='help-indent'>/emds/maps</div>";
-const filesPatternHelp =
-    "<div class='help-title'>Angivelse af kendetegn for de filer, der skal hentes fra kataloget</div>" +
-    "<div class='help-text'>Eksempel:</div>" +
-    "<div class='help-indent'>http://sa-cdn.clioonline.dk/tx_cliobibex/biblioteksguiden.xml</div>";
+const HOST_HELP =
+    <div>
+        <div className='help-title'>Den FTP adresse hvorfra filerne skal hentes</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>rs7.loc.gov</div>
+        <div className='help-indent'>ftp.iacnet.com</div>
+    </div>
+
+const PORT_HELP =
+    <div>
+        <div className='help-title'>Den port, der skal benyttes, hvis den afviger fra standard-fpt-porten</div>
+        <div className='help-text'>Forhåndsudfyldes med standardportnummeret</div>
+    </div>
+
+const USERNAME_HELP =
+    <div>
+        <div className='help-title'>Det navn eller den projektbetegnelse, der benyttes som login til sitet</div>
+    </div>
+
+const PASSWORD_HELP =
+    <div>
+        <div className='help-title'>Password der knytter sig til Brugerlogin</div>
+    </div>
+
+const DIR_HELP =
+    <div>
+        <div className='help-title'>Det (under)katalog som de ønskede filer skal hentes fra.</div>
+        <div className='help-text'>Hvis feltet er tomt hentes direkte den første mappe på ftp-serveren.</div>
+        <div className='help-text'>Eksempel:</div>
+        <div className='help-indent'>/emds/maps</div>
+    </div>
+
+const FILES_PATTERN_HELP =
+    <div>
+        <div className='help-title'>Angivelse af kendetegn for de filer, der skal hentes fra kataloget</div>
+        <div className='help-text'>Eksempel:</div>
+        <div className='help-indent'>http://sa-cdn.clioonline.dk/tx_cliobibex/biblioteksguiden.xml</div>
+    </div>
+
 
 
 class FtpHarvesterConfigEdit extends React.Component {
@@ -132,18 +150,18 @@ class FtpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}
                     title={"FTP Høster"}>
-                <FormEntry label="FTP adresse" name="host" value={getStringValue(this.state.config.host)} help={hostHelp}
+                <FormEntry label="FTP adresse" name="host" value={getStringValue(this.state.config.host)} help={HOST_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Port" name="port" help={portHelp}
+                <FormEntry label="Port" name="port" help={PORT_HELP}
                            value={this.state.config.port !== undefined ? this.state.config.port.toString() : FTP_PORT}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Brugerlogin" name="username" value={getStringValue(this.state.config.username)} help={usernameHelp}
+                <FormEntry label="Brugerlogin" name="username" value={getStringValue(this.state.config.username)} help={USERNAME_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Password" name="password" value={getStringValue(this.state.config.password)} help={passwordHelp}
+                <FormEntry label="Password" name="password" value={getStringValue(this.state.config.password)} help={PASSWORD_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Dir" name="dir" value={getStringValue(this.state.config.dir)} help={dirHelp}
+                <FormEntry label="Dir" name="dir" value={getStringValue(this.state.config.dir)} help={DIR_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Filnavnsstruktur" name="filesPattern" value={getStringValue(this.state.config.filesPattern)} help={filesPatternHelp}
+                <FormEntry label="Filnavnsstruktur" name="filesPattern" value={getStringValue(this.state.config.filesPattern)} help={FILES_PATTERN_HELP}
                            onChangeCallback={this.onChangeCallback}/>
             </BaseHarvesterConfigEdit>
         )

@@ -9,57 +9,75 @@ import ReactTooltip from 'react-tooltip';
 
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 
-const nameHelp =
-    "<div class='help-title'>Høsterens navn</div>";
-const crontabHelp =
-    "<div class='help-title'>Hentningsfrekvens</div>" +
-    "<div class='help-text'>Består af fem sæt af tal (eller stjerne som default):</div>" +
-    "<div class='help-indent'>* * * * *</div>" +
-    "<div class='help-text'>De fem sæt står for</div>" +
-    "<div class='help-indent'>'minut' 'time' 'nr dag i måneden' 'månedens nr' 'ugedagsnr'</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>1 4 26 * *</div>" +
-    "<div class='help-text'>Betyder 1 minut over 4 (om morgenen) på den 26. dag i måneden</div>" +
-    "<div class='help-indent'>10 16 * * *</div>" +
-    "<div class='help-text'>Betyder kl. 16.10 hver dag</div>" +
-    "<div class='help-indent'>* * * * 7</div>" +
-    "<div class='help-text'>Betyder hvert minut om søndagen</div>" +
-    "<div class='help-indent'>52 1 * * 1</div>" +
-    "<div class='help-text'>Betyder kl. 1.52 hver mandag</div>" +
-    "<div class='help-text'>Få evt. hjælp til cron på crontab.guru</div>";
-const transfileHelp =
-    "<div class='help-title'>Transfilnavn</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>b=ticklerepo,c=utf8,t=xml,o=fysikkemi,m=kildepost@dbc.dk</div>" +
-    "<div class='help-indent'>b=marckonv,c=utf8,o=m21,t=iso,m=kildepost@dbc.dk</div>";
-const seqnoHelp =
-    "<div class='help-title'>Nummer på den sidst hentede fil. Forudfyldt med 0, så den første fil hentes. Hvis du ønsker at hente en fil igen, skal løbenummer sættes til nummeret før den fil, du vil have hentet.</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>20180901</div>" +
-    "<div class='help-indent'>4623</div>" +
-    "<br/>" +
-    "<div class='help-text'>Filer på f.eks. en ftp server:</div>" +
-    "<div class='help-indent'>v46.i23.records.utf8</div>" +
-    "<div class='help-indent'>v46.i24.records.utf8</div>" +
-    "<div class='help-indent'>v46.i25.records.utf8</div>" +
-    "<br/>" +
-    "<div class='help-text'>Løbenumre er her 4623, 4624 og 4625.</div>" +
-    "<div class='help-indent'>De bliver taget ud via 'løbenummerdel' 2-3,6-7. Det svarer til tegn nr. 2 og 3 plus tegn nr. 6 og 7.</div>";
-const seqnoExtractHelp =
-    "<div class='help-title'>Løbenummerdel</div>" +
-    "<div class='help-text'>Delelement af filnavn til brug for løbenummer. Dvs. de tegn i filnavnet som udgør løbenummeret.</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>2-3,6-7</div>" +
-    "<div class='help-indent'>17-24</div>" +
-    "<br/>" +
-    "<div class='help-text'>For at angive løbenummerdelen ’4623’ på denne fil:</div>" +
-    "<div class='help-indent'>v46.i23.records.utf8</div>" +
-    "<div class='help-text'>skal man hente tegn 2-3 og tegn 6-7, så løbenummerdelen bliver 2-3,6-7</div>";
-const agencyHelp =
-    "<div class='help-title'>Præfiks til filnavn indeholdende som minimum et biblioteksnummer/submitter + punktum</div>" +
-    "<div class='help-text'>Eksempler:</div>" +
-    "<div class='help-indent'>150067.</div>" +
-    "<div class='help-indent'>150023.BIOCON_FULL</div>";
+const NAME_HELP =
+    <div>
+        <div className='help-title'>Høsterens navn</div>
+    </div>
+
+const CRONTAB_HELP =
+    <div>
+        <div className='help-title'>Hentningsfrekvens</div>
+        <div className='help-text'>Består af fem sæt af tal (eller stjerne som default):</div>
+        <div className='help-indent'>* * * * *</div>
+        <div className='help-text'>De fem sæt står for</div>
+        <div className='help-indent'>'minut' 'time' 'nr dag i måneden' 'månedens nr' 'ugedagsnr'</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>1 4 26 * *</div>
+        <div className='help-text'>Betyder 1 minut over 4 (om morgenen) på den 26. dag i måneden</div>
+        <div className='help-indent'>10 16 * * *</div>
+        <div className='help-text'>Betyder kl. 16.10 hver dag</div>
+        <div className='help-indent'>* * * * 7</div>
+        <div className='help-text'>Betyder hvert minut om søndagen</div>
+        <div className='help-indent'>52 1 * * 1</div>
+        <div className='help-text'>Betyder kl. 1.52 hver mandag</div>
+        <div className='help-text'>Få evt. hjælp til cron på crontab.guru</div>
+    </div>
+
+const TRANSFILE_HELP =
+    <div>
+        <div className='help-title'>Transfilnavn</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>b=ticklerepo,c=utf8,t=xml,o=fysikkemi,m=kildepost@dbc.dk</div>
+        <div className='help-indent'>b=marckonv,c=utf8,o=m21,t=iso,m=kildepost@dbc.dk</div>
+    </div>
+
+const SEQNO_HELP =
+    <div>
+        <div className='help-title'>Nummer på den sidst hentede fil. Forudfyldt med 0, så den første fil hentes. Hvis du ønsker at hente en fil igen, skal løbenummer sættes til nummeret før den fil, du vil have hentet.</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>20180901</div>
+        <div className='help-indent'>4623</div>
+        <br/>
+        <div className='help-text'>Filer på f.eks. en ftp server:</div>
+        <div className='help-indent'>v46.i23.records.utf8</div>
+        <div className='help-indent'>v46.i24.records.utf8</div>
+        <div className='help-indent'>v46.i25.records.utf8</div>
+        <br/>
+        <div className='help-text'>Løbenumre er her 4623, 4624 og 4625.</div>
+        <div className='help-indent'>De bliver taget ud via 'løbenummerdel' 2-3,6-7. Det svarer til tegn nr. 2 og 3 plus tegn nr. 6 og 7.</div>
+    </div>
+
+const SEQNO_EXTRACT_HELP =
+    <div>
+        <div className='help-title'>Løbenummerdel</div>
+        <div className='help-text'>Delelement af filnavn til brug for løbenummer. Dvs. de tegn i filnavnet som udgør løbenummeret.</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>2-3,6-7</div>
+        <div className='help-indent'>17-24</div>
+        <br/>
+        <div className='help-text'>For at angive løbenummerdelen ’4623’ på denne fil:</div>
+        <div className='help-indent'>v46.i23.records.utf8</div>
+        <div className='help-text'>skal man hente tegn 2-3 og tegn 6-7, så løbenummerdelen bliver 2-3,6-7</div>
+    </div>
+
+const AGENCY_HELP =
+    <div>
+        <div className='help-title'>Præfiks til filnavn indeholdende som minimum et biblioteksnummer/submitter + punktum</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>150067.</div>
+        <div className='help-indent'>150023.BIOCON_FULL</div>
+    </div>
+
 
 
 class FormEntry extends React.Component {
@@ -74,7 +92,6 @@ class FormEntry extends React.Component {
     }
     render() {
         const {name} = this.props;
-        const Help = () => (<div dangerouslySetInnerHTML={{ __html: this.props.help }} />);
         return (
             <div className="form-group">
                 <label htmlFor={name}>{this.props.label}</label>
@@ -82,7 +99,7 @@ class FormEntry extends React.Component {
                     onChange={this.onChange}
                     data-tip data-for={name}
                     data-event="focus" data-event-off="blur"/>
-                <ReactTooltip id={name} type="info" place="right" effect="solid"><Help /></ReactTooltip>
+                <ReactTooltip id={name} type="info" place="right" effect="solid">{this.props.help}</ReactTooltip>
             </div>
         )
     }
@@ -159,17 +176,17 @@ class BaseHarvesterConfigEdit extends React.Component {
         return (
             <form id="upload-form">
                 <div className="breadcrumb-title">Saturnhøster >> {this.props.config.id !== undefined ? "Rediger" : "Ny"} {this.props.title}</div>
-                <FormEntry label="Navn" name="name" value={config.name} help={nameHelp}
+                <FormEntry label="Navn" name="name" value={config.name} help={NAME_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Hentningsfrekvens" name="schedule" value={config.schedule} help={crontabHelp}
+                <FormEntry label="Hentningsfrekvens" name="schedule" value={config.schedule} help={CRONTAB_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Transfil" name="transfile" value={config.transfile} help={transfileHelp}
+                <FormEntry label="Transfil" name="transfile" value={config.transfile} help={TRANSFILE_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Løbenummer" name="seqno" value={config.seqno || "0"} help={seqnoHelp}
+                <FormEntry label="Løbenummer" name="seqno" value={config.seqno || "0"} help={SEQNO_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Løbenummerdel" name="seqnoExtract" value={config.seqnoExtract || ""} help={seqnoExtractHelp}
+                <FormEntry label="Løbenummerdel" name="seqnoExtract" value={config.seqnoExtract || ""} help={SEQNO_EXTRACT_HELP}
                            onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency} help={agencyHelp}
+                <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency} help={AGENCY_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
                 <button type="submit" className="save-button" onClick={this.onClick}>Gem</button>
