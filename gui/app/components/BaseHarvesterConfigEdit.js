@@ -92,6 +92,7 @@ class FormEntry extends React.Component {
     }
     render() {
         const {name} = this.props;
+        const tooltip = this.props.help ? <ReactTooltip id={name} type="info" place="right" effect="solid">{this.props.help}</ReactTooltip> : null;
         return (
             <div className="form-group">
                 <label htmlFor={name}>{this.props.label}</label>
@@ -99,7 +100,7 @@ class FormEntry extends React.Component {
                     onChange={this.onChange}
                     data-tip data-for={name}
                     data-event="focus" data-event-off="blur"/>
-                <ReactTooltip id={name} type="info" place="right" effect="solid">{this.props.help}</ReactTooltip>
+                {tooltip}
             </div>
         )
     }
@@ -108,6 +109,7 @@ class FormEntry extends React.Component {
 FormEntry.propTypes = {
     value: PropTypes.string,
     onChangeCallback: PropTypes.func.isRequired,
+    help: PropTypes.element
 };
 
 FormEntry.defaultProps = {
