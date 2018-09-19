@@ -29,7 +29,8 @@ class HttpHarvesterConfigList extends React.Component {
     render() {
         return (
             <BaseHarvesterConfigList
-                    newConfigPath={constants.paths.newHttpHarvesterConfig}>
+                    newConfigPath={constants.paths.newHttpHarvesterConfig}
+                    title="Hentninger via HTTP" button="Ny HTTP høster">
                 {this.state.configs.map(item => {
                     const path = new Path(
                         constants.paths.editHttpHarvesterConfig);
