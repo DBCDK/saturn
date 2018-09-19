@@ -44,7 +44,7 @@ public class ScheduledHarvesterBean {
     @EJB HarvesterConfigRepository harvesterConfigRepository;
     @EJB FtpSenderBean ftpSenderBean;
 
-    @Schedule(minute = "*", hour = "*")
+    @Schedule(minute = "*", hour = "*", second = "*/5")
     public void harvest() {
         try {
             List<FtpHarvesterConfig> ftpResults = harvesterConfigRepository
