@@ -49,8 +49,9 @@ const DIR_HELP =
 const FILES_PATTERN_HELP =
     <div>
         <div className='help-title'>Angivelse af kendetegn for de filer, der skal hentes fra kataloget</div>
-        <div className='help-text'>Eksempel:</div>
-        <div className='help-indent'>http://sa-cdn.clioonline.dk/tx_cliobibex/biblioteksguiden.xml</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>NREF-BIORC-FULL_*</div>
+        <div className='help-indent'>*records.utf8</div>
     </div>
 
 
