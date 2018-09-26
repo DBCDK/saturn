@@ -81,6 +81,7 @@ public class HarvesterConfigEntityIT {
         config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config1.setAgency("010100");
+        config1.setEnabled(true);
 
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
         config2.setName("MyName'sNotRick!");
@@ -91,6 +92,7 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config2.setAgency("010100");
+        config2.setEnabled(true);
 
         harvesterConfigRepository.entityManager.persist(config1);
         harvesterConfigRepository.entityManager.flush();
@@ -136,6 +138,7 @@ public class HarvesterConfigEntityIT {
         config1.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config1.setAgency("010100");
+        config1.setEnabled(true);
 
         FtpHarvesterConfig config2 = new FtpHarvesterConfig();
         config2.setName("MyName'sNotRick!");
@@ -151,6 +154,7 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config2.setAgency("010100");
+        config2.setEnabled(true);
 
         harvesterConfigRepository.entityManager.persist(config1);
         harvesterConfigRepository.entityManager.flush();
@@ -190,6 +194,7 @@ public class HarvesterConfigEntityIT {
             config.setSchedule(name);
             config.setTransfile(name);
             config.setAgency("010100");
+            config.setEnabled(true);
             harvesterConfigRepository.entityManager.persist(config);
             harvesterConfigRepository.entityManager.flush();
         }
@@ -218,6 +223,7 @@ public class HarvesterConfigEntityIT {
             config.setDir(name);
             config.setFilesPattern(name);
             config.setAgency("010100");
+            config.setEnabled(true);
             harvesterConfigRepository.entityManager.persist(config);
             harvesterConfigRepository.entityManager.flush();
         }
@@ -244,6 +250,7 @@ public class HarvesterConfigEntityIT {
             harvesterConfigRepository.add(HttpHarvesterConfig.class,
                 httpHarvesterConfig, mockedUriBuilder);
             httpHarvesterConfig.setUrlPattern("http://" + name);
+            httpHarvesterConfig.setEnabled(true);
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -277,6 +284,7 @@ public class HarvesterConfigEntityIT {
             ftpHarvesterConfig.setSchedule(name);
             ftpHarvesterConfig.setTransfile(name);
             ftpHarvesterConfig.setAgency("010100");
+            ftpHarvesterConfig.setEnabled(true);
             harvesterConfigRepository.add(FtpHarvesterConfig.class,
                 ftpHarvesterConfig, mockedUriBuilder);
         }
@@ -303,6 +311,7 @@ public class HarvesterConfigEntityIT {
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
+        config.setEnabled(true);
         harvesterConfigRepository.add(HttpHarvesterConfig.class, config,
             mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -322,6 +331,7 @@ public class HarvesterConfigEntityIT {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config2.setAgency("010100");
+        config2.setEnabled(true);
         harvesterConfigRepository.add(HttpHarvesterConfig.class, config2,
             mockedUriBuilder);
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -352,6 +362,7 @@ public class HarvesterConfigEntityIT {
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
+        config.setEnabled(true);
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
@@ -384,6 +395,7 @@ public class HarvesterConfigEntityIT {
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
+        config.setEnabled(true);
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
