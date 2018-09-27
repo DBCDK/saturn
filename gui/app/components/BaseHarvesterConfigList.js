@@ -18,6 +18,7 @@ class ConfigEntry extends React.Component {
         return (
             <tr>
                 <td><Link to={this.props.url}>{this.props.name}</Link></td>
+                <td className="center"><input type="checkbox"/></td>
             </tr>
         )
     }
@@ -36,7 +37,10 @@ class BaseHarvesterConfigList extends React.Component {
                 <Link to={this.props.newConfigPath}><button className="action-button">{this.props.button}</button></Link>
                 <table className="harvester-table">
                     <thead>
-                        <tr><th>Navn</th></tr>
+                        <tr>
+                            <th>Navn</th>
+                            <th>Aktiv</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {this.props.children}
