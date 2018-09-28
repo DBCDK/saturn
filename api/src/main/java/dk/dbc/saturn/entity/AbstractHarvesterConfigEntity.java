@@ -110,7 +110,10 @@ public abstract class AbstractHarvesterConfigEntity {
     }
 
     public Boolean isEnabled() {
-        return enabled == null ? false : enabled;
+        if (enabled == null) {
+            return false;
+        }
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
