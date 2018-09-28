@@ -1,0 +1,2 @@
+ALTER TABLE httpharvester ADD COLUMN enabled BOOLEAN NOT NULL;
+ALTER TABLE ftpharvester ADD COLUMN enabled BOOLEAN NOT NULL;
