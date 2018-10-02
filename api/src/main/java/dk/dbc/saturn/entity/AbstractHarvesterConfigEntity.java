@@ -14,6 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.util.Date;
+import java.util.Objects;
 
 @MappedSuperclass
 public abstract class AbstractHarvesterConfigEntity {
@@ -41,6 +42,8 @@ public abstract class AbstractHarvesterConfigEntity {
     private String seqnoExtract;
 
     private String agency;
+
+    private Boolean enabled;
 
     public void setId(int id) {
         this.id = id;
@@ -106,34 +109,40 @@ public abstract class AbstractHarvesterConfigEntity {
         this.agency = agency;
     }
 
-    @SuppressWarnings("PMD.UselessParentheses")
+    public Boolean isEnabled() {
+        if (enabled == null) {
+            return false;
+        }
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof HttpHarvesterConfig)) return false;
-
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AbstractHarvesterConfigEntity that = (AbstractHarvesterConfigEntity) o;
-
-        final boolean lastHarvestedEquals = (lastHarvested == null &&
-            that.lastHarvested == null) || (lastHarvested != null &&
-            lastHarvested.equals(that.lastHarvested));
-        return id == that.id
-            && name.equals(that.name)
-            && schedule.equals(that.schedule)
-            && lastHarvestedEquals
-            && agency.equals(that.agency)
-            && transfile.equals(that.transfile);
+        return id == that.id &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(schedule, that.schedule) &&
+                Objects.equals(lastHarvested, that.lastHarvested) &&
+                Objects.equals(transfile, that.transfile) &&
+                Objects.equals(seqno, that.seqno) &&
+                Objects.equals(seqnoExtract, that.seqnoExtract) &&
+                Objects.equals(agency, that.agency) &&
+                Objects.equals(enabled, that.enabled);
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + name.hashCode();
-        result = 31 * result + schedule.hashCode();
-        if(lastHarvested != null) {
-            result = 31 * result + lastHarvested.hashCode();
-        }
-        result = 31 * result + transfile.hashCode();
-        result = 31 * result + agency.hashCode();
-        return result;
+        return Objects.hash(id, name, schedule, lastHarvested,
+                transfile, seqno, seqnoExtract, agency, enabled);
     }
 }

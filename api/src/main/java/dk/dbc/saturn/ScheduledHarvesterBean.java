@@ -60,11 +60,12 @@ public class ScheduledHarvesterBean {
                     continue;
                 }
                 try {
-                    FileNameMatcher fileNameMatcher = new FileNameMatcher(
-                        ftpConfig.getFilesPattern());
-                    if (cronParserBean.shouldExecute(ftpConfig.getSchedule(),
-                        ftpConfig.getLastHarvested())) {
-                        Future<Set<FileHarvest>> result =
+                    if (ftpConfig.isEnabled() &&
+                            cronParserBean.shouldExecute(ftpConfig.getSchedule(),
+                                    ftpConfig.getLastHarvested())) {
+                        final FileNameMatcher fileNameMatcher =
+                                new FileNameMatcher(ftpConfig.getFilesPattern());
+                        final Future<Set<FileHarvest>> result =
                             ftpHarvesterBean.harvest(ftpConfig.getHost(),
                                 ftpConfig.getPort(), ftpConfig.getUsername(),
                                 ftpConfig.getPassword(), ftpConfig.getDir(),
@@ -83,8 +84,9 @@ public class ScheduledHarvesterBean {
                     continue;
                 }
                 try {
-                    if(cronParserBean.shouldExecute(httpConfig.getSchedule(),
-                        httpConfig.getLastHarvested())) {
+                    if (httpConfig.isEnabled() &&
+                            cronParserBean.shouldExecute(httpConfig.getSchedule(),
+                                    httpConfig.getLastHarvested())) {
                         if(httpConfig.getUrlPattern() == null ||
                                 httpConfig.getUrlPattern().isEmpty()) {
                             Future<Set<FileHarvest>> result =
