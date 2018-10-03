@@ -128,6 +128,7 @@ class FtpHarvesterConfigEdit extends React.Component {
                 break;
             }
         }
+        config.enabled = true;
         FtpHarvesterConfig.addFtpHarvesterConfig(config).end()
             .catch(err => console.error("unexpected error when adding config",
             config, err));

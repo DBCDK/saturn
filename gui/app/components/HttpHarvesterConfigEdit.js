@@ -85,6 +85,7 @@ class HttpHarvesterConfigEdit extends React.Component {
                 break;
             }
         }
+        config.enabled = true;
         HttpHarvesterConfig.addHttpHarvesterConfig(config).end()
             .catch(err => console.error("unexpected error when adding config",
             config, err));
