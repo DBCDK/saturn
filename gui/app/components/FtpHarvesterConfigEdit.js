@@ -128,6 +128,7 @@ class FtpHarvesterConfigEdit extends React.Component {
                 break;
             }
         }
+        config.enabled = true;
         FtpHarvesterConfig.addFtpHarvesterConfig(config).end()
             .catch(err => console.error("unexpected error when adding config",
             config, err));
@@ -142,7 +143,9 @@ class FtpHarvesterConfigEdit extends React.Component {
             }).catch(err => alert(err));
     }
     componentWillMount() {
-        this.fetchConfig(this.props.match.params.id);
+        if (this.props.match.params.id !== undefined) {
+            this.fetchConfig(this.props.match.params.id);
+        }
     }
     render() {
         return (
