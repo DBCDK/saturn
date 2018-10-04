@@ -99,7 +99,9 @@ class HttpHarvesterConfigEdit extends React.Component {
             }).catch(err => alert(err));
     }
     componentWillMount() {
-        this.fetchConfig(this.props.match.params.id);
+        if (this.props.match.params.id !== undefined) {
+            this.fetchConfig(this.props.match.params.id);
+        }
     }
     render() {
         return (
