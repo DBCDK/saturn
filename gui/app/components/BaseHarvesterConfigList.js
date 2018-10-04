@@ -7,18 +7,27 @@ import React from "react";
 import PropTypes from "prop-types";
 import {Link} from "react-router-dom";
 
-import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
-import constants from "../constants";
 
 class ConfigEntry extends React.Component {
     constructor(props) {
         super(props);
+        this.state = { enabled: false };
+        this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     }
+
+    handleCheckboxChange(event) {
+        this.setState({ enabled: event.target.checked });
+    }
+
     render() {
         return (
             <tr>
                 <td><Link to={this.props.url}>{this.props.name}</Link></td>
-                <td className="center"><input type="checkbox"/></td>
+                <td className="center">
+                    <input name="enabled" type="checkbox"
+                           checked={this.state.enabled}
+                           onChange={this.handleCheckboxChange}/>
+                </td>
             </tr>
         )
     }
