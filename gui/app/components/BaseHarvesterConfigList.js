@@ -11,12 +11,14 @@ import {Link} from "react-router-dom";
 class ConfigEntry extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { enabled: false };
+        this.state = { enabled: this.props.enabled };
         this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     }
 
     handleCheckboxChange(event) {
-        this.setState({ enabled: event.target.checked });
+        const active = event.target.checked;
+        this.setState({ enabled: active });
+        this.props.onEnabledChanged(this.props.id, active);
     }
 
     render() {
@@ -36,6 +38,13 @@ class ConfigEntry extends React.Component {
 ConfigEntry.propTypes = {
     name: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
+    enabled: PropTypes.bool,
+    onEnabledChanged: PropTypes.func,
+};
+
+ConfigEntry.defaultProps = {
+    onEnabledChanged: (event) => console.log("no-op for ConfigEntry.onEnabledChanged"),
+    enabled: true,
 };
 
 class BaseHarvesterConfigList extends React.Component {
