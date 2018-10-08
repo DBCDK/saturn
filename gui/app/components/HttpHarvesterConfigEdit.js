@@ -81,11 +81,13 @@ class HttpHarvesterConfigEdit extends React.Component {
             case "agency":
                 config.agency = form[i].value;
                 break;
+            case "enabled":
+                config.enabled = form[i].checked;
+                break;
             default:
                 break;
             }
         }
-        config.enabled = true;
         HttpHarvesterConfig.addHttpHarvesterConfig(config).end()
             .catch(err => console.error("unexpected error when adding config",
             config, err));

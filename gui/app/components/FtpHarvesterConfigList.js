@@ -31,6 +31,7 @@ class FtpHarvesterConfigList extends React.Component {
         for (let i=0; i<this.state.configs.length; i++) {
             if (this.state.configs[i].id == id) {
                 config = this.state.configs[i];
+                break;
             }
         }
         if (config == {}) {

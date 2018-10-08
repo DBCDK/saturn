@@ -116,6 +116,37 @@ FormEntry.defaultProps = {
     value: "",
 };
 
+class FormCheckbox extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { enabled: this.props.enabled };
+        this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+    }
+    handleCheckboxChange(event) {
+        const active = event.target.checked;
+        this.setState({ enabled: active });
+        this.props.onChangeCallback(this.props.name, active);
+    }
+    render() {
+        const {name} = this.props;
+        return (
+            <div className="form-group">
+                <label htmlFor={name}>{this.props.label}</label>
+                <input type="checkbox" name={name} checked={!!this.props.enabled} onChange={this.handleCheckboxChange}/>
+            </div>
+        )
+    }
+};
+
+FormCheckbox.propTypes = {
+    enabled: PropTypes.bool,
+    onChangeCallback: PropTypes.func,
+};
+
+FormCheckbox.defaultProps = {
+    enabled: true,
+};
+
 class BaseHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
@@ -177,7 +208,7 @@ class BaseHarvesterConfigEdit extends React.Component {
         const config = this.props.config;
         return (
             <form id="upload-form">
-                <div className="breadcrumb-title">Saturnhøster >> {this.props.config.id !== undefined ? "Rediger" : "Ny"} {this.props.title}</div>
+                <div className="breadcrumb-title">Saturnhøster >> {config.id !== undefined ? "Rediger" : "Ny"} {this.props.title}</div>
                 <FormEntry label="Navn" name="name" value={config.name} help={NAME_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="Hentningsfrekvens" name="schedule" value={config.schedule} help={CRONTAB_HELP}
@@ -191,8 +222,10 @@ class BaseHarvesterConfigEdit extends React.Component {
                 <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency} help={AGENCY_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
+                <FormCheckbox label="Aktiv" name="enabled" enabled={config.enabled}
+                           onChangeCallback={this.onChangeCallback}/>
                 <button type="submit" className="save-button" onClick={this.onClick}>Gem</button>
-                {this.props.config.id !== undefined ?
+                {config.id !== undefined ?
                     <button type="submit" className="delete-button" onClick={this.onDelete}>Slet</button>
                     : <div/> }
             </form>
