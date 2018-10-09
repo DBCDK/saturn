@@ -4,7 +4,6 @@
  */
 
 import React from "react";
-import PropTypes from "prop-types";
 
 import constants from "../constants";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
@@ -17,6 +16,7 @@ class HttpHarvesterConfigList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {"configs": []};
+        this.onEnabledChanged = this.onEnabledChanged.bind(this);
     }
     componentWillMount() {
         HttpHarvesterConfig.listHttpHarvesterConfigs().end().then(
@@ -25,6 +25,23 @@ class HttpHarvesterConfigList extends React.Component {
                 HttpHarvesterConfig, response.text);
             this.setState({configs});
         });
+    }
+    onEnabledChanged(id, active) {
+        let config = {};
+        for (let i=0; i<this.state.configs.length; i++) {
+            if (this.state.configs[i].id == id) {
+                config = this.state.configs[i];
+                break;
+            }
+        }
+        if (config == {}) {
+            console.error(`Actual HTTP Config was not found for id=${id}`);
+        } else {
+            config.enabled = active;
+        }
+        HttpHarvesterConfig.addHttpHarvesterConfig(config).end()
+            .catch(err => console.error(`unexpected error when changing enabled flag in HTTP config for id=${id}`,
+                config, err));
     }
     render() {
         return (
@@ -35,8 +52,10 @@ class HttpHarvesterConfigList extends React.Component {
                     const path = new Path(
                         constants.paths.editHttpHarvesterConfig);
                     path.bind("id", item.id);
-                    return <ConfigEntry key={item.id}
-                        id={item.id} name={item.name} url={path.path}/>;
+                    return <ConfigEntry key={item.id} id={item.id}
+                                        name={item.name} url={path.path}
+                                        enabled={item.enabled}
+                                        onEnabledChanged={this.onEnabledChanged}/>;
                     })
                 }
             </BaseHarvesterConfigList>
