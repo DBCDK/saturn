@@ -48,15 +48,18 @@ class HttpHarvesterConfigList extends React.Component {
             <BaseHarvesterConfigList
                     newConfigPath={constants.paths.newHttpHarvesterConfig}
                     title="Hentninger via HTTP" button="Ny HTTP høster">
-                {this.state.configs.map(item => {
-                    const path = new Path(
-                        constants.paths.editHttpHarvesterConfig);
-                    path.bind("id", item.id);
-                    return <ConfigEntry key={item.id} id={item.id}
-                                        name={item.name} url={path.path}
-                                        enabled={item.enabled}
-                                        onEnabledChanged={this.onEnabledChanged}/>;
-                    })
+                {this.state.configs.
+                    sort((a,b) => a.name.localeCompare(b.name)).
+                    map(item => {
+                        const path = new Path(
+                            constants.paths.editHttpHarvesterConfig);
+                        path.bind("id", item.id);
+                        return <ConfigEntry key={item.id} id={item.id}
+                                            name={item.name} url={path.path}
+                                            enabled={item.enabled}
+                                            onEnabledChanged={this.onEnabledChanged}/>;
+                        }
+                    )
                 }
             </BaseHarvesterConfigList>
         )
