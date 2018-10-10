@@ -161,7 +161,10 @@ class BaseHarvesterConfigEdit extends React.Component {
             if(this.props.config.hasOwnProperty(key)) {
                 return this.validate(key, this.props.config[key]);
             }
-        })).then(() => {this.props.onSave(event.target.form)})
+        })).then(() => {
+            this.props.onSave(event.target.form);
+            history.back();
+        })
             .catch(err => alert(err));
     }
     onDelete(event) {
