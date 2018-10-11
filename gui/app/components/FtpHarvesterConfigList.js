@@ -48,15 +48,18 @@ class FtpHarvesterConfigList extends React.Component {
             <BaseHarvesterConfigList
                     newConfigPath={constants.paths.newFtpHarvesterConfig}
                     title="Hentninger via FTP" button="Ny FTP høster">
-                {this.state.configs.map(item => {
-                    const path = new Path(
-                        constants.paths.editFtpHarvesterConfig);
-                    path.bind("id", item.id);
-                    return <ConfigEntry key={item.id} id={item.id}
-                                        name={item.name} url={path.path}
-                                        enabled={item.enabled}
-                                        onEnabledChanged={this.onEnabledChanged}/>;
-                    })
+                {this.state.configs.
+                    sort((a,b) => a.name.localeCompare(b.name)).
+                    map(item => {
+                        const path = new Path(
+                            constants.paths.editFtpHarvesterConfig);
+                        path.bind("id", item.id);
+                        return <ConfigEntry key={item.id} id={item.id}
+                                            name={item.name} url={path.path}
+                                            enabled={item.enabled}
+                                            onEnabledChanged={this.onEnabledChanged}/>;
+                        }
+                    )
                 }
             </BaseHarvesterConfigList>
         )
