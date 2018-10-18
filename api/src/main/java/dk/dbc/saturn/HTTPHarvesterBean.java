@@ -120,7 +120,9 @@ public class HTTPHarvesterBean {
     @Asynchronous
     public Future<Set<FileHarvest>> harvest(String url, String pattern)
             throws HarvestException {
+        LOGGER.info("looking for pattern {} in {}", pattern, url);
         final String datafileUrl = findInContent(url, pattern);
+        LOGGER.info("found url {} for pattern {}", datafileUrl, pattern);
         return harvest(datafileUrl);
     }
 
