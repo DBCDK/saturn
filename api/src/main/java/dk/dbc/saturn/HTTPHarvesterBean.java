@@ -61,21 +61,9 @@ public class HTTPHarvesterBean {
         LOGGER.info("harvesting {}", url);
 
         final ClientConfig clientConfig = new ClientConfig();
-        if(proxyHandlerBean.getProxyHostname() != null &&
-                proxyHandlerBean.getProxyPort() != 0) {
-            final String proxyHost = proxyHandlerBean.getProxyHostname();
-            final int proxyPort = proxyHandlerBean.getProxyPort();
-            LOGGER.info(String.format(
-                "running through proxy: host = %s port = %s", proxyHost,
-                proxyPort));
-            SocksConnectionFactory connectionFactory =
-                new SocksConnectionFactory(proxyHost, proxyPort);
-            HttpUrlConnectorProvider connectorProvider =
-                new HttpUrlConnectorProvider();
-            connectorProvider.connectionFactory(connectionFactory);
-
-            clientConfig.connectorProvider(connectorProvider);
-        }
+        final Optional<HttpUrlConnectorProvider> connectorProvider =
+            getConnectorProvider();
+        connectorProvider.ifPresent(clientConfig::connectorProvider);
         clientConfig.register(new JacksonFeature());
         // for logging requests and responses (LoggingFilter is deprecated
         // in jersey 2.23 though)
@@ -144,8 +132,12 @@ public class HTTPHarvesterBean {
     // finds a string matching a pattern in the content fetched from the given url
     protected String findInContent(String url, String pattern) throws HarvestException {
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(pattern);
-        final Client client = HttpClient.newClient(new ClientConfig()
-            .register(new JacksonFeature()));
+        final ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(new JacksonFeature());
+        final Optional<HttpUrlConnectorProvider> connectorProvider =
+            getConnectorProvider();
+        connectorProvider.ifPresent(clientConfig::connectorProvider);
+        final Client client = HttpClient.newClient(clientConfig);
         try {
             final Response response = getResponse(client, url);
             if(response.hasEntity()) {
@@ -194,5 +186,24 @@ public class HTTPHarvesterBean {
             url = url.substring(0, url.length() - 1);
         }
         return url.substring(url.lastIndexOf("/") + 1, url.length());
+    }
+
+    private Optional<HttpUrlConnectorProvider> getConnectorProvider() {
+        if(proxyHandlerBean.getProxyHostname() != null &&
+                proxyHandlerBean.getProxyPort() != 0) {
+            final String proxyHost = proxyHandlerBean.getProxyHostname();
+            final int proxyPort = proxyHandlerBean.getProxyPort();
+            LOGGER.info(String.format(
+                "running through proxy: host = %s port = %s", proxyHost,
+                proxyPort));
+            final SocksConnectionFactory connectionFactory =
+                new SocksConnectionFactory(proxyHost, proxyPort);
+            final HttpUrlConnectorProvider connectorProvider =
+                new HttpUrlConnectorProvider();
+            connectorProvider.connectionFactory(connectionFactory);
+
+            return Optional.of(connectorProvider);
+        }
+        return Optional.empty();
     }
 }
