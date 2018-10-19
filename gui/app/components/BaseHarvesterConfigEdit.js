@@ -163,7 +163,6 @@ class BaseHarvesterConfigEdit extends React.Component {
             }
         })).then(() => {
             this.props.onSave(event.target.form);
-            history.back();
         })
             .catch(err => alert(err));
     }

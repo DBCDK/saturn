@@ -88,9 +88,12 @@ class HttpHarvesterConfigEdit extends React.Component {
                 break;
             }
         }
-        HttpHarvesterConfig.addHttpHarvesterConfig(config).end()
-            .catch(err => console.error("unexpected error when adding config",
-            config, err));
+        HttpHarvesterConfig.addHttpHarvesterConfig(config).end().then(() => {
+                const a = document.createElement("a");
+                a.href = "#/http";
+                ReactDOM.findDOMNode(this).appendChild(a);
+                a.click();
+            }).catch(err => console.error("unexpected error when adding config", config, err));
     }
     onDelete(id) {
         BaseHarvesterConfig.deleteConfig(constants.endpoints
