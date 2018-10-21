@@ -7,69 +7,20 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.postgresql.ds.PGSimpleDataSource;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
-import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
-import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
-import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_URL;
-import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_USER;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class HarvesterConfigEntityIT {
-    private static HarvesterConfigRepository harvesterConfigRepository =
-        new HarvesterConfigRepository();
-    private final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
-
-    @BeforeAll
-    public static void setUp() throws URISyntaxException {
-        final PGSimpleDataSource dataSource = getDataSource();
-        migrateDatabase(dataSource);
-        EntityManager entityManager = createEntityManager(dataSource,
-            "saturnIT_PU");
-        harvesterConfigRepository.entityManager = entityManager;
-        when(mockedUriBuilder.path(anyString())).thenReturn(mockedUriBuilder);
-        when(mockedUriBuilder.build()).thenReturn(new URI("location"));
-    }
-
-    @BeforeEach
-    void beginTransaction() {
-        harvesterConfigRepository.entityManager.getTransaction().begin();
-    }
-
-    @AfterEach
-    void resetDatabase() {
-        harvesterConfigRepository.entityManager.getTransaction().begin();
-        harvesterConfigRepository.entityManager.createNativeQuery(
-            "DELETE FROM httpharvester").executeUpdate();
-        harvesterConfigRepository.entityManager.createNativeQuery(
-            "DELETE FROM ftpharvester").executeUpdate();
-        harvesterConfigRepository.entityManager.getTransaction().commit();
-    }
-
+public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     @Test
     void test_httpHarvesterEntities() throws ParseException {
         final HttpHarvesterConfig config1 = new HttpHarvesterConfig();
@@ -381,34 +332,6 @@ public class HarvesterConfigEntityIT {
         assertThat("list size after delete", listAfterDelete.size(), is(0));
     }
 
-    private static PGSimpleDataSource getDataSource() {
-        final PGSimpleDataSource datasource = new PGSimpleDataSource();
-        datasource.setDatabaseName("saturn");
-        datasource.setServerName("localhost");
-        datasource.setPortNumber(Integer.parseInt(System.getProperty(
-            "postgresql.port", "5432")));
-        datasource.setUser(System.getProperty("user.name"));
-        datasource.setPassword(System.getProperty("user.name"));
-        return datasource;
-    }
-
-    private static void migrateDatabase(PGSimpleDataSource datasource) {
-        final DatabaseMigrator migrator = new DatabaseMigrator(datasource);
-        migrator.migrate();
-    }
-
-    private static EntityManager createEntityManager(
-        PGSimpleDataSource dataSource, String persistenceUnitName) {
-        Map<String, String> entityManagerProperties = new HashMap<>();
-        entityManagerProperties.put(JDBC_USER, dataSource.getUser());
-        entityManagerProperties.put(JDBC_PASSWORD, dataSource.getPassword());
-        entityManagerProperties.put(JDBC_URL, dataSource.getUrl());
-        entityManagerProperties.put(JDBC_DRIVER, "org.postgresql.Driver");
-        entityManagerProperties.put("eclipselink.logging.level", "FINE");
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory(persistenceUnitName,
-            entityManagerProperties);
-        return factory.createEntityManager(entityManagerProperties);
-    }
 
     private Date getDate(String date, String timezone) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
