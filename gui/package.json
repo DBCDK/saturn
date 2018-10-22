@@ -7,7 +7,8 @@
     "build": "node_modules/.bin/webpack --config webpack.common.js --mode production",
     "watch": "node_modules/.bin/webpack --watch --config webpack.dev.js --mode development",
     "test": "node_modules/.bin/mocha --require babel-core/register --recursive",
-    "dev-server": "node_modules/.bin/webpack-dev-server --config webpack.dev.js --mode development"
+    "dev-server": "node_modules/.bin/webpack-dev-server --config webpack.dev.js --mode development",
+    "dependency-tree": "node_modules/.bin/webpack --config webpack.common.js --mode production --profile --json > bundle_stats.json && node_modules/.bin/whybundled bundle_stats.json"
   },
   "dependencies": {
     "prop-types": "15.6.0",
@@ -30,6 +31,7 @@
     "webpack": "4.12.0",
     "webpack-cli": "3.0.7",
     "webpack-dev-server": "3.1.4",
-    "webpack-merge": "4.1.1"
+    "webpack-merge": "4.1.1",
+    "whybundled": "^1.4.2"
   }
 }
