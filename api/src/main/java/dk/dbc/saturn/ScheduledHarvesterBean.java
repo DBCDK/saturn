@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -35,7 +36,7 @@ public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
 
-    final private HashMap<? super AbstractHarvesterConfigEntity,
+    final HashMap<Integer,
         Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
     @EJB CronParserBean cronParserBean;
@@ -54,7 +55,7 @@ public class ScheduledHarvesterBean {
             LOGGER.info("got {} ftp configs, {} http configs", ftpResults.size(),
                 httpResults.size());
             for(FtpHarvesterConfig ftpConfig : ftpResults) {
-                if(harvestTasks.containsKey(ftpConfig)) {
+                if(harvestTasks.containsKey(ftpConfig.getId())) {
                     LOGGER.info("still harvesting {}, not scheduling new " +
                         "harvest", ftpConfig.getName());
                     continue;
@@ -70,7 +71,7 @@ public class ScheduledHarvesterBean {
                                 ftpConfig.getPort(), ftpConfig.getUsername(),
                                 ftpConfig.getPassword(), ftpConfig.getDir(),
                                 fileNameMatcher, new SeqnoMatcher(ftpConfig));
-                        harvestTasks.put(ftpConfig, result);
+                        harvestTasks.put(ftpConfig.getId(), result);
                     }
                 } catch (HarvestException e) {
                     LOGGER.error("error while harvesting for ftp {}",
@@ -78,7 +79,7 @@ public class ScheduledHarvesterBean {
                 }
             }
             for(HttpHarvesterConfig httpConfig : httpResults) {
-                if(harvestTasks.containsKey(httpConfig)) {
+                if(harvestTasks.keySet().contains(httpConfig.getId())) {
                     LOGGER.info("still harvesting {}, not scheduling new " +
                         "harvest", httpConfig.getName());
                     continue;
@@ -91,14 +92,14 @@ public class ScheduledHarvesterBean {
                                 httpConfig.getUrlPattern().isEmpty()) {
                             Future<Set<FileHarvest>> result =
                                 httpHarvesterBean.harvest(httpConfig.getUrl());
-                            harvestTasks.put(httpConfig, result);
+                            harvestTasks.put(httpConfig.getId(), result);
                         } else {
                             // look in response from url to get the real
                             // url for data harvesting
                             Future<Set<FileHarvest>> result =
                                 httpHarvesterBean.harvest(httpConfig.getUrl(),
                                 httpConfig.getUrlPattern());
-                            harvestTasks.put(httpConfig, result);
+                            harvestTasks.put(httpConfig.getId(), result);
                         }
                     }
                 } catch (HarvestException e) {
@@ -113,15 +114,23 @@ public class ScheduledHarvesterBean {
     }
 
     private void sendResults() {
-        Iterator<? extends Map.Entry<? super AbstractHarvesterConfigEntity,
+        Iterator<? extends Map.Entry<Integer,
             Future<Set<FileHarvest>>>> iterator = harvestTasks
             .entrySet().iterator();
         while(iterator.hasNext()) {
-            Map.Entry<? super AbstractHarvesterConfigEntity,
-                Future<Set<FileHarvest>>> configEntry =
+            Map.Entry<Integer, Future<Set<FileHarvest>>> configEntry =
                 iterator.next();
+            final int id = configEntry.getKey();
+            Optional<Class> type = harvesterConfigRepository.getHarvesterConfigType(id);
+            if(!type.isPresent()) {
+                // this should never happen
+                LOGGER.error("unable to find type for config with id {}", id);
+                iterator.remove();
+                continue;
+            }
             final AbstractHarvesterConfigEntity config =
-                (AbstractHarvesterConfigEntity) configEntry.getKey();
+                harvesterConfigRepository.entityManager.find(
+                (Class<? extends AbstractHarvesterConfigEntity>)type.get(), id);
             try {
                 Future<Set<FileHarvest>> result = configEntry.getValue();
                 if(result.isDone()) {
