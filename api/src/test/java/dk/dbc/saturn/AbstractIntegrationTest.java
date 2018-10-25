@@ -5,6 +5,8 @@
 
 package dk.dbc.saturn;
 
+import dk.dbc.saturn.entity.FtpHarvesterConfig;
+import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +18,12 @@ import javax.persistence.Persistence;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
@@ -90,5 +96,44 @@ public abstract class AbstractIntegrationTest {
     private static void migrateDatabase(PGSimpleDataSource datasource) {
         final DatabaseMigrator migrator = new DatabaseMigrator(datasource);
         migrator.migrate();
+    }
+
+    HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setUrl("http://nick.com");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Europe/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        config.setEnabled(true);
+        return config;
+    }
+
+    FtpHarvesterConfig getFtpHarvesterConfig() throws ParseException {
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setHost("http://nick.com");
+        config.setPort(5432);
+        config.setUsername("patrick-squarepants");
+        config.setPassword("secretpants");
+        config.setDir("rock-bottom");
+        config.setFilesPattern("glove-candy.png");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Europe/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        config.setEnabled(true);
+        return config;
+    }
+
+    Date getDate(String date, String timezone) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+        return sdf.parse(date);
     }
 }

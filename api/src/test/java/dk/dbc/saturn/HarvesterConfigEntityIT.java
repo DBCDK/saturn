@@ -9,15 +9,11 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -338,45 +334,5 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         assertThat("some large id value not present",
             harvesterConfigRepository.getHarvesterConfigType(
             Integer.MAX_VALUE).isPresent(), is(false));
-    }
-
-    private HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
-        HttpHarvesterConfig config = new HttpHarvesterConfig();
-        config.setName("MyName'sNotRick!");
-        config.setSchedule("1 * * * *");
-        config.setUrl("http://nick.com");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Europe/Copenhagen"));
-        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
-            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
-        config.setAgency("010100");
-        config.setEnabled(true);
-        return config;
-    }
-
-    private FtpHarvesterConfig getFtpHarvesterConfig() throws ParseException {
-        FtpHarvesterConfig config = new FtpHarvesterConfig();
-        config.setName("MyName'sNotRick!");
-        config.setSchedule("1 * * * *");
-        config.setHost("http://nick.com");
-        config.setPort(5432);
-        config.setUsername("patrick-squarepants");
-        config.setPassword("secretpants");
-        config.setDir("rock-bottom");
-        config.setFilesPattern("glove-candy.png");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Europe/Copenhagen"));
-        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
-            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
-        config.setAgency("010100");
-        config.setEnabled(true);
-        return config;
-    }
-
-
-    private Date getDate(String date, String timezone) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-        return sdf.parse(date);
     }
 }
