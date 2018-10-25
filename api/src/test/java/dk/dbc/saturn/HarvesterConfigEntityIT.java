@@ -9,14 +9,17 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
+import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.TimeZone;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -273,16 +276,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
 
     @Test
     void test_delete_httpHarvesterConfig() throws ParseException {
-        HttpHarvesterConfig config = new HttpHarvesterConfig();
-        config.setName("MyName'sNotRick!");
-        config.setSchedule("1 * * * *");
-        config.setUrl("http://nick.com");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Erope/Copenhagen"));
-        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
-            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
-        config.setAgency("010100");
-        config.setEnabled(true);
+        HttpHarvesterConfig config = getHttpHarvesterConfig();
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
@@ -301,21 +295,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
 
     @Test
     void test_delete_ftpHarvesterConfig() throws ParseException {
-        FtpHarvesterConfig config = new FtpHarvesterConfig();
-        config.setName("MyName'sNotRick!");
-        config.setSchedule("1 * * * *");
-        config.setHost("http://nick.com");
-        config.setPort(5432);
-        config.setUsername("patrick-squarepants");
-        config.setPassword("secretpants");
-        config.setDir("rock-bottom");
-        config.setFilesPattern("glove-candy.png");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Erope/Copenhagen"));
-        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
-            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
-        config.setAgency("010100");
-        config.setEnabled(true);
+        FtpHarvesterConfig config = getFtpHarvesterConfig();
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
 
@@ -330,6 +310,67 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         List<HttpHarvesterConfig> listAfterDelete = harvesterConfigRepository
             .list(HttpHarvesterConfig.class, 0, 0);
         assertThat("list size after delete", listAfterDelete.size(), is(0));
+    }
+
+    @Test
+    void test_getHarvesterConfigType() throws ParseException {
+        FtpHarvesterConfig ftpHarvesterConfig = getFtpHarvesterConfig();
+        HttpHarvesterConfig httpHarvesterConfig = getHttpHarvesterConfig();
+
+        harvesterConfigRepository.entityManager.persist(ftpHarvesterConfig);
+        harvesterConfigRepository.entityManager.persist(httpHarvesterConfig);
+        harvesterConfigRepository.entityManager.flush();
+
+        Optional ftpConfigOptional = harvesterConfigRepository
+            .getHarvesterConfigType(ftpHarvesterConfig.getId());
+        Optional httpConfigOptional = harvesterConfigRepository
+            .getHarvesterConfigType(httpHarvesterConfig.getId());
+
+        assertThat("ftpharvesterconfig is present",
+            ftpConfigOptional.isPresent(), is(true));
+        assertThat("httpharvesterconfig is present",
+            httpConfigOptional.isPresent(), is(true));
+        assertThat("ftpharvesterconfig type", ftpConfigOptional.get(),
+            is(equalTo(FtpHarvesterConfig.class)));
+        assertThat("httpharvesterconfig type", httpConfigOptional.get(),
+            is(equalTo(HttpHarvesterConfig.class)));
+
+        assertThat("some large id value not present",
+            harvesterConfigRepository.getHarvesterConfigType(
+            Integer.MAX_VALUE).isPresent(), is(false));
+    }
+
+    private HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setUrl("http://nick.com");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Europe/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        config.setEnabled(true);
+        return config;
+    }
+
+    private FtpHarvesterConfig getFtpHarvesterConfig() throws ParseException {
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setHost("http://nick.com");
+        config.setPort(5432);
+        config.setUsername("patrick-squarepants");
+        config.setPassword("secretpants");
+        config.setDir("rock-bottom");
+        config.setFilesPattern("glove-candy.png");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+            "Europe/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        config.setEnabled(true);
+        return config;
     }
 
 

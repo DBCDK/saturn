@@ -20,6 +20,10 @@ import javax.persistence.Table;
     @NamedQuery(
         name = HttpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME,
         query = HttpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_QUERY
+    ),
+    @NamedQuery(
+        name = HttpHarvesterConfig.GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME,
+        query = HttpHarvesterConfig.GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY
     )
 })
 public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
@@ -32,6 +36,10 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         "HttpHarvesterConfig.getHarvesterConfigById";
     public static final String GET_HARVESTER_CONFIG_BY_ID_QUERY =
         "SELECT config FROM HttpHarvesterConfig config WHERE config.id = :id";
+    public static final String GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME =
+        "HttpHarvesterConfig.getHarvesterConfigCountById";
+    static final String GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY =
+        "SELECT COUNT(config.id) FROM HttpHarvesterConfig config WHERE config.id = :id";
 
     private String url;
     private String urlPattern;
