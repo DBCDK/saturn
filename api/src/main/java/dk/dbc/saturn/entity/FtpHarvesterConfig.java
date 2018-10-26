@@ -21,6 +21,10 @@ import javax.persistence.Table;
     @NamedQuery(
         name = FtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME,
         query = FtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_QUERY
+    ),
+    @NamedQuery(
+        name = FtpHarvesterConfig.GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME,
+        query = FtpHarvesterConfig.GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY
     )
 })
 public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
@@ -33,6 +37,11 @@ public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
         "FtpHarvesterConfig.getHarvesterConfigById";
     public static final String GET_HARVESTER_CONFIG_BY_ID_QUERY =
         "SELECT config FROM FtpHarvesterConfig config WHERE config.id = :id";
+    public static final String GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME =
+        "FtpHarvesterConfig.getHarvesterConfigCountById";
+    static final String GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY =
+        "SELECT COUNT(config.id) FROM FtpHarvesterConfig config WHERE config.id = :id";
+
     private String host;
     private int port;
     private String username;

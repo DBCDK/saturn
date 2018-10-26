@@ -83,6 +83,35 @@ public class HarvesterConfigRepository {
     }
 
     /**
+     * This is a work-around method to get the type of a given harvester config.
+     * Since the database doesn't have the same class hierarchy that the java
+     * objects have we need to check seaparately for each type.
+     * This could well be an indication that this design needs to be rethought.
+     *
+     * @param id entity id
+     * @return type of config entity
+     */
+    public Optional<Class> getHarvesterConfigType(int id) {
+        final TypedQuery<Long> httpConfigQuery = entityManager
+            .createNamedQuery(HttpHarvesterConfig
+            .GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME, Long.class);
+        httpConfigQuery.setParameter("id", id);
+        httpConfigQuery.setMaxResults(1);
+        if(httpConfigQuery.getSingleResult() > 0) {
+            return Optional.of(HttpHarvesterConfig.class);
+        }
+        final TypedQuery<Long> ftpConfigQuery = entityManager
+            .createNamedQuery(FtpHarvesterConfig
+            .GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME, Long.class);
+        ftpConfigQuery.setParameter("id", id);
+        httpConfigQuery.setMaxResults(1);
+        if(ftpConfigQuery.getSingleResult() > 0) {
+            return Optional.of(FtpHarvesterConfig.class);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * persist harvester config entity in database
      * @param type type of harvester config
      * @param entity harvester config entity
