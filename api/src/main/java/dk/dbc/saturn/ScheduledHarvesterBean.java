@@ -128,9 +128,8 @@ public class ScheduledHarvesterBean {
                 iterator.remove();
                 continue;
             }
-            final AbstractHarvesterConfigEntity config =
-                harvesterConfigRepository.entityManager.find(
-                (Class<? extends AbstractHarvesterConfigEntity>)type.get(), id);
+            final AbstractHarvesterConfigEntity config = harvesterConfigRepository
+                .find(type.get(), id);
             try {
                 Future<Set<FileHarvest>> result = configEntry.getValue();
                 if(result.isDone()) {
