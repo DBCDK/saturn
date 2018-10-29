@@ -161,6 +161,19 @@ public class HarvesterConfigRepository {
         }
     }
 
+    /**
+     * Get config entity from database
+     * @param type type of config entity
+     * @param id id of config entity
+     * @return config entity
+     */
+    public AbstractHarvesterConfigEntity find(
+            Class<? extends AbstractHarvesterConfigEntity> type, int id) {
+        final AbstractHarvesterConfigEntity config = entityManager.find(
+            type, id);
+        return config;
+    }
+
     private URI uriFromId(UriBuilder uriBuilder, int id) {
         URI uri = uriBuilder.path(String.valueOf(id)).build();
         // to make the uri return the correct location for getting the
