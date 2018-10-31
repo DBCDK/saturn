@@ -1,0 +1,48 @@
+#!groovy
+
+@Library("metascrum@master") _
+
+def docker_tags = list_docker_tags("docker-io.dbc.dk/saturn-service",
+	"master-")
+
+pipeline {
+	agent {
+		docker {
+			label "devel8"
+			image "docker-io.dbc.dk/python3"
+		}
+	}
+	parameters {
+		choice(name: "DOCKER_TAG", choices: docker_tags)
+	}
+	environment {
+		MARATHON_TOKEN = credentials("METASCRUM_MARATHON_TOKEN")
+	}
+	options {
+		timestamps()
+	}
+	stages {
+		stage("deploy") {
+			when { branch "master" }
+			steps {
+				dir("deploy") {
+					git(url: "gitlab@git-platform.dbc.dk:metascrum/deploy.git", credentialsId: "gitlab-meta")
+				}
+				sh """#!/usr/bin/env bash
+				set -xe
+				rm -rf ENV saturn-prod.json
+
+				python3 -m venv ENV
+				source ENV/bin/activate
+				pip3 install -U pip
+				pip install \"git+https://github.com/DBCDK/mesos-tools.git#egg=mesos-tools\"
+
+				python3 -m mesos_tools.marathon_config_producer saturn-prod --root deploy/marathon --template-keys DOCKER_TAG=${params.DOCKER_TAG} -o saturn-prod.json
+				python3 -m mesos_tools.marathon_deployer deploy saturn-prod.json -a $MARATHON_TOKEN -b https://mcp1.dbc.dk:8443
+				"""
+
+
+			}
+		}
+	}
+}
