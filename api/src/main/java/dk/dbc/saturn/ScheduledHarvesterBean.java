@@ -88,17 +88,19 @@ public class ScheduledHarvesterBean {
                     if (httpConfig.isEnabled() &&
                             cronParserBean.shouldExecute(httpConfig.getSchedule(),
                                     httpConfig.getLastHarvested())) {
+                        final int seqno = httpConfig.getSeqno() != null ?
+                            httpConfig.getSeqno() : 0;
                         if(httpConfig.getUrlPattern() == null ||
                                 httpConfig.getUrlPattern().isEmpty()) {
                             Future<Set<FileHarvest>> result =
-                                httpHarvesterBean.harvest(httpConfig.getUrl());
+                                httpHarvesterBean.harvest(httpConfig.getUrl(), seqno);
                             harvestTasks.put(httpConfig.getId(), result);
                         } else {
                             // look in response from url to get the real
                             // url for data harvesting
                             Future<Set<FileHarvest>> result =
                                 httpHarvesterBean.harvest(httpConfig.getUrl(),
-                                httpConfig.getUrlPattern());
+                                httpConfig.getUrlPattern(), seqno);
                             harvestTasks.put(httpConfig.getId(), result);
                         }
                     }
@@ -141,11 +143,12 @@ public class ScheduledHarvesterBean {
                     }
                     ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
                     config.setLastHarvested(Date.from(Instant.now()));
-                    config.setSeqno(fileHarvests.stream()
+                    int seqno = fileHarvests.stream()
                             .map(FileHarvest::getSeqno)
                             .filter(Objects::nonNull)
                             .max(Comparator.comparing(Integer::valueOf))
-                            .orElse(0));
+                            .orElse(0);
+                    config.setSeqno(++seqno);
 
                     if (config instanceof HttpHarvesterConfig) {
                         harvesterConfigRepository.save(HttpHarvesterConfig.class,
