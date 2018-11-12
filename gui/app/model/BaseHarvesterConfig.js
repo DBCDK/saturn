@@ -56,6 +56,7 @@ class BaseHarvesterConfig {
         config.seqnoExtract = json.seqnoExtract;
         config.agency = json.agency;
         config.enabled = json.enabled;
+        config.lastHarvested = json.lastHarvested;
         return config;
     }
 }

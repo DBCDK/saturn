@@ -54,6 +54,7 @@ class HttpHarvesterConfigEdit extends React.Component {
         // if id is undefined, a new entity will be created in the database
         // by the backend
         config.id = this.state.config.id;
+        config.lastHarvested = this.state.config.lastHarvested;
         for(let i = 0; i < form.length; i++) {
             if(form[i] === undefined) continue;
             switch(form[i].name) {
