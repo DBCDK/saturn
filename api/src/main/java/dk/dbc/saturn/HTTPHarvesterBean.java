@@ -55,7 +55,7 @@ public class HTTPHarvesterBean {
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
     @Asynchronous
-    public Future<Set<FileHarvest>> harvest(String url) throws HarvestException {
+    public Future<Set<FileHarvest>> harvest(String url, int seqno) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
         long start = Instant.now().toEpochMilli();
         LOGGER.info("harvesting {}", url);
@@ -77,11 +77,11 @@ public class HTTPHarvesterBean {
                 final Set<FileHarvest> fileHarvests = new HashSet<>();
                 if (filename.isPresent()) {
                     final FileHarvest fileHarvest = new FileHarvest(
-                        filename.get(), is, null);
+                        filename.get(), is, seqno);
                     fileHarvests.add(fileHarvest);
                 } else {
                     final FileHarvest fileHarvest = new FileHarvest(
-                        getFilename(url), is, null);
+                        getFilename(url), is, seqno);
                     fileHarvests.add(fileHarvest);
                 }
                 return new AsyncResult<>(fileHarvests);
@@ -106,12 +106,12 @@ public class HTTPHarvesterBean {
      * failure to match the pattern against the response
      */
     @Asynchronous
-    public Future<Set<FileHarvest>> harvest(String url, String pattern)
+    public Future<Set<FileHarvest>> harvest(String url, String pattern, int seqno)
             throws HarvestException {
         LOGGER.info("looking for pattern {} in {}", pattern, url);
         final String datafileUrl = findInContent(url, pattern);
         LOGGER.info("found url {} for pattern {}", datafileUrl, pattern);
-        return harvest(datafileUrl);
+        return harvest(datafileUrl, seqno);
     }
 
     private Response getResponse(Client client, String url) throws HarvestException {
