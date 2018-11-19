@@ -74,7 +74,12 @@ public class CronParserBean {
          * expression matches, we would rather not handle this corner case
          * at the benefit of having simpler code.
          */
-        if(executionTime.isMatch(nowDateTime)) {
+        if(lastExecution != null &&
+                (now.getTime() - lastExecution.getTime()) < 60000) {
+            // ignore executions where the difference is less than a minute
+            // since that is the smallets granularity of the cron syntax
+            return false;
+        } else if(executionTime.isMatch(nowDateTime)) {
             return true;
         } else if(lastExecution == null) {
             return false;

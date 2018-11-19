@@ -72,6 +72,16 @@ class CronParserBeanTest {
     }
 
     @Test
+    void shouldExecute_intervalUnderOneMinute() throws HarvestException,
+            ParseException {
+        Date last = getDate("2018-11-19T10:16:30");
+        Date now = getDate("2018-11-19T10:17:29");
+        CronParserBean parserBean = new CronParserBean();
+        assertThat(parserBean.shouldExecute("* * * * *", last, now),
+            is(false));
+    }
+
+    @Test
     void describe() {
         CronParserBean parserBean = new CronParserBean();
         assertThat(parserBean.describe("3 * 22 3 *"),
