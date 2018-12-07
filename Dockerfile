@@ -1,4 +1,4 @@
-FROM docker.dbc.dk/dbc-payara-micro-logback:4
+FROM docker.dbc.dk/dbc-payara-micro-logback:5.183-8
 
 USER gfish
 
