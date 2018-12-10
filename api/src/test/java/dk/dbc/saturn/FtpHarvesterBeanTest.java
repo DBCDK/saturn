@@ -78,6 +78,35 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         }
     }
 
+    @Test
+    void test_harvest_seqnoFilenameLeadingSpace() throws IOException,
+            InterruptedException, ExecutionException {
+        final String putFile1 = " 12v24.txt";
+        final FtpClient ftpClient = new FtpClient()
+            .withHost("localhost")
+            .withPort(fakeFtpServer.getServerControlPort())
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD);
+        ftpClient.put(putFile1, "Barnacle Boy!");
+        ftpClient.close();
+
+        FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setSeqnoExtract("1-2,4-5");
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
+            "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
+            PASSWORD, "", new FileNameMatcher("*.txt"),
+            new SeqnoMatcher(config)).get();
+
+        assertThat("result size", fileHarvests.size(), is(1));
+        final Map<String, String> contentMap = new HashMap<>(1);
+        contentMap.put(" 12v24.txt", "Barnacle Boy!");
+        for (FileHarvest fileHarvest : fileHarvests) {
+            assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
+                is(contentMap.get(fileHarvest.getFilename())));
+        }
+    }
+
     private static FtpHarvesterBean getFtpHarvesterBean() {
         FtpHarvesterBean ftpHarvesterBean = new FtpHarvesterBean();
         ftpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
