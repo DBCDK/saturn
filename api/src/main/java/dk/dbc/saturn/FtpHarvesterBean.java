@@ -63,12 +63,21 @@ public class FtpHarvesterBean {
             ftpClient.cd(dir);
         }
         for (String file : ftpClient.list(fileNameMatcher)) {
-            if (file != null && !file.isEmpty()
-                    && seqnoMatcher.shouldFetch(Paths.get(file).getFileName().toString())) {
-                InputStream is = ftpClient.get(file, FtpClient.FileType.BINARY);
-                final FileHarvest fileHarvest = new FileHarvest(
+            if (file != null && !file.isEmpty()) {
+                /*
+                 * The sequence number comparison is done using a trimmed
+                 * version of the filename because sometimes the filenames
+                 * have leading spaces. The filename is carried unaltered
+                 * to the receiver though to maintain some faithfulness to
+                 * the original file.
+                 */
+                final String filename = Paths.get(file).getFileName().toString().trim();
+                if(seqnoMatcher.shouldFetch(filename)) {
+                    InputStream is = ftpClient.get(file, FtpClient.FileType.BINARY);
+                    final FileHarvest fileHarvest = new FileHarvest(
                         file, is, seqnoMatcher.getSeqno());
-                fileHarvests.add(fileHarvest);
+                    fileHarvests.add(fileHarvest);
+                }
             }
         }
         ftpClient.close();
