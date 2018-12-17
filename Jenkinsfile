@@ -72,23 +72,5 @@ pipeline {
 				}
 			}
 		}
-		stage("deploy staging") {
-			agent {
-				docker {
-					label workerNode
-					image "docker-io.dbc.dk/python3"
-				}
-			}
-			when {
-				branch "master"
-			}
-			steps {
-				dir("deploy") {
-					deploy_to_mesos("saturn-staging", "${env.DOCKER_TAG}", "${env.MARATHON_TOKEN}", {
-						git(url: "gitlab@git-platform.dbc.dk:metascrum/deploy.git", credentialsId: "gitlab-meta")
-					}, this)
-				}
-			}
-		}
 	}
 }
