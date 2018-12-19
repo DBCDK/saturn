@@ -189,15 +189,13 @@ public class HTTPHarvesterBean {
     }
 
     private Optional<HttpUrlConnectorProvider> getConnectorProvider() {
-        if(proxyHandlerBean.getProxyHostname() != null &&
-                proxyHandlerBean.getProxyPort() != 0) {
-            final String proxyHost = proxyHandlerBean.getProxyHostname();
-            final int proxyPort = proxyHandlerBean.getProxyPort();
-            LOGGER.info(String.format(
-                "running through proxy: host = %s port = %s", proxyHost,
-                proxyPort));
-            final SocksConnectionFactory connectionFactory =
-                new SocksConnectionFactory(proxyHost, proxyPort);
+        if (proxyHandlerBean.getProxyHostname() != null
+                && proxyHandlerBean.getProxyPort() != 0) {
+            LOGGER.debug("using proxy: host = {} port = {}",
+                    proxyHandlerBean.getProxyHostname(),
+                    proxyHandlerBean.getProxyPort());
+            final SocksConnectionFactory connectionFactory = new SocksConnectionFactory(
+                    proxyHandlerBean.getProxyHostname(), proxyHandlerBean.getProxyPort());
             final HttpUrlConnectorProvider connectorProvider =
                 new HttpUrlConnectorProvider();
             connectorProvider.connectionFactory(connectionFactory);

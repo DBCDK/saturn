@@ -54,10 +54,9 @@ public class FtpHarvesterBean {
                 proxyHandlerBean.getProxyPort());
             final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
             ftpClient.withProxy(proxy);
-            LOGGER.info(String.format(
-                "running with proxy: host = %s port = %s",
-                proxyHandlerBean.getProxyHostname(),
-                proxyHandlerBean.getProxyPort()));
+            LOGGER.debug("using proxy: host = {} port = {}",
+                    proxyHandlerBean.getProxyHostname(),
+                    proxyHandlerBean.getProxyPort());
         }
         if(!dir.isEmpty()) {
             ftpClient.cd(dir);
