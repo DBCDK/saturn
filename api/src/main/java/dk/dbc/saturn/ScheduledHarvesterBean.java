@@ -56,7 +56,7 @@ public class ScheduledHarvesterBean {
                 httpResults.size());
             for(FtpHarvesterConfig ftpConfig : ftpResults) {
                 if(harvestTasks.containsKey(ftpConfig.getId())) {
-                    LOGGER.info("still harvesting {}, not scheduling new " +
+                    LOGGER.debug("still harvesting {}, not scheduling new " +
                         "harvest", ftpConfig.getName());
                     continue;
                 }
@@ -80,7 +80,7 @@ public class ScheduledHarvesterBean {
             }
             for(HttpHarvesterConfig httpConfig : httpResults) {
                 if(harvestTasks.keySet().contains(httpConfig.getId())) {
-                    LOGGER.info("still harvesting {}, not scheduling new " +
+                    LOGGER.debug("still harvesting {}, not scheduling new " +
                         "harvest", httpConfig.getName());
                     continue;
                 }
