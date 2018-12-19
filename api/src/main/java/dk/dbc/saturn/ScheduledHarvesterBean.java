@@ -105,21 +105,8 @@ public class ScheduledHarvesterBean {
                 if (httpConfig.isEnabled()
                         && cronParserBean.shouldExecute(httpConfig.getSchedule(),
                                 httpConfig.getLastHarvested())) {
-                    if (httpConfig.getUrlPattern() == null
-                            || httpConfig.getUrlPattern().isEmpty()) {
-                        // TODO: 19-12-18 pass MDC state to asynchronous handler
-                        final Future<Set<FileHarvest>> result =
-                                httpHarvesterBean.harvest(httpConfig.getUrl());
-                        harvestTasks.put(httpConfig.getId(), result);
-                    } else {
-                        // look in response from url to get the real
-                        // url for data harvesting
-                        // TODO: 19-12-18 pass MDC state to asynchronous handler
-                        final Future<Set<FileHarvest>> result =
-                                httpHarvesterBean.harvest(httpConfig.getUrl(),
-                                        httpConfig.getUrlPattern());
-                        harvestTasks.put(httpConfig.getId(), result);
-                    }
+                       harvestTasks.put(httpConfig.getId(),
+                                httpHarvesterBean.harvest(httpConfig));
                 }
             } catch (HarvestException e) {
                 LOGGER.error("error while scheduling harvest", e);
