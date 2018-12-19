@@ -58,12 +58,16 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
         assertThat("file harvest filename", result.getFilename(),
             is("spongebob"));
 
+
         // simulate a second passing where the harvest is done
         when(future.isDone()).thenReturn(true);
         scheduledHarvesterBean.harvest();
 
         assertThat("empty task list after second run", scheduledHarvesterBean
             .harvestTasks.size(), is(0));
+
+        assertThat("config seqno updated", config.getSeqno(), is(3));
+
         // verify that two passes happened
         verify(future, times(2)).isDone();
     }
