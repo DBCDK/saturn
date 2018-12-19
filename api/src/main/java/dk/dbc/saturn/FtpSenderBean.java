@@ -48,16 +48,15 @@ public class FtpSenderBean {
     public void send(Set<FileHarvest> files, String filenamePrefix,
             String transfileTemplate) {
         files.forEach(f -> f.setFilenamePrefix(filenamePrefix));
-        String filenames = files.stream().map(FileHarvest::getFilename)
+        final String filenames = files.stream().map(FileHarvest::getFilename)
             .collect(Collectors.joining(", "));
+        LOGGER.info("downloading to ftp: {}", filenames);
         final String transfile = TransfileGenerator
             .generateTransfile(transfileTemplate,
                 files.stream().map(FileHarvest::getFilename).collect(Collectors.toList()));
         final String transfileName = String.format("%s.%s.trans",
             filenamePrefix, APPLICATION_ID);
-        LOGGER.info(String.format("sending to ftp, files = %s, " +
-            "transfile = %s, transfilename = %s", filenames, transfile,
-            transfileName));
+        LOGGER.info("creating transfile {} with content: {}", transfileName, transfile);
         FtpClient ftpClient = new FtpClient()
             .withHost(host)
             .withPort(Integer.parseInt(port))
