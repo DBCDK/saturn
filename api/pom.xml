@@ -307,5 +307,10 @@
             <version>${microprofile.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>stopwatch</artifactId>
+            <version>${stopwatch.version}</version>
+        </dependency>
     </dependencies>
 </project>

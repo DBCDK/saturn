@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +19,10 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @LocalBean
 @Stateless
@@ -36,7 +37,7 @@ public class FtpHarvesterBean {
                                             String username, String password, String dir,
                                             FileNameMatcher fileNameMatcher,
                                             SeqnoMatcher seqnoMatcher) {
-        long start = Instant.now().toEpochMilli();
+        final Stopwatch stopwatch = new Stopwatch();
         LOGGER.info("harvesting {}@{}:{}/{} with pattern \"{}\"", username,
             host, port, dir, fileNameMatcher.getPattern());
         Set<FileHarvest> fileHarvests = new HashSet<>();
@@ -81,7 +82,7 @@ public class FtpHarvesterBean {
         }
         ftpClient.close();
         LOGGER.info("harvesting for {}@{}:{}/{} took {} ms", username,
-            host, port, dir, Instant.now().toEpochMilli() - start);
+            host, port, dir, stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
         return new AsyncResult<>(fileHarvests);
     }
 }

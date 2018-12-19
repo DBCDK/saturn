@@ -9,6 +9,7 @@ import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpClient;
 import dk.dbc.httpclient.HttpGet;
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
@@ -25,7 +26,6 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -57,7 +57,7 @@ public class HTTPHarvesterBean {
     @Asynchronous
     public Future<Set<FileHarvest>> harvest(String url) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
-        long start = Instant.now().toEpochMilli();
+        final Stopwatch stopwatch = new Stopwatch();
         LOGGER.info("harvesting {}", url);
 
         final ClientConfig clientConfig = new ClientConfig();
@@ -91,7 +91,7 @@ public class HTTPHarvesterBean {
             }
         } finally {
             LOGGER.info("harvesting of {} took {} ms", url,
-                (Instant.now().toEpochMilli() - start));
+                    stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
             client.close();
         }
     }
