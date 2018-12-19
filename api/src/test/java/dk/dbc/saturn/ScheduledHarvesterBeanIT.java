@@ -11,16 +11,13 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -44,12 +41,11 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
             .thenReturn(true);
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(
-            new FileHarvest("spongebob", null, 0));
+            new FileHarvest("spongebob", null, 3));
         final Future future = mock(Future.class);
         when(future.get()).thenReturn(fileHarvests);
         when(future.isDone()).thenReturn(false);
-        when(httpHarvesterBean.harvest(anyString(), anyInt()))
-            .thenReturn(future);
+        when(httpHarvesterBean.harvest(anyString())).thenReturn(future);
 
         final ScheduledHarvesterBean scheduledHarvesterBean =
             getScheduledHarvesterBean();
@@ -70,42 +66,6 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
             .harvestTasks.size(), is(0));
         // verify that two passes happened
         verify(future, times(2)).isDone();
-    }
-
-    @Test
-    void test_seqnoFromHttpHarvest() throws HarvestException,
-            InterruptedException, ExecutionException, ParseException {
-        final HttpHarvesterConfig config = getHttpHarvesterConfig();
-
-        harvesterConfigRepository.entityManager.persist(config);
-        harvesterConfigRepository.entityManager.flush();
-
-        final int configId = config.getId();
-        assertThat("init seqno", config.getSeqno(), is(nullValue()));
-
-        when(cronParserBean.shouldExecute(anyString(), any(Date.class)))
-            .thenReturn(true);
-
-        // seqno set to 0
-        final Set<FileHarvest> fileHarvests = Collections.singleton(
-            new FileHarvest("spongebob", null, 0));
-        final Future future = mock(Future.class);
-        when(future.get()).thenReturn(fileHarvests);
-        when(future.isDone()).thenReturn(false);
-        when(httpHarvesterBean.harvest(anyString(), anyInt()))
-            .thenReturn(future);
-
-        final ScheduledHarvesterBean scheduledHarvesterBean =
-            getScheduledHarvesterBean();
-        when(future.isDone()).thenReturn(true);
-        scheduledHarvesterBean.harvest();
-
-        Optional<HttpHarvesterConfig> resultConfig =
-            harvesterConfigRepository.getHarvesterConfig(
-            HttpHarvesterConfig.class, configId);
-        assertThat("result config is present", resultConfig.isPresent(),
-            is(true));
-        assertThat("resulting seqno", resultConfig.get().getSeqno(), is(1));
     }
 
     private ScheduledHarvesterBean getScheduledHarvesterBean() {
