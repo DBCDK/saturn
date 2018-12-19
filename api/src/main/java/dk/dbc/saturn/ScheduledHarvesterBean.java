@@ -76,15 +76,8 @@ public class ScheduledHarvesterBean {
                 if (ftpConfig.isEnabled()
                         && cronParserBean.shouldExecute(ftpConfig.getSchedule(),
                                 ftpConfig.getLastHarvested())) {
-                    final FileNameMatcher fileNameMatcher =
-                            new FileNameMatcher(ftpConfig.getFilesPattern());
-                    // TODO: 19-12-18 pass MDC state to asynchronous handler
-                    final Future<Set<FileHarvest>> result =
-                            ftpHarvesterBean.harvest(ftpConfig.getHost(),
-                                    ftpConfig.getPort(), ftpConfig.getUsername(),
-                                    ftpConfig.getPassword(), ftpConfig.getDir(),
-                                    fileNameMatcher, new SeqnoMatcher(ftpConfig));
-                    harvestTasks.put(ftpConfig.getId(), result);
+                    harvestTasks.put(ftpConfig.getId(),
+                            ftpHarvesterBean.harvest(ftpConfig));
                 }
             } catch (HarvestException e) {
                 LOGGER.error("error while scheduling harvest", e);
