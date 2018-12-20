@@ -9,6 +9,7 @@ import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpClient;
 import dk.dbc.httpclient.HttpGet;
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
@@ -55,7 +56,19 @@ public class HTTPHarvesterBean {
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
     @Asynchronous
-    public Future<Set<FileHarvest>> harvest(String url) throws HarvestException {
+    public Future<Set<FileHarvest>> harvest(HttpHarvesterConfig config) throws HarvestException {
+        if (config.getUrlPattern() == null
+                || config.getUrlPattern().isEmpty()) {
+            return new AsyncResult<>(
+                    harvest(config.getUrl()));
+        }
+        // look in response from url to get the real
+        // url for data harvesting
+        return new AsyncResult<>(
+                harvest(config.getUrl(), config.getUrlPattern()));
+    }
+
+    public Set<FileHarvest> harvest(String url) throws HarvestException {
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
         final Stopwatch stopwatch = new Stopwatch();
         LOGGER.info("harvesting {}", url);
@@ -84,7 +97,7 @@ public class HTTPHarvesterBean {
                         getFilename(url), is, null);
                     fileHarvests.add(fileHarvest);
                 }
-                return new AsyncResult<>(fileHarvests);
+                return fileHarvests;
             } else {
                 throw new HarvestException(String.format(
                     "no entity found on response for url \"%s\"", url));
@@ -105,8 +118,7 @@ public class HTTPHarvesterBean {
      * @throws HarvestException on empty response from the first url or
      * failure to match the pattern against the response
      */
-    @Asynchronous
-    public Future<Set<FileHarvest>> harvest(String url, String pattern)
+    public Set<FileHarvest> harvest(String url, String pattern)
             throws HarvestException {
         LOGGER.info("looking for pattern {} in {}", pattern, url);
         final String datafileUrl = findInContent(url, pattern);

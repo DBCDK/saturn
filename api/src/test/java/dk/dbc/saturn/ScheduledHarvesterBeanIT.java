@@ -45,7 +45,7 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
         final Future future = mock(Future.class);
         when(future.get()).thenReturn(fileHarvests);
         when(future.isDone()).thenReturn(false);
-        when(httpHarvesterBean.harvest(anyString())).thenReturn(future);
+        when(httpHarvesterBean.harvest(any(HttpHarvesterConfig.class))).thenReturn(future);
 
         final ScheduledHarvesterBean scheduledHarvesterBean =
             getScheduledHarvesterBean();

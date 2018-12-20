@@ -13,14 +13,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     @Test
-    public void test_harvest() throws IOException, ExecutionException, InterruptedException {
+    public void test_harvest() throws IOException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
         final FtpClient ftpClient = new FtpClient()
@@ -37,7 +36,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
             PASSWORD, PUT_DIR, new FileNameMatcher(),
-                new SeqnoMatcher(new FtpHarvesterConfig())).get();
+                new SeqnoMatcher(new FtpHarvesterConfig()));
 
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);
@@ -50,7 +49,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    public void test_harvest_dirArgumentIsEmpty() throws IOException, ExecutionException, InterruptedException {
+    public void test_harvest_dirArgumentIsEmpty() throws IOException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
         final FtpClient ftpClient = new FtpClient()
@@ -66,7 +65,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
             PASSWORD, "", new FileNameMatcher("*.txt"),
-            new SeqnoMatcher(new FtpHarvesterConfig())).get();
+            new SeqnoMatcher(new FtpHarvesterConfig()));
 
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);
@@ -79,8 +78,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    void test_harvest_seqnoFilenameLeadingSpace() throws IOException,
-            InterruptedException, ExecutionException {
+    void test_harvest_seqnoFilenameLeadingSpace() throws IOException {
         final String putFile1 = " 12v24.txt";
         final FtpClient ftpClient = new FtpClient()
             .withHost("localhost")
@@ -96,7 +94,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
             PASSWORD, "", new FileNameMatcher("*.txt"),
-            new SeqnoMatcher(config)).get();
+            new SeqnoMatcher(config));
 
         assertThat("result size", fileHarvests.size(), is(1));
         final Map<String, String> contentMap = new HashMap<>(1);
