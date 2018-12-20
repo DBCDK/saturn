@@ -53,11 +53,12 @@ public class FtpSenderBean {
         try {
             files.forEach(f -> f.setFilenamePrefix(filenamePrefix));
             final String filenames = files.stream().map(FileHarvest::getFilename)
-                    .collect(Collectors.joining(", "));
+                    .sorted().collect(Collectors.joining(", "));
             LOGGER.info("downloading to ftp: {}", filenames);
             final String transfile = TransfileGenerator
                     .generateTransfile(transfileTemplate,
-                            files.stream().map(FileHarvest::getFilename).collect(Collectors.toList()));
+                            files.stream().map(FileHarvest::getFilename)
+                                    .sorted().collect(Collectors.toList()));
             final String transfileName = String.format("%s.%s.trans",
                     filenamePrefix, APPLICATION_ID);
             LOGGER.info("creating transfile {} with content: {}", transfileName, transfile);
