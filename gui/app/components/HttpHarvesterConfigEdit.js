@@ -73,12 +73,6 @@ class HttpHarvesterConfigEdit extends React.Component {
             case "transfile":
                 config.transfile = form[i].value;
                 break;
-            case "seqno":
-                config.seqno = form[i].value;
-                break;
-            case "seqnoExtract":
-                config.seqnoExtract = form[i].value;
-                break;
             case "agency":
                 config.agency = form[i].value;
                 break;

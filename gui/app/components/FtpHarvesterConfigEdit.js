@@ -14,6 +14,35 @@ import {getStringValue} from "../utils";
 
 const FTP_PORT = "21";
 
+const SEQNO_HELP =
+    <div>
+        <div className='help-title'>Nummer på den sidst hentede fil. Forudfyldt med 0, så den første fil hentes. Hvis du ønsker at hente en fil igen, skal løbenummer sættes til nummeret før den fil, du vil have hentet.</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>20180901</div>
+        <div className='help-indent'>4623</div>
+        <br/>
+        <div className='help-text'>Filer på f.eks. en ftp server:</div>
+        <div className='help-indent'>v46.i23.records.utf8</div>
+        <div className='help-indent'>v46.i24.records.utf8</div>
+        <div className='help-indent'>v46.i25.records.utf8</div>
+        <br/>
+        <div className='help-text'>Løbenumre er her 4623, 4624 og 4625.</div>
+        <div className='help-indent'>De bliver taget ud via 'løbenummerdel' 2-3,6-7. Det svarer til tegn nr. 2 og 3 plus tegn nr. 6 og 7.</div>
+    </div>
+
+const SEQNO_EXTRACT_HELP =
+    <div>
+        <div className='help-title'>Løbenummerdel</div>
+        <div className='help-text'>Delelement af filnavn til brug for løbenummer. Dvs. de tegn i filnavnet som udgør løbenummeret.</div>
+        <div className='help-text'>Eksempler:</div>
+        <div className='help-indent'>2-3,6-7</div>
+        <div className='help-indent'>17-24</div>
+        <br/>
+        <div className='help-text'>For at angive løbenummerdelen ’4623’ på denne fil:</div>
+        <div className='help-indent'>v46.i23.records.utf8</div>
+        <div className='help-text'>skal man hente tegn 2-3 og tegn 6-7, så løbenummerdelen bliver 2-3,6-7</div>
+    </div>
+
 const HOST_HELP =
     <div>
         <div className='help-title'>Den FTP adresse hvorfra filerne skal hentes</div>
@@ -160,6 +189,11 @@ class FtpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onConfigChanged={this.onConfigChanged}
                     title={"FTP Høster"}>
+                <FormEntry label="Løbenummer" name="seqno" help={SEQNO_HELP}
+                           value={this.state.config.seqno !== undefined ? this.state.config.seqno.toString() : "0"}
+                           onChangeCallback={this.onChangeCallback}/>
+                <FormEntry label="Løbenummerdel" name="seqnoExtract" value={getStringValue(this.state.config.seqnoExtract)} help={SEQNO_EXTRACT_HELP}
+                           onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="FTP adresse" name="host" value={getStringValue(this.state.config.host)} help={HOST_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="Port" name="port" help={PORT_HELP}
