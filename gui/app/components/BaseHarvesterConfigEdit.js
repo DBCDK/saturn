@@ -41,35 +41,6 @@ const TRANSFILE_HELP =
         <div className='help-indent'>b=marckonv,c=utf8,o=m21,t=iso,m=kildepost@dbc.dk</div>
     </div>
 
-const SEQNO_HELP =
-    <div>
-        <div className='help-title'>Nummer på den sidst hentede fil. Forudfyldt med 0, så den første fil hentes. Hvis du ønsker at hente en fil igen, skal løbenummer sættes til nummeret før den fil, du vil have hentet.</div>
-        <div className='help-text'>Eksempler:</div>
-        <div className='help-indent'>20180901</div>
-        <div className='help-indent'>4623</div>
-        <br/>
-        <div className='help-text'>Filer på f.eks. en ftp server:</div>
-        <div className='help-indent'>v46.i23.records.utf8</div>
-        <div className='help-indent'>v46.i24.records.utf8</div>
-        <div className='help-indent'>v46.i25.records.utf8</div>
-        <br/>
-        <div className='help-text'>Løbenumre er her 4623, 4624 og 4625.</div>
-        <div className='help-indent'>De bliver taget ud via 'løbenummerdel' 2-3,6-7. Det svarer til tegn nr. 2 og 3 plus tegn nr. 6 og 7.</div>
-    </div>
-
-const SEQNO_EXTRACT_HELP =
-    <div>
-        <div className='help-title'>Løbenummerdel</div>
-        <div className='help-text'>Delelement af filnavn til brug for løbenummer. Dvs. de tegn i filnavnet som udgør løbenummeret.</div>
-        <div className='help-text'>Eksempler:</div>
-        <div className='help-indent'>2-3,6-7</div>
-        <div className='help-indent'>17-24</div>
-        <br/>
-        <div className='help-text'>For at angive løbenummerdelen ’4623’ på denne fil:</div>
-        <div className='help-indent'>v46.i23.records.utf8</div>
-        <div className='help-text'>skal man hente tegn 2-3 og tegn 6-7, så løbenummerdelen bliver 2-3,6-7</div>
-    </div>
-
 const AGENCY_HELP =
     <div>
         <div className='help-title'>Præfiks til filnavn indeholdende som minimum et biblioteksnummer/submitter + punktum</div>
@@ -216,10 +187,6 @@ class BaseHarvesterConfigEdit extends React.Component {
                 <FormEntry label="Hentningsfrekvens" name="schedule" value={config.schedule} help={CRONTAB_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="Transfil" name="transfile" value={config.transfile} help={TRANSFILE_HELP}
-                           onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Løbenummer" name="seqno" value={config.seqno || "0"} help={SEQNO_HELP}
-                           onChangeCallback={this.onChangeCallback}/>
-                <FormEntry label="Løbenummerdel" name="seqnoExtract" value={config.seqnoExtract || ""} help={SEQNO_EXTRACT_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency} help={AGENCY_HELP}
                            onChangeCallback={this.onChangeCallback}/>
