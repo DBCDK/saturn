@@ -55,7 +55,7 @@ public class ScheduledHarvesterBean {
         MDC.clear();
     }
 
-    @Schedule(minute = "*", hour = "*", second = "*/5")
+    @Schedule(minute = "*", hour = "*", second = "*/20")
     public void harvest() {
         try {
             scheduleFtpHarvests();
