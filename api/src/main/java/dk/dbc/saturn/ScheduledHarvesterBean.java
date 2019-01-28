@@ -18,9 +18,10 @@ import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import java.sql.Date;
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ScheduledHarvesterBean {
     final HashMap<Integer,
         Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
-    @EJB CronParserBean cronParserBean;
+    @Inject RunScheduleFactory runScheduleFactory;
     @EJB HTTPHarvesterBean httpHarvesterBean;
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -83,12 +84,12 @@ public class ScheduledHarvesterBean {
             }
             try {
                 if (ftpConfig.isEnabled()
-                        && cronParserBean.shouldExecute(ftpConfig.getSchedule(),
-                                ftpConfig.getLastHarvested())) {
+                        && runScheduleFactory.newRunScheduleFrom(ftpConfig.getSchedule())
+                                .isSatisfiedBy(new Date(), ftpConfig.getLastHarvested())) {
                     harvestTasks.put(ftpConfig.getId(),
                             ftpHarvesterBean.harvest(ftpConfig));
                 }
-            } catch (HarvestException e) {
+            } catch (IllegalArgumentException e) {
                 LOGGER.error("error while scheduling harvest", e);
             }
         }
@@ -112,8 +113,8 @@ public class ScheduledHarvesterBean {
             }
             try {
                 if (httpConfig.isEnabled()
-                        && cronParserBean.shouldExecute(httpConfig.getSchedule(),
-                                httpConfig.getLastHarvested())) {
+                        && runScheduleFactory.newRunScheduleFrom(httpConfig.getSchedule())
+                                .isSatisfiedBy(new Date(), httpConfig.getLastHarvested())) {
                        harvestTasks.put(httpConfig.getId(),
                                 httpHarvesterBean.harvest(httpConfig));
                 }

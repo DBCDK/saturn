@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -18,14 +17,12 @@ import java.util.concurrent.Future;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
-    private static final CronParserBean cronParserBean = mock(CronParserBean.class);
     private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
 
@@ -36,9 +33,6 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
 
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.flush();
-
-        when(cronParserBean.shouldExecute(anyString(), any(Date.class)))
-            .thenReturn(true);
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(
             new FileHarvest("spongebob", null, 3));
@@ -73,8 +67,9 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
     }
 
     private ScheduledHarvesterBean getScheduledHarvesterBean() {
-        ScheduledHarvesterBean scheduledHarvesterBean = new ScheduledHarvesterBean();
-        scheduledHarvesterBean.cronParserBean = cronParserBean;
+        final RunScheduleFactory runScheduleFactory = new RunScheduleFactory("Europe/Copenhagen");
+        final ScheduledHarvesterBean scheduledHarvesterBean = new ScheduledHarvesterBean();
+        scheduledHarvesterBean.runScheduleFactory = runScheduleFactory;
         scheduledHarvesterBean.ftpSenderBean = ftpSenderBean;
         scheduledHarvesterBean.harvesterConfigRepository = harvesterConfigRepository;
         scheduledHarvesterBean.httpHarvesterBean = httpHarvesterBean;

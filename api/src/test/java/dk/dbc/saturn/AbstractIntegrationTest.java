@@ -101,7 +101,7 @@ public abstract class AbstractIntegrationTest {
     HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setName("MyName'sNotRick!");
-        config.setSchedule("1 * * * *");
+        config.setSchedule("* * * * *");
         config.setUrl("http://nick.com");
         config.setLastHarvested(getDate("2018-06-06T20:20:20",
             "Europe/Copenhagen"));

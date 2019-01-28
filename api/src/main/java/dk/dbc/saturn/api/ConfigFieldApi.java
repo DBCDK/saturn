@@ -5,10 +5,11 @@
 
 package dk.dbc.saturn.api;
 
-import dk.dbc.saturn.CronParserBean;
+import dk.dbc.saturn.RunScheduleFactory;
+import dk.dbc.util.RunSchedule;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,7 +22,7 @@ public class ConfigFieldApi {
     private static final String VALIDATE_CRON_ENDPOINT = "cron/validate";
     private static final String DESCRIBE_CRON_ENDPOINT = "cron/describe";
 
-    @EJB CronParserBean cronParserBean;
+    @Inject RunScheduleFactory runScheduleFactory;
 
     /**
      * validate a cron expression
@@ -33,10 +34,12 @@ public class ConfigFieldApi {
     @Path(VALIDATE_CRON_ENDPOINT)
     @Produces(MediaType.TEXT_PLAIN)
     public Response validateCron(String cronExpression) {
-        if(cronParserBean.validate(cronExpression)) {
+        try {
+            runScheduleFactory.newRunScheduleFrom(cronExpression);
             return Response.ok("OK").build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     /**
@@ -48,10 +51,12 @@ public class ConfigFieldApi {
     @Path(DESCRIBE_CRON_ENDPOINT)
     @Produces(MediaType.TEXT_PLAIN)
     public Response describeCron(String cronExpression) {
-        if(!cronParserBean.validate(cronExpression)) {
+        try {
+            final RunSchedule runSchedule = runScheduleFactory
+                    .newRunScheduleFrom(cronExpression);
+            return Response.ok(runSchedule.toDisplayString()).build();
+        } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        final String description = cronParserBean.describe(cronExpression);
-        return Response.ok(description).build();
     }
 }
