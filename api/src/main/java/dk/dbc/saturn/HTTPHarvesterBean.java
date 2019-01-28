@@ -55,17 +55,20 @@ public class HTTPHarvesterBean {
     private static Pattern filenamePattern =
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
+
     @Asynchronous
     public Future<Set<FileHarvest>> harvest(HttpHarvesterConfig config) throws HarvestException {
-        if (config.getUrlPattern() == null
-                || config.getUrlPattern().isEmpty()) {
+        try (HarvesterMDC mdc = new HarvesterMDC(config)) {
+            if (config.getUrlPattern() == null
+                    || config.getUrlPattern().isEmpty()) {
+                return new AsyncResult<>(
+                        harvest(config.getUrl()));
+            }
+            // look in response from url to get the real
+            // url for data harvesting
             return new AsyncResult<>(
-                    harvest(config.getUrl()));
+                    harvest(config.getUrl(), config.getUrlPattern()));
         }
-        // look in response from url to get the real
-        // url for data harvesting
-        return new AsyncResult<>(
-                harvest(config.getUrl(), config.getUrlPattern()));
     }
 
     public Set<FileHarvest> harvest(String url) throws HarvestException {

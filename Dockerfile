@@ -1,4 +1,4 @@
-FROM docker.dbc.dk/dbc-payara-micro-logback:5.183-8
+FROM docker.dbc.dk/payara5-micro:latest
 
 USER gfish
 
@@ -13,7 +13,6 @@ LABEL PROXY_PORT="port number of proxy"
 LABEL PROXY_USERNAME="username for proxy authentication"
 LABEL PROXY_PASSWORD="password for proxy authentication"
 
-COPY api/target/saturn.war wars
-COPY api/target/config /payara-micro/config.d
+COPY api/target/saturn.war saturn.json wars/
 
 EXPOSE 8080

@@ -10,7 +10,9 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
@@ -44,6 +46,13 @@ public class ScheduledHarvesterBean {
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
     @EJB FtpSenderBean ftpSenderBean;
+
+    @PostConstruct
+    public void init() {
+        // For some reason we need to touch the MDC context initially
+        // to get any MDC logging at all???
+        MDC.clear();
+    }
 
     @Schedule(minute = "*", hour = "*", second = "*/5")
     public void harvest() {
