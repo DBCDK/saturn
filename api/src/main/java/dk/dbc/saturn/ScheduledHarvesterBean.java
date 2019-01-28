@@ -142,32 +142,34 @@ public class ScheduledHarvesterBean {
             final AbstractHarvesterConfigEntity config = harvesterConfigRepository
                 .find(type.get(), id);
             try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-                final Future<Set<FileHarvest>> result = configEntry.getValue();
-                if (result.isDone()) {
-                    iterator.remove();
-                    final Set<FileHarvest> fileHarvests = result.get();
-                    if (fileHarvests.isEmpty()) {
-                        LOGGER.warn("no files harvested");
-                        continue;
-                    }
-                    ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
-                    config.setLastHarvested(Date.from(Instant.now()));
-                    config.setSeqno(fileHarvests.stream()
-                            .map(FileHarvest::getSeqno)
-                            .filter(Objects::nonNull)
-                            .max(Comparator.comparing(Integer::valueOf))
-                            .orElse(0));
+                try {
+                    final Future<Set<FileHarvest>> result = configEntry.getValue();
+                    if (result.isDone()) {
+                        iterator.remove();
+                        final Set<FileHarvest> fileHarvests = result.get();
+                        if (fileHarvests.isEmpty()) {
+                            LOGGER.warn("no files harvested");
+                            continue;
+                        }
+                        ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
+                        config.setLastHarvested(Date.from(Instant.now()));
+                        config.setSeqno(fileHarvests.stream()
+                                .map(FileHarvest::getSeqno)
+                                .filter(Objects::nonNull)
+                                .max(Comparator.comparing(Integer::valueOf))
+                                .orElse(0));
 
-                    if (config instanceof HttpHarvesterConfig) {
-                        harvesterConfigRepository.save(HttpHarvesterConfig.class,
-                                (HttpHarvesterConfig) config);
-                    } else {
-                        harvesterConfigRepository.save(FtpHarvesterConfig.class,
-                                (FtpHarvesterConfig) config);
+                        if (config instanceof HttpHarvesterConfig) {
+                            harvesterConfigRepository.save(HttpHarvesterConfig.class,
+                                    (HttpHarvesterConfig) config);
+                        } else {
+                            harvesterConfigRepository.save(FtpHarvesterConfig.class,
+                                    (FtpHarvesterConfig) config);
+                        }
                     }
+                } catch (InterruptedException | ExecutionException e) {
+                    LOGGER.error("harvest task not completed: {}", e.getMessage(), e);
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                LOGGER.warn("harvest task interrupted: {}", e.getMessage());
             }
         }
     }
