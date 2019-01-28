@@ -1,0 +1,7 @@
+{
+    "jdbc": {
+        "jdbc/saturn/harvesterconfig": {
+            "url": "${DB_URL}"
+        }
+    }
+}
