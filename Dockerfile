@@ -13,6 +13,6 @@ LABEL PROXY_PORT="port number of proxy"
 LABEL PROXY_USERNAME="username for proxy authentication"
 LABEL PROXY_PASSWORD="password for proxy authentication"
 
-COPY api/target/saturn.war saturn.json wars/
+COPY api/target/saturn.war saturn.json deployments/
 
 EXPOSE 8080
