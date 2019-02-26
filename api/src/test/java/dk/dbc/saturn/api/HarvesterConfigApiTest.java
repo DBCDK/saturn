@@ -8,6 +8,10 @@ package dk.dbc.saturn.api;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
+import dk.dbc.saturn.FileHarvest;
+import dk.dbc.saturn.FtpHarvesterBean;
+import dk.dbc.saturn.HTTPHarvesterBean;
+import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
@@ -17,11 +21,16 @@ import org.junit.jupiter.api.Test;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,10 +56,14 @@ class HarvesterConfigApiTest {
         jsonbContext.getTypeFactory().constructCollectionType(
             List.class, FtpHarvesterConfig.class);
 
+    private final InputStream inputStream = mock(InputStream.class);
+
     @BeforeAll
     static void setup() throws URISyntaxException {
         harvesterConfigApi.harvesterConfigRepository =
             mock(HarvesterConfigRepository.class);
+        harvesterConfigApi.ftpHarvesterBean = mock(FtpHarvesterBean.class);
+        harvesterConfigApi.httpHarvesterBean = mock(HTTPHarvesterBean.class);
         mockedUriInfo = mock(UriInfo.class);
         UriBuilder mockedUriBuilder = mock(UriBuilder.class);
         when(mockedUriInfo.getAbsolutePathBuilder()).thenReturn(mockedUriBuilder);
@@ -243,6 +256,71 @@ class HarvesterConfigApiTest {
             .thenReturn(Optional.empty());
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
+    }
+
+    @Test
+    void test_testHttpHarvesterConfig_notFound() throws JSONBException,
+            InterruptedException, ExecutionException, HarvestException {
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.empty());
+        Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(404));
+    }
+
+    @Test
+    void test_testHttpHarvesterConfig() throws JSONBException, HarvestException,
+            InterruptedException, ExecutionException {
+        final HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setUrl("BubbleBuddy!");
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
+                eq(HttpHarvesterConfig.class), anyInt()))
+                .thenReturn(Optional.of(config));
+
+        final Set<FileHarvest> fileHarvests = new HashSet<>(
+                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
+        final CompletableFuture<Set<FileHarvest>> future =
+                CompletableFuture.completedFuture(fileHarvests);
+        when(harvesterConfigApi.httpHarvesterBean.harvest(config))
+            .thenReturn(future);
+
+        Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(200));
+        assertThat("has entity", response.hasEntity(), is(true));
+    }
+
+    @Test
+    void test_testFtpHarvesterConfig_notFound()
+            throws JSONBException, InterruptedException, ExecutionException {
+        when(harvesterConfigApi.harvesterConfigRepository
+            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
+                anyInt()))
+            .thenReturn(Optional.empty());
+        Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(404));
+    }
+
+
+    @Test
+    void test_testFtpHarvesterConfig()
+            throws JSONBException, InterruptedException, ExecutionException {
+        final FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setHost("Tartar sauce!");
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
+                eq(FtpHarvesterConfig.class), anyInt()))
+                .thenReturn(Optional.of(config));
+
+        final Set<FileHarvest> fileHarvests = new HashSet<>(
+                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
+        final CompletableFuture<Set<FileHarvest>> future =
+                CompletableFuture.completedFuture(fileHarvests);
+        when(harvesterConfigApi.ftpHarvesterBean.harvest(config))
+                .thenReturn(future);
+
+        final Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
+        assertThat("status", response.getStatus(), is(200));
+        assertThat("has entity", response.hasEntity(), is(true));
     }
 
     @Test
