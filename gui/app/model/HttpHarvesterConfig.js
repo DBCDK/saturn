@@ -19,6 +19,10 @@ class HttpHarvesterConfig extends BaseHarvesterConfig {
         return BaseHarvesterConfig.listHarvesterConfigs(
             constants.endpoints.listHttpHarvesterConfigs, start, limit);
     }
+    static testConfig(id) {
+        return BaseHarvesterConfig.testConfig(
+            constants.endpoints.testHttpHarvesterById, id);
+    }
     static fromJson(json) {
         const config = super.fromJson(json);
         config.url = json.url;

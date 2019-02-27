@@ -11,6 +11,8 @@ const endpoints = {
     deleteFtpHarvesterConfig: "/api/configs/ftp/delete/:id",
     getHttpHarvesterById: "/api/configs/http/get/:id",
     getFtpHarvesterById: "/api/configs/ftp/get/:id",
+    testHttpHarvesterById: "/api/configs/http/test/:id",
+    testFtpHarvesterById: "/api/configs/ftp/test/:id",
     listHttpHarvesterConfigs: "/api/configs/http/list",
     listFtpHarvesterConfigs: "/api/configs/ftp/list",
 };
