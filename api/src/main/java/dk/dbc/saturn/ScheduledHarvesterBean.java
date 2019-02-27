@@ -15,6 +15,7 @@ import org.slf4j.MDC;
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
+import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
@@ -54,7 +55,7 @@ public class ScheduledHarvesterBean {
         MDC.clear();
     }
 
-    //@Schedule(minute = "*", hour = "*", second = "*/20")
+    @Schedule(minute = "*", hour = "*", second = "*/20")
     public void harvest() {
         try {
             scheduleFtpHarvests();
