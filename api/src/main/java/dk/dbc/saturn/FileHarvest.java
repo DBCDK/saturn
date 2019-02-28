@@ -5,10 +5,12 @@
 
 package dk.dbc.saturn;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.InputStream;
 import java.util.Objects;
 
-public class FileHarvest {
+public class FileHarvest implements Comparable<FileHarvest> {
     private String filename;
     private final InputStream content;
     private final Integer seqno;
@@ -27,6 +29,7 @@ public class FileHarvest {
         filename = String.format("%s.%s", prefix, filename);
     }
 
+    @JsonIgnore
     public InputStream getContent() {
         return content;
     }
@@ -57,5 +60,9 @@ public class FileHarvest {
         return "FileHarvest{" +
                 "filename='" + filename + '\'' +
                 '}';
+    }
+
+    public int compareTo(FileHarvest other) {
+        return filename.compareTo(other.getFilename());
     }
 }

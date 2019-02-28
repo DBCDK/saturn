@@ -40,6 +40,11 @@ class BaseHarvesterConfig {
         params.set("id", id);
         return new HttpClient().delete(endpoint, params);
     }
+    static testConfig(endpoint, id) {
+        const params = new Map();
+        params.set("id", id);
+        return new HttpClient().get(endpoint, params);
+    }
     static fromJson(json) {
         /*
          * to enable inheriting this method properly, use `new this()`

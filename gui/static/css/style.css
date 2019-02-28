@@ -71,7 +71,10 @@ button:hover {
 }
 
 button.save-button {
-    background-color: rgb(129, 169, 50);
+}
+
+button.test-button {
+    margin-left: 26em;
 }
 
 button.delete-button {
@@ -123,6 +126,10 @@ td {
     display: inline-block;
     padding: 2px;
     border: 2px solid gray;
+}
+
+.form-group input[type=checkbox] {
+    width: auto;
 }
 
 .harvester-table {

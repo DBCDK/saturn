@@ -88,10 +88,15 @@ const FILES_PATTERN_HELP =
 class FtpHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {"config": {}};
+        this.state = {"config": {}, "testResult": [],
+            isWaitingForRemoteResponse: false,  // will be true when API request is in progress
+            remoteResponseLabel: "",
+        };
         this.fetchConfig = this.fetchConfig.bind(this);
         this.onSave = this.onSave.bind(this);
         this.onDelete = this.onDelete.bind(this);
+        this.onTest = this.onTest.bind(this);
+        this.testConfig = this.testConfig.bind(this);
         this.onConfigChanged = this.onConfigChanged.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
     }
@@ -177,6 +182,18 @@ class FtpHarvesterConfigEdit extends React.Component {
                 a.click();
             }).catch(err => alert(err));
     }
+    onTest(form) {
+        // clear any previous test result before new test
+        this.setState({testResult: [], isWaitingForRemoteResponse: true,
+            remoteResponseLabel: "testing complete"}, () => this.testConfig());
+    }
+    testConfig() {
+        FtpHarvesterConfig.testConfig(this.state.config.id).end().then(response => {
+            const testResult = JSON.parse(response.text);
+            const isWaitingForRemoteResponse = false;
+            this.setState({testResult, isWaitingForRemoteResponse});
+        });
+    }
     componentWillMount() {
         if (this.props.match.params.id !== undefined) {
             this.fetchConfig(this.props.match.params.id);
@@ -185,8 +202,12 @@ class FtpHarvesterConfigEdit extends React.Component {
     render() {
         return (
             <BaseHarvesterConfigEdit config={getStringValue(this.state.config)}
+                    testResult={this.state.testResult}
+                    isWaitingForRemoteResponse={this.state.isWaitingForRemoteResponse}
+                    remoteResponseLabel={this.state.remoteResponseLabel}
                     onSave={this.onSave}
                     onDelete={this.onDelete}
+                    onTest={this.onTest}
                     onConfigChanged={this.onConfigChanged}
                     title={"FTP Høster"}>
                 <FormEntry label="Løbenummer" name="seqno" help={SEQNO_HELP}

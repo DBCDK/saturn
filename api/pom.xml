@@ -230,10 +230,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-testutil-jpa</artifactId>
             <version>${dbc.commons.version}</version>

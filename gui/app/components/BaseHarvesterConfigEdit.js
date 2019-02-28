@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 import ReactTooltip from 'react-tooltip';
 
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
+import BusySpinner from '../BusySpinner';
 
 const NAME_HELP =
     <div>
@@ -87,6 +88,30 @@ FormEntry.defaultProps = {
     value: "",
 };
 
+class FileHarvest extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        return (
+            <tr>
+                <td>{this.props.filename}</td>
+                <td>{this.props.seqno}</td>
+            </tr>
+        );
+    }
+}
+
+FileHarvest.propTypes = {
+    filename: PropTypes.string,
+    seqno: PropTypes.number
+};
+
+FileHarvest.defaultProps = {
+    filename: "",
+    seqno: null
+};
+
 class FormCheckbox extends React.Component {
     constructor(props) {
         super(props);
@@ -122,8 +147,10 @@ class BaseHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
+        this.onClickTest = this.onClickTest.bind(this);
         this.onDelete = this.onDelete.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
+        this.showTestResult = this.showTestResult.bind(this);
     }
     onClick(event) {
         event.preventDefault();
@@ -137,6 +164,10 @@ class BaseHarvesterConfigEdit extends React.Component {
         })
             .catch(err => alert(err));
     }
+    onClickTest(event) {
+        event.preventDefault();
+        this.props.onTest(event.target.form);
+    }
     onDelete(event) {
         event.preventDefault();
         this.props.onDelete(this.props.config.id);
@@ -146,6 +177,25 @@ class BaseHarvesterConfigEdit extends React.Component {
         const config = this.props.config;
         config[name] = value;
         this.props.onConfigChanged(config);
+    }
+    showTestResult() {
+        if (this.props.testResult.length) {
+            const testResult = this.props.testResult;
+            return (
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>filename</th>
+                        <th>seqno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {this.props.testResult.map(harvestFile =>
+                        <FileHarvest key={harvestFile.filename}
+                            filename={harvestFile.filename} seqno={harvestFile.seqno}/>)}
+                </tbody>
+            </table>);
+        }
     }
     validate(name, value) {
         switch(name) {
@@ -179,7 +229,10 @@ class BaseHarvesterConfigEdit extends React.Component {
     }
     render() {
         const config = this.props.config;
+        const isWaitingForRemoteResponse = this.props.isWaitingForRemoteResponse;
+        const remoteResponseLabel = this.props.remoteResponseLabel;
         return (
+            <div>
             <form id="upload-form">
                 <div className="breadcrumb-title">Saturnhøster >> {config.id !== undefined ? "Rediger" : "Ny"} {this.props.title}</div>
                 <FormEntry label="Navn" name="name" value={config.name} help={NAME_HELP}
@@ -197,7 +250,13 @@ class BaseHarvesterConfigEdit extends React.Component {
                 {config.id !== undefined ?
                     <button type="submit" className="delete-button" onClick={this.onDelete}>Slet</button>
                     : <div/> }
+                {config.id !== undefined ?
+                    <button type="submit" className="test-button" onClick={this.onClickTest}>Test</button>
+                    : <div/> }
+                {isWaitingForRemoteResponse ? <BusySpinner label=""/> : <div>{remoteResponseLabel}</div>}
             </form>
+            {this.showTestResult()}
+            </div>
         )
     }
 }
@@ -206,13 +265,19 @@ BaseHarvesterConfigEdit.propTypes = {
     config: PropTypes.object,
     onSave: PropTypes.func,
     onDelete: PropTypes.func,
+    onTest: PropTypes.func,
+    showTestResult: PropTypes.func,
     onConfigChanged: PropTypes.func.isRequired
 };
 
 BaseHarvesterConfigEdit.defaultProps = {
     config: {},
+    testResult: [],
+    isWaitingForRemoteResponse: false,
+    remoteResponseLabel: "",
     onSave: (event) => console.log("no-op for BaseHarvesterConfigEdit.onSave"),
     onDelete: event => console.log("no-op for BaseHarvesterConfigEdit.onDelete"),
+    onTest: (event) => console.log("no-op for BaseHarvesterConfigEdit.onTest"),
 };
 
 export {BaseHarvesterConfigEdit, FormEntry};

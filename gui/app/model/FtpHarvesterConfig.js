@@ -19,6 +19,10 @@ class FtpHarvesterConfig extends BaseHarvesterConfig {
         return BaseHarvesterConfig.listHarvesterConfigs(
             constants.endpoints.listFtpHarvesterConfigs, start, limit);
     }
+    static testConfig(id) {
+        return BaseHarvesterConfig.testConfig(
+            constants.endpoints.testFtpHarvesterById, id);
+    }
     static fromJson(json) {
         const config = super.fromJson(json);
         config.host = json.host;
