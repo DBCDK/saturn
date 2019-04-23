@@ -54,6 +54,7 @@ pipeline {
 				}
 			}
 		}
+        /*
 		stage("sonarqube") {
 			when {
 				branch "master"
@@ -72,5 +73,6 @@ pipeline {
 				}
 			}
 		}
+        */
 	}
 }
