@@ -22,8 +22,7 @@ import java.util.Set;
 // application path must not be "/" if webapp/index.html is to be loaded
 @ApplicationPath("/api")
 public class Saturn extends Application {
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        dk.dbc.saturn.rest.Saturn.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Saturn.class);
 
     private static final Set<Class<?>> classes = new HashSet<>();
     static {
