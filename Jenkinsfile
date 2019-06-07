@@ -1,8 +1,6 @@
 #!groovy
 
-@Library("metascrum@master") _
-
-def workerNode = "devel8"
+def workerNode = "devel9"
 
 pipeline {
 	agent {label workerNode}
@@ -12,11 +10,11 @@ pipeline {
 	}
 	environment {
 		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
-		MARATHON_TOKEN = credentials("METASCRUM_MARATHON_TOKEN")
-		SONARQUBE_HOST = "http://sonarqube.mcp1.dbc.dk"
-		SONARQUBE_TOKEN = credentials("dataio-sonarqube")
+		GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
 	}
 	triggers {
+		upstream(upstreamProjects: "Docker-payara5-bump-trigger",
+			threshold: hudson.model.Result.SUCCESS)
 		pollSCM("H/03 * * * *")
 	}
 	options {
@@ -49,30 +47,30 @@ pipeline {
 		stage("docker build") {
 			steps {
 				script {
-					def image = docker.build("docker-io.dbc.dk/saturn-service:${env.DOCKER_TAG}")
+					def image = docker.build("docker-io.dbc.dk/saturn-service:${env.DOCKER_TAG}",
+						"--pull --no-cache .")
 					image.push()
 				}
 			}
 		}
-        /*
-		stage("sonarqube") {
+		stage("update staging version") {
+			agent {
+				docker {
+					label workerNode
+					image "docker.dbc.dk/build-env"
+					alwaysPull true
+				}
+			}
 			when {
 				branch "master"
 			}
 			steps {
-				script {
-					try {
-						sh """
-							mvn sonar:sonar \
-							-Dsonar.host.url=$SONARQUBE_HOST \
-							-Dsonar.login=$SONARQUBE_TOKEN
-						"""
-					} catch(e) {
-						printf "sonarqube connection failed: %s", e.toString()
-					}
+				dir("deploy") {
+					sh """
+						set-new-version dataio-saturn-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/saturn-deploy ${env.DOCKER_TAG} -b staging
+					"""
 				}
 			}
 		}
-        */
 	}
 }
