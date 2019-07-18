@@ -35,7 +35,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, PUT_DIR, new FileNameMatcher(),
+            PASSWORD, String.join("/", HOME_DIR, PUT_DIR), new FileNameMatcher(),
                 new SeqnoMatcher(new FtpHarvesterConfig()));
 
         assertThat("result size", fileHarvests.size(), is(2));
@@ -60,13 +60,11 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.put(putFile1, "Barnacle Boy!");
         ftpClient.put(putFile2, "Mermaid Man!");
         ftpClient.close();
-
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
             "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
             PASSWORD, "", new FileNameMatcher("*.txt"),
             new SeqnoMatcher(new FtpHarvesterConfig()));
-
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);
         contentMap.put("bb.txt", "Barnacle Boy!");

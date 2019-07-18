@@ -36,6 +36,7 @@ public abstract class AbstractFtpBeanTest {
         fakeFtpServer.start();
     }
 
+
     @AfterAll
     static void tearDown() {
         fakeFtpServer.stop();

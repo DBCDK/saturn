@@ -13,6 +13,7 @@ import dk.dbc.saturn.FtpHarvesterBean;
 import dk.dbc.saturn.HTTPHarvesterBean;
 import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.MockFileHarvest;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -279,7 +280,8 @@ class HarvesterConfigApiTest {
                 .thenReturn(Optional.of(config));
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
+                Collections.singletonList( new MockFileHarvest("filename", "content", 42)));
+
         final CompletableFuture<Set<FileHarvest>> future =
                 CompletableFuture.completedFuture(fileHarvests);
         when(harvesterConfigApi.httpHarvesterBean.harvest(config))
@@ -312,7 +314,7 @@ class HarvesterConfigApiTest {
                 .thenReturn(Optional.of(config));
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
+                Collections.singletonList( new MockFileHarvest ("filename", "content", 42)));
         final CompletableFuture<Set<FileHarvest>> future =
                 CompletableFuture.completedFuture(fileHarvests);
         when(harvesterConfigApi.ftpHarvesterBean.harvest(config))

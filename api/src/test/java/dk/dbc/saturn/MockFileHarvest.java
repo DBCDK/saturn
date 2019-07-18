@@ -1,0 +1,73 @@
+package dk.dbc.saturn;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Objects;
+
+public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
+    private String filename;
+    private final Integer seqno;
+    private String dir;
+    private String content;
+
+    public MockFileHarvest(String filename, String content, int seqno){
+        this.filename=filename;
+        this.content=content;
+        this.seqno=seqno;
+    }
+
+    @Override
+    public String getFilename() {
+        return this.filename;
+    }
+    public void setFilename(String filename){
+        this.filename=filename;
+    }
+
+    @Override
+    public void setFilenamePrefix(String prefix) {
+        filename = String.format("%s.%s", prefix, filename);
+    }
+
+    @Override
+    public Integer getSeqno() {
+        return seqno;
+    }
+
+    @Override
+    @JsonIgnore
+    public InputStream getContent() {
+        return new ByteArrayInputStream(content.toString().getBytes());
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FileHarvest that = (FileHarvest) o;
+        return Objects.equals(filename, that.getFilename());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(filename);
+    }
+
+    @Override
+    public String toString() {
+        return "FileHarvest{" +
+                "filename='" + filename + '\'' +
+                '}';
+    }
+
+    public int compareTo(FileHarvest other) {
+        return filename.compareTo(other.getFilename());
+    }
+}

@@ -92,11 +92,11 @@ public class HTTPHarvesterBean {
                 final Optional<String> filename = getFilenameFromResponse(response);
                 final Set<FileHarvest> fileHarvests = new HashSet<>();
                 if (filename.isPresent()) {
-                    final FileHarvest fileHarvest = new FileHarvest(
+                    final FileHarvest fileHarvest = new HttpFileHarvest(
                         filename.get(), is, null);
                     fileHarvests.add(fileHarvest);
                 } else {
-                    final FileHarvest fileHarvest = new FileHarvest(
+                    final FileHarvest fileHarvest = new HttpFileHarvest(
                         getFilename(url), is, null);
                     fileHarvests.add(fileHarvest);
                 }

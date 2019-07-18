@@ -84,10 +84,12 @@ public class FtpHarvesterBean {
                  * the original file.
                  */
                 final String filename = Paths.get(file).getFileName().toString().trim();
-                if(seqnoMatcher.shouldFetch(filename)) {
-                    InputStream is = ftpClient.get(file, FtpClient.FileType.BINARY);
-                    final FileHarvest fileHarvest = new FileHarvest(
-                        file, is, seqnoMatcher.getSeqno());
+                if (seqnoMatcher.shouldFetch(filename)) {
+                    final FileHarvest fileHarvest = new FtpFileHarvest(
+                            dir,
+                            file,
+                            seqnoMatcher.getSeqno(),
+                            ftpClient);
                     fileHarvests.add(fileHarvest);
                 }
             }

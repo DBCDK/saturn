@@ -34,9 +34,9 @@ public class HTTPHarvesterBeanTest {
     private static ClientAndProxy mockProxy;
 
     private final FileHarvest squarepantsFileHarvest =
-            new FileHarvest("squarepants.jpg", null, null);
+            new HttpFileHarvest("squarepants.jpg", null, null);
     private final FileHarvest squarepantsNoHeaderFileHarvest =
-            new FileHarvest("squarepants", null, null);
+            new HttpFileHarvest("squarepants", null, null);
 
     @BeforeAll
     public static void setUp() throws IOException {
@@ -199,7 +199,7 @@ public class HTTPHarvesterBeanTest {
         final Set<FileHarvest> results = httpHarvesterBean.harvest(wireMockHost + "/patternpants",
             String.format("%s/viaf*iso.gz", wireMockHost));
         assertThat("results size", results.size(), is(1));
-        final FileHarvest viafHarvest = new FileHarvest(
+        final FileHarvest viafHarvest = new HttpFileHarvest(
             "viaf-20180701-clusters-marc21.iso.gz", null, null);
         assertThat("contains viaf harvest", results.contains(viafHarvest),
             is(true));

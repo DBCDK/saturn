@@ -35,7 +35,7 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
         harvesterConfigRepository.entityManager.flush();
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(
-            new FileHarvest("spongebob", null, 3));
+            new MockFileHarvest("spongebob", "spongebob", 3));
         final Future future = mock(Future.class);
         when(future.get()).thenReturn(fileHarvests);
         when(future.isDone()).thenReturn(false);

@@ -218,12 +218,7 @@ public class HarvesterConfigApi {
             final Set<FileHarvest> fileHarvests = new TreeSet<>(
                     ftpHarvesterBean.harvest(config.get()).get());
             fileHarvests.forEach(fileHarvest -> {
-                try {
-                    fileHarvest.getContent().close();
-                } catch (IOException e) {
-                    LOGGER.warn("Unable to close content stream for {}<{}>",
-                            config.get().getName(), fileHarvest.getFilename());
-                }
+               LOGGER.info("Found: {}",fileHarvest.getFilename());
             });
             return Response.ok(jsonbContext.marshall(fileHarvests)).build();
         }

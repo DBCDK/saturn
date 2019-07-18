@@ -125,8 +125,7 @@ public class ScheduledHarvesterBean {
     }
 
     private void sendResults() {
-        final Iterator<? extends
-                Map.Entry<Integer, Future<Set<FileHarvest>>>>
+        final Iterator<Map.Entry<Integer, Future<Set<FileHarvest>>>>
                 iterator = harvestTasks.entrySet().iterator();
 
         while (iterator.hasNext()) {
