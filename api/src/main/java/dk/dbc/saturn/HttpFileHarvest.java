@@ -25,8 +25,9 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         return filename;
     }
 
-    public void setFilenamePrefix(String prefix) {
-        filename = String.format("%s.%s", prefix, filename);
+    @Override
+    public String getUploadFilename(String prefix) {
+        return filename;
     }
 
     @JsonIgnore

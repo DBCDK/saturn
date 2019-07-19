@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 public interface FileHarvest {
      String getFilename();
-     void setFilenamePrefix(String prefix);
+     String getUploadFilename( String prefix );
      Integer getSeqno();
      InputStream getContent();
 }

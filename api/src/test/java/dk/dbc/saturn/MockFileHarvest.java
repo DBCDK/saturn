@@ -22,13 +22,10 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
     public String getFilename() {
         return this.filename;
     }
-    public void setFilename(String filename){
-        this.filename=filename;
-    }
 
     @Override
-    public void setFilenamePrefix(String prefix) {
-        filename = String.format("%s.%s", prefix, filename);
+    public String getUploadFilename(String prefix) {
+        return String.format("%s.%s", prefix, filename);
     }
 
     @Override
