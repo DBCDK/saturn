@@ -6,18 +6,28 @@
 package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Response;
 
 import java.io.InputStream;
 import java.util.Objects;
 
 public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private String filename;
-    private final InputStream content;
+    private final Client client;
+    private final String url;
     private final Integer seqno;
 
-    public HttpFileHarvest(String filename, InputStream content, Integer seqno) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            HttpFileHarvest.class);
+
+    public HttpFileHarvest(String filename, Client client, String url, Integer seqno) {
         this.filename = filename;
-        this.content = content;
+        this.client = client;
+        this.url = url;
         this.seqno = seqno;
     }
 
@@ -27,12 +37,23 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     @Override
     public String getUploadFilename(String prefix) {
-        return filename;
+        return String.format("%s.%s", prefix, filename);
     }
 
     @JsonIgnore
-    public InputStream getContent() {
-        return content;
+    public InputStream getContent() throws HarvestException {
+        /*
+        todo: stopwatch timing
+         */
+        final Response response = HTTPHarvesterBean.getResponse(client, url);
+        if (response.hasEntity()) {
+            InputStream is = response.readEntity(InputStream.class);
+            return is;
+        }
+        else {
+            throw new HarvestException( String.format( "Unable to read from inputstream,",
+                    "frorm url {}", url));
+        }
     }
 
     public Integer getSeqno() {
@@ -65,5 +86,11 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     public int compareTo(FileHarvest other) {
         return filename.compareTo(other.getFilename());
+    }
+
+    @Override
+    public void close() {
+        LOGGER.info("Closing http connection to {}", url);
+        client.close();
     }
 }

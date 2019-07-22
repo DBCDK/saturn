@@ -19,7 +19,7 @@ import static org.hamcrest.core.Is.is;
 
 public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     @Test
-    public void test_harvest() throws IOException {
+    public void test_harvest() throws IOException, HarvestException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
         final FtpClient ftpClient = new FtpClient()
@@ -49,7 +49,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    public void test_harvest_dirArgumentIsEmpty() throws IOException {
+    public void test_harvest_dirArgumentIsEmpty() throws IOException, HarvestException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
         final FtpClient ftpClient = new FtpClient()
@@ -76,7 +76,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    void test_harvest_seqnoFilenameLeadingSpace() throws IOException {
+    void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
         final String putFile1 = " 12v24.txt";
         final FtpClient ftpClient = new FtpClient()
             .withHost("localhost")

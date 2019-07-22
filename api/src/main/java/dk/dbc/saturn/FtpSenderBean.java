@@ -51,7 +51,7 @@ public class FtpSenderBean {
      * @param transfileTemplate transfile content template
      */
     public void send(Set<FileHarvest> files, String filenamePrefix,
-            String transfileTemplate) {
+            String transfileTemplate) throws HarvestException    {
         final Stopwatch stopwatch = new Stopwatch();
         try {
             final List<String> filenames = files.stream()
@@ -76,8 +76,8 @@ public class FtpSenderBean {
                     ftpClient.put(
                             fileHarvest.getUploadFilename( filenamePrefix ),
                             fileHarvest.getContent(),
-                            FtpClient.FileType.BINARY)
-                    ;
+                            FtpClient.FileType.BINARY );
+                    fileHarvest.close();
                 }
                 LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfile);
                 ftpClient.put(transfileName, new ByteArrayInputStream(

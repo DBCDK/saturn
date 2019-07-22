@@ -64,6 +64,11 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
                 '}';
     }
 
+    @Override
+    public void close(){
+
+    }
+
     public int compareTo(FileHarvest other) {
         return filename.compareTo(other.getFilename());
     }

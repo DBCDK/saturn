@@ -169,7 +169,7 @@ public class HarvesterConfigApi {
             fileHarvests.forEach(fileHarvest -> {
                 try {
                     fileHarvest.getContent().close();
-                } catch (IOException e) {
+                } catch (IOException | HarvestException e) {
                     LOGGER.warn("Unable to close content stream for {}<{}>",
                             config.get().getName(), fileHarvest.getFilename());
                 }

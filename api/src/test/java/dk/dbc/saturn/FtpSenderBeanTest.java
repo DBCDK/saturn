@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 class FtpSenderBeanTest extends AbstractFtpBeanTest {
     @Test
-    void send() throws IOException  {
+    void send() throws IOException, HarvestException  {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
         Set<FileHarvest> inputStreams = getFileHarvests("krusty","sponge", "bob");
         final String transfile = "b=transfile";

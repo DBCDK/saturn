@@ -57,6 +57,10 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
                 "filename='" + filename + '\'' +
                 '}';
     }
+    @Override
+    public void close(){
+        ftpClient.close();
+    }
 
     public int compareTo(FileHarvest other) {
         return filename.compareTo(other.getFilename());

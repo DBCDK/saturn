@@ -167,7 +167,7 @@ public class ScheduledHarvesterBean {
                                     (FtpHarvesterConfig) config);
                         }
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException | ExecutionException | HarvestException e) {
                     LOGGER.error("harvest task not completed: {}", e.getMessage(), e);
                 }
             }

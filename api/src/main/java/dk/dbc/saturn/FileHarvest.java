@@ -11,5 +11,6 @@ public interface FileHarvest {
      String getFilename();
      String getUploadFilename( String prefix );
      Integer getSeqno();
-     InputStream getContent();
+     InputStream getContent() throws HarvestException;
+     void close();
 }

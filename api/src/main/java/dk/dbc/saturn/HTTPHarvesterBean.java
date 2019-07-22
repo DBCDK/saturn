@@ -71,20 +71,25 @@ public class HTTPHarvesterBean {
         }
     }
 
-    public Set<FileHarvest> harvest(String url) throws HarvestException {
-        InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
-        final Stopwatch stopwatch = new Stopwatch();
-        LOGGER.info("harvesting {}", url);
-
+    private  Client getHttpClient(){
         final ClientConfig clientConfig = new ClientConfig();
         final Optional<HttpUrlConnectorProvider> connectorProvider =
-            getConnectorProvider();
+                getConnectorProvider();
         connectorProvider.ifPresent(clientConfig::connectorProvider);
         clientConfig.register(new JacksonFeature());
         // for logging requests and responses (LoggingFilter is deprecated
         // in jersey 2.23 though)
         //clientConfig.register(LoggingFilter.class);
-        final Client client = HttpClient.newClient(clientConfig);
+        return HttpClient.newClient(clientConfig);
+    }
+
+    public Set<FileHarvest> harvest(String url) throws HarvestException {
+        InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
+        final Stopwatch stopwatch = new Stopwatch();
+        LOGGER.info("harvesting {}", url);
+
+        final Client client = getHttpClient();
+
         try {
             final Response response = getResponse(client, url);
             if (response.hasEntity()) {
@@ -93,11 +98,11 @@ public class HTTPHarvesterBean {
                 final Set<FileHarvest> fileHarvests = new HashSet<>();
                 if (filename.isPresent()) {
                     final FileHarvest fileHarvest = new HttpFileHarvest(
-                        filename.get(), is, null);
+                        filename.get(), client, url, null);
                     fileHarvests.add(fileHarvest);
                 } else {
                     final FileHarvest fileHarvest = new HttpFileHarvest(
-                        getFilename(url), is, null);
+                        getFilename(url), client, url, null);
                     fileHarvests.add(fileHarvest);
                 }
                 return fileHarvests;
@@ -108,7 +113,6 @@ public class HTTPHarvesterBean {
         } finally {
             LOGGER.info("harvesting of {} took {} ms", url,
                     stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
-            client.close();
         }
     }
 
@@ -129,7 +133,7 @@ public class HTTPHarvesterBean {
         return harvest(datafileUrl);
     }
 
-    private Response getResponse(Client client, String url) throws HarvestException {
+    protected static Response getResponse(Client client, String url) throws HarvestException {
         final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(
             client, RETRY_POLICY);
         final Response response = new HttpGet(failSafeHttpClient)
