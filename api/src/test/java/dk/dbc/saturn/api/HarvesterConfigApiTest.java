@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -306,7 +307,7 @@ class HarvesterConfigApiTest {
 
     @Test
     void test_testFtpHarvesterConfig()
-            throws JSONBException, InterruptedException, ExecutionException {
+            throws JSONBException, InterruptedException, ExecutionException, HarvestException {
         final FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
         when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
@@ -315,10 +316,10 @@ class HarvesterConfigApiTest {
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(
                 Collections.singletonList( new MockFileHarvest ("filename", "content", 42)));
-        final CompletableFuture<Set<FileHarvest>> future =
-                CompletableFuture.completedFuture(fileHarvests);
-        when(harvesterConfigApi.ftpHarvesterBean.harvest(config))
-                .thenReturn(future);
+        final CompletableFuture<Void> future =
+                CompletableFuture.completedFuture(null);
+        when(harvesterConfigApi.ftpHarvesterBean.listFiles( config ))
+                .thenReturn(fileHarvests);
 
         final Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));

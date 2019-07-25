@@ -55,7 +55,7 @@ public class HTTPHarvesterBean {
     private static Pattern filenamePattern =
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
-
+    /* Todo: Rewrite as in FtpHarvesterBean: This should be a listFiles */
     @Asynchronous
     public Future<Set<FileHarvest>> harvest(HttpHarvesterConfig config) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {

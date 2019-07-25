@@ -93,4 +93,5 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         LOGGER.info("Closing http connection to {}", url);
         client.close();
     }
+
 }

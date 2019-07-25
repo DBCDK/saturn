@@ -39,6 +39,7 @@ public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
 
+    /* Todo: Deprecate this */
     final HashMap<Integer,
         Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
@@ -47,6 +48,7 @@ public class ScheduledHarvesterBean {
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
     @EJB FtpSenderBean ftpSenderBean;
+    @EJB RunningTasks runningTasks;
 
     @PostConstruct
     public void init() {
@@ -69,32 +71,33 @@ public class ScheduledHarvesterBean {
     private void scheduleFtpHarvests() {
         final List<FtpHarvesterConfig> ftpConfigs = harvesterConfigRepository
                 .list(FtpHarvesterConfig.class, 0, 0);
-
         LOGGER.info("got {} FTP configs", ftpConfigs.size());
         for (FtpHarvesterConfig ftpConfig : ftpConfigs) {
-            scheduleFtpHarvest(ftpConfig);
-        }
-    }
-
-    private void scheduleFtpHarvest(FtpHarvesterConfig ftpConfig) {
-        try (HarvesterMDC mdc = new HarvesterMDC(ftpConfig)) {
-            if (harvestTasks.containsKey(ftpConfig.getId())) {
-                LOGGER.debug("still harvesting, not rescheduled");
-                return;
-            }
             try {
+                if ( runningTasks.isRunning(ftpConfig) ) {
+                    LOGGER.debug("still harvesting, not rescheduled");
+                    return;
+                }
                 if (ftpConfig.isEnabled()
                         && runScheduleFactory.newRunScheduleFrom(ftpConfig.getSchedule())
-                                .isSatisfiedBy(new Date(), ftpConfig.getLastHarvested())) {
-                    harvestTasks.put(ftpConfig.getId(),
-                            ftpHarvesterBean.harvest(ftpConfig));
+                        .isSatisfiedBy(new Date(), ftpConfig.getLastHarvested())) {
+
+                    Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles(ftpConfig);
+
+                    if (! fileHarvests.isEmpty()) {
+                        runningTasks.add( ftpConfig, fileHarvests );
+                        ftpHarvesterBean.harvest( ftpConfig, fileHarvests );
+                        LOGGER.info( "Done scheduling {}", ftpConfig.getName());
+                    }
                 }
-            } catch (IllegalArgumentException e) {
-                LOGGER.error("error while scheduling harvest", e);
+            } catch (HarvestException e) {
+                LOGGER.error("Error while harvesting", e);
             }
         }
+        LOGGER.info( "Number of tasks unfinshed:{}", runningTasks.size());
     }
 
+    /* Todo: Rewrite using pattern from scheduleFtpHarvests */
     private void scheduleHttpHarvests() {
         final List<HttpHarvesterConfig> httpConfigs = harvesterConfigRepository
                 .list(HttpHarvesterConfig.class, 0, 0);
@@ -105,6 +108,7 @@ public class ScheduledHarvesterBean {
         }
     }
 
+    /* Todo: Rewrite using pattern from scheduleFtpHarvests */
     private void scheduleHttpHarvest(HttpHarvesterConfig httpConfig) {
         try (HarvesterMDC mdc = new HarvesterMDC(httpConfig)) {
             if (harvestTasks.keySet().contains(httpConfig.getId())) {
@@ -124,6 +128,7 @@ public class ScheduledHarvesterBean {
         }
     }
 
+    /* Todo: remove */
     private void sendResults() {
         final Iterator<Map.Entry<Integer, Future<Set<FileHarvest>>>>
                 iterator = harvestTasks.entrySet().iterator();

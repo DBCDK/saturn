@@ -25,12 +25,12 @@ import static org.mockito.Mockito.when;
 class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
     private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
+    private static final RunningTasks runningTasks = new RunningTasks();
 
     @Test
     void test_harvest() throws HarvestException,
             InterruptedException, ExecutionException, ParseException {
         final HttpHarvesterConfig config = getHttpHarvesterConfig();
-
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.flush();
 
@@ -43,10 +43,11 @@ class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
 
         final ScheduledHarvesterBean scheduledHarvesterBean =
             getScheduledHarvesterBean();
+        scheduledHarvesterBean.runningTasks = runningTasks;
         scheduledHarvesterBean.harvest();
 
         assertThat("task list after first run", scheduledHarvesterBean
-            .harvestTasks.size(), is(1));
+                .harvestTasks.size(), is(1));
         final FileHarvest result = scheduledHarvesterBean.harvestTasks.get(
             config.getId()).get().iterator().next();
         assertThat("file harvest filename", result.getFilename(),

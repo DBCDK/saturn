@@ -18,12 +18,18 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         this.ftpClient = ftpClient;
         this.dir = dir;
     }
+
+    @Override
     public String getFilename() {
         return filename;
     }
+
+    @Override
     public String getUploadFilename( String prefix ){
         return String.format("%s.%s", prefix, filename);
     }
+
+    @Override
     @JsonIgnore
     public InputStream getContent() {
         if (!dir.isEmpty()){
@@ -32,9 +38,11 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         return ftpClient.get(filename, FtpClient.FileType.BINARY);
     }
 
+    @Override
     public Integer getSeqno() {
         return seqno;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -46,6 +54,7 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         FtpFileHarvest that = (FtpFileHarvest) o;
         return Objects.equals(filename, that.filename);
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(filename);
@@ -57,11 +66,13 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
                 "filename='" + filename + '\'' +
                 '}';
     }
+
     @Override
     public void close(){
         ftpClient.close();
     }
 
+    @Override
     public int compareTo(FileHarvest other) {
         return filename.compareTo(other.getFilename());
     }

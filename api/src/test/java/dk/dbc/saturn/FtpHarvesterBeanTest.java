@@ -33,10 +33,13 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.close();
 
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
-            "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, String.join("/", HOME_DIR, PUT_DIR), new FileNameMatcher(),
-                new SeqnoMatcher(new FtpHarvesterConfig()));
+
+        FtpHarvesterConfig config = getFtpHarvesterConfig(
+                "localhost", USERNAME, PASSWORD,
+                String.join("/", HOME_DIR, PUT_DIR),
+                fakeFtpServer.getServerControlPort(), null);
+
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles( config );
 
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);
@@ -61,10 +64,11 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.put(putFile2, "Mermaid Man!");
         ftpClient.close();
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
-            "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, "", new FileNameMatcher("*.txt"),
-            new SeqnoMatcher(new FtpHarvesterConfig()));
+        FtpHarvesterConfig config = getFtpHarvesterConfig(
+                "localhost", USERNAME, PASSWORD, "", fakeFtpServer.getServerControlPort(),
+                "*.txt" );
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles( config );
+
         assertThat("result size", fileHarvests.size(), is(2));
         final Map<String, String> contentMap = new HashMap<>(2);
         contentMap.put("bb.txt", "Barnacle Boy!");
@@ -87,12 +91,11 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         ftpClient.close();
 
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
-        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        FtpHarvesterConfig config = getFtpHarvesterConfig(
+                "localhost", USERNAME, PASSWORD, "", fakeFtpServer.getServerControlPort(),
+                "*.txt" );
         config.setSeqnoExtract("1-2,4-5");
-        Set<FileHarvest> fileHarvests = ftpHarvesterBean.harvest(
-            "localhost", fakeFtpServer.getServerControlPort(), USERNAME,
-            PASSWORD, "", new FileNameMatcher("*.txt"),
-            new SeqnoMatcher(config));
+        Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles( config );
 
         assertThat("result size", fileHarvests.size(), is(1));
         final Map<String, String> contentMap = new HashMap<>(1);
@@ -107,5 +110,18 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         FtpHarvesterBean ftpHarvesterBean = new FtpHarvesterBean();
         ftpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
         return ftpHarvesterBean;
+    }
+
+    private static FtpHarvesterConfig getFtpHarvesterConfig( String host, String username,
+                                                             String password, String dir,
+                                                             int port, String filesPattern ){
+        FtpHarvesterConfig config = new FtpHarvesterConfig();
+        config.setHost(host);
+        config.setUsername(username);
+        config.setPassword(password);
+        config.setDir(dir);
+        config.setPort(port);
+        config.setFilesPattern(filesPattern);
+        return config;
     }
 }
