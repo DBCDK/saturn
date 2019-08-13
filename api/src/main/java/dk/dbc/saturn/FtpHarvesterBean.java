@@ -16,8 +16,6 @@ import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Set;
@@ -40,9 +38,10 @@ public class FtpHarvesterBean {
         FtpHarvesterBean.class);
     
     @Asynchronous
-    public Future<Void> harvest( FtpHarvesterConfig config, Set<FileHarvest> fileHarvests ) throws HarvestException {
+    public Future<Void> harvest( FtpHarvesterConfig config ) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info( "Starting harvest of {}", config.getName());
+            Set<FileHarvest> fileHarvests = listFiles( config );
             ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
@@ -65,36 +64,14 @@ public class FtpHarvesterBean {
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher( ftpHarvesterConfig );
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(ftpHarvesterConfig.getFilesPattern());
         final Stopwatch stopwatch = new Stopwatch();
-        final String username = ftpHarvesterConfig.getUsername();
-        final String host = ftpHarvesterConfig.getHost();
-        final int port = ftpHarvesterConfig.getPort();
-        final String password = ftpHarvesterConfig.getPassword();
-        final String dir = ftpHarvesterConfig.getDir();
-
-        LOGGER.info("Listing from {}@{}:{}/{} with pattern \"{}\"", username,
-                host, port, dir, fileNameMatcher.getPattern());
+        LOGGER.info("Listing from {}@{}:{}/{} with pattern \"{}\"",
+                ftpHarvesterConfig.getUsername(),
+                ftpHarvesterConfig.getHost(),
+                ftpHarvesterConfig.getPort(),
+                ftpHarvesterConfig.getDir(),
+                fileNameMatcher.getPattern());
         Set<FileHarvest> fileHarvests = new HashSet<>();
-        FtpClient ftpClient = new FtpClient()
-                .withHost(host)
-                .withPort(port)
-                .withUsername(username)
-                .withPassword(password);
-        if(proxyHandlerBean.getProxyHostname() != null &&
-                proxyHandlerBean.getProxyPort() != 0) {
-            // mockftpserver doesn't seem to be accessible through a mock
-            // socks proxy so this part is untested for now
-            final InetSocketAddress address = new InetSocketAddress(
-                    proxyHandlerBean.getProxyHostname(),
-                    proxyHandlerBean.getProxyPort());
-            final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
-            ftpClient.withProxy(proxy);
-            LOGGER.debug("using proxy: host = {} port = {}",
-                    proxyHandlerBean.getProxyHostname(),
-                    proxyHandlerBean.getProxyPort());
-        }
-        if(!dir.isEmpty()) {
-            ftpClient.cd(dir);
-        }
+        FtpClient ftpClient = FtpClientFactory.createFtpClient( ftpHarvesterConfig, proxyHandlerBean );
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()) {
                 /*
@@ -107,7 +84,7 @@ public class FtpHarvesterBean {
                 final String filename = Paths.get(file).getFileName().toString().trim();
                 if (seqnoMatcher.shouldFetch(filename)) {
                     final FileHarvest fileHarvest = new FtpFileHarvest(
-                            dir,
+                            ftpHarvesterConfig.getDir(),
                             file,
                             seqnoMatcher.getSeqno(),
                             ftpClient);
@@ -116,8 +93,11 @@ public class FtpHarvesterBean {
             }
         }
         ftpClient.close();
-        LOGGER.info("Listing from {}@{}:{}/{} took {} ms", username,
-                host, port, dir, stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+        LOGGER.info("Listing from {}@{}:{}/{} took {} ms", ftpHarvesterConfig.getUsername(),
+                ftpHarvesterConfig.getHost(),
+                ftpHarvesterConfig.getPort(),
+                ftpHarvesterConfig.getDir(),
+                stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
         return fileHarvests;
     }
 
