@@ -65,12 +65,8 @@ public class FtpSenderBean {
                             filenames );
             final String transfileName = String.format("%s.%s.trans",
                     filenamePrefix, APPLICATION_ID);
-            FtpClient ftpClient = new FtpClient()
-                    .withHost(host)
-                    .withPort(Integer.parseInt(port))
-                    .withUsername(username)
-                    .withPassword(password)
-                    .cd(dir);
+            FtpClient ftpClient = FtpClientFactory.createFtpClient( host, Integer.parseInt(port),
+                    username, password, dir, null );
             try {
                 for (FileHarvest fileHarvest : files) {
                     ftpClient.put(
