@@ -76,7 +76,7 @@ public class ScheduledHarvesterBean {
             try {
                 if ( runningTasks.isRunning(ftpConfig) ) {
                     LOGGER.debug("still harvesting, not rescheduled");
-                    return;
+                    continue;
                 }
                 if (ftpConfig.isEnabled()
                         && runScheduleFactory.newRunScheduleFrom(ftpConfig.getSchedule())
@@ -86,7 +86,7 @@ public class ScheduledHarvesterBean {
 
                     if (! fileHarvests.isEmpty()) {
                         runningTasks.add( ftpConfig, fileHarvests );
-                        ftpHarvesterBean.harvest( ftpConfig, fileHarvests );
+                        ftpHarvesterBean.harvest( ftpConfig );
                         LOGGER.info( "Done scheduling {}", ftpConfig.getName());
                     }
                 }
