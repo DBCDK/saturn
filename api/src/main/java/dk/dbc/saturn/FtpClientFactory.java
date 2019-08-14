@@ -13,6 +13,8 @@ public class FtpClientFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             FtpClientFactory.class);
 
+    private FtpClientFactory() {}
+
     public static FtpClient createFtpClient( FtpHarvesterConfig config, ProxyHandlerBean proxyHandlerBean ){
         final String username = config.getUsername();
         final String host = config.getHost();
