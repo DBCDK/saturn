@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static dk.dbc.saturn.AbstractIntegrationTest.getHttpHarvesterConfig;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,57 +24,57 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ScheduledHarvesterBeanIT extends AbstractIntegrationTest {
+class ScheduledHarvesterBeanIT {
     private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
-    private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
     private static final RunningTasks runningTasks = new RunningTasks();
+    private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
 
     @Test
     void test_harvest() throws HarvestException,
             InterruptedException, ExecutionException, ParseException {
         final HttpHarvesterConfig config = getHttpHarvesterConfig();
-        harvesterConfigRepository.entityManager.persist(config);
-        harvesterConfigRepository.entityManager.flush();
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(
             new MockFileHarvest("spongebob", "spongebob", 3));
+        final List<HttpHarvesterConfig> httpConfigs = Collections.singletonList(
+                getHttpHarvesterConfig()  );
         final Future future = mock(Future.class);
-        when(future.get()).thenReturn(fileHarvests);
-        when(future.isDone()).thenReturn(false);
-        when(httpHarvesterBean.harvest(any(HttpHarvesterConfig.class))).thenReturn(future);
-
         final ScheduledHarvesterBean scheduledHarvesterBean =
-            getScheduledHarvesterBean();
-        scheduledHarvesterBean.runningTasks = runningTasks;
-        scheduledHarvesterBean.harvest();
-
-        assertThat("task list after first run", scheduledHarvesterBean
-                .harvestTasks.size(), is(1));
-        final FileHarvest result = scheduledHarvesterBean.harvestTasks.get(
-            config.getId()).get().iterator().next();
-        assertThat("file harvest filename", result.getFilename(),
-            is("spongebob"));
-
-
-        // simulate a second passing where the harvest is done
+                getScheduledHarvesterBean();
+        when( scheduledHarvesterBean.harvesterConfigRepository
+                .list(HttpHarvesterConfig.class, 0, 0))
+                .thenReturn( httpConfigs );
+        when(scheduledHarvesterBean.httpHarvesterBean.harvest(any(HttpHarvesterConfig.class))).
+                thenReturn(future);
         when(future.isDone()).thenReturn(true);
+
+        scheduledHarvesterBean.runningTasks = runningTasks;
+
+        when( scheduledHarvesterBean.httpHarvesterBean.listFiles( any(HttpHarvesterConfig.class)) )
+                .thenReturn(fileHarvests);
+        config.setId(1);
+        runningTasks.add(config);
         scheduledHarvesterBean.harvest();
 
-        assertThat("empty task list after second run", scheduledHarvesterBean
-            .harvestTasks.size(), is(0));
+        // Test that no new harvest is launched if an earlier version is still running..
+        assertThat("task list after first run", runningTasks.size(), is(1));
+        verify( scheduledHarvesterBean.httpHarvesterBean, times( 0)).harvest(config);
+        runningTasks.remove(config);
+        assertThat("task list after removing this config", runningTasks.size(), is(0));
 
-        assertThat("config seqno updated", config.getSeqno(), is(3));
+        scheduledHarvesterBean.harvest();
+        assertThat("empty task list after second run", runningTasks.size(), is(1));
 
-        // verify that two passes happened
-        verify(future, times(2)).isDone();
+        // verify that harvest was called once
+        verify( scheduledHarvesterBean.httpHarvesterBean, times( 1)).harvest(config);
     }
 
-    private ScheduledHarvesterBean getScheduledHarvesterBean() {
+    private ScheduledHarvesterBean getScheduledHarvesterBean( ) {
         final RunScheduleFactory runScheduleFactory = new RunScheduleFactory("Europe/Copenhagen");
         final ScheduledHarvesterBean scheduledHarvesterBean = new ScheduledHarvesterBean();
         scheduledHarvesterBean.runScheduleFactory = runScheduleFactory;
         scheduledHarvesterBean.ftpSenderBean = ftpSenderBean;
-        scheduledHarvesterBean.harvesterConfigRepository = harvesterConfigRepository;
+        scheduledHarvesterBean.harvesterConfigRepository = mock(HarvesterConfigRepository.class);
         scheduledHarvesterBean.httpHarvesterBean = httpHarvesterBean;
         return scheduledHarvesterBean;
     }

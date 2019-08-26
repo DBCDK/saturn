@@ -8,12 +8,7 @@ package dk.dbc.saturn.api;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
-import dk.dbc.saturn.FileHarvest;
-import dk.dbc.saturn.FtpHarvesterBean;
-import dk.dbc.saturn.HTTPHarvesterBean;
-import dk.dbc.saturn.HarvestException;
-import dk.dbc.saturn.HarvesterConfigRepository;
-import dk.dbc.saturn.MockFileHarvest;
+import dk.dbc.saturn.*;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -283,10 +278,8 @@ class HarvesterConfigApiTest {
         final Set<FileHarvest> fileHarvests = new HashSet<>(
                 Collections.singletonList( new MockFileHarvest("filename", "content", 42)));
 
-        final CompletableFuture<Set<FileHarvest>> future =
-                CompletableFuture.completedFuture(fileHarvests);
-        when(harvesterConfigApi.httpHarvesterBean.harvest(config))
-            .thenReturn(future);
+        when(harvesterConfigApi.httpHarvesterBean.listFiles(config))
+            .thenReturn(fileHarvests);
 
         Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
