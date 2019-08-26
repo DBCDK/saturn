@@ -1,6 +1,6 @@
 package dk.dbc.saturn;
 
-import dk.dbc.saturn.entity.FtpHarvesterConfig;
+import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,12 +18,12 @@ public class RunningTasks {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             RunningTasks.class);
 
-    public boolean isRunning( FtpHarvesterConfig config ) {
+    public boolean isRunning( AbstractHarvesterConfigEntity config ) {
 
         return runningHarvestTasks.contains( config.getId() );
     }
 
-    public  void remove( FtpHarvesterConfig config ) {
+    public  void remove( AbstractHarvesterConfigEntity config ) {
         if (isRunning(config) ) {
             runningHarvestTasks.remove( config.getId() );
         }
@@ -33,7 +33,7 @@ public class RunningTasks {
                         .map(String::valueOf).collect(Collectors.toList())));
     }
 
-    public void add( FtpHarvesterConfig config, Set<FileHarvest> fileHarvests ) throws HarvestException {
+    public void add( AbstractHarvesterConfigEntity config ) throws HarvestException {
         if ( isRunning( config) ) {
             throw new HarvestException( String.format("%s already running.", config.getName()));
         }

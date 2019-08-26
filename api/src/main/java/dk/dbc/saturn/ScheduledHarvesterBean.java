@@ -19,18 +19,9 @@ import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
-import java.time.Instant;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Startup
 @Singleton
@@ -38,10 +29,6 @@ import java.util.concurrent.Future;
 public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
-
-    /* Todo: Deprecate this */
-    final HashMap<Integer,
-        Future<Set<FileHarvest>>> harvestTasks = new HashMap<>();
 
     @Inject RunScheduleFactory runScheduleFactory;
     @EJB HTTPHarvesterBean httpHarvesterBean;
@@ -62,7 +49,6 @@ public class ScheduledHarvesterBean {
         try {
             scheduleFtpHarvests();
             scheduleHttpHarvests();
-            sendResults();
         } catch (Exception e) {
             LOGGER.error("caught unexpected exception while harvesting", e);
         }
@@ -85,7 +71,7 @@ public class ScheduledHarvesterBean {
                     Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles(ftpConfig);
 
                     if (! fileHarvests.isEmpty()) {
-                        runningTasks.add( ftpConfig, fileHarvests );
+                        runningTasks.add( ftpConfig );
                         ftpHarvesterBean.harvest( ftpConfig );
                         LOGGER.info( "Done scheduling {}", ftpConfig.getName());
                     }
@@ -97,84 +83,28 @@ public class ScheduledHarvesterBean {
         LOGGER.info( "Number of tasks unfinshed:{}", runningTasks.size());
     }
 
-    /* Todo: Rewrite using pattern from scheduleFtpHarvests */
     private void scheduleHttpHarvests() {
         final List<HttpHarvesterConfig> httpConfigs = harvesterConfigRepository
                 .list(HttpHarvesterConfig.class, 0, 0);
 
         LOGGER.info("got {} HTTP configs", httpConfigs.size());
         for (HttpHarvesterConfig httpConfig : httpConfigs) {
-            scheduleHttpHarvest(httpConfig);
-        }
-    }
-
-    /* Todo: Rewrite using pattern from scheduleFtpHarvests */
-    private void scheduleHttpHarvest(HttpHarvesterConfig httpConfig) {
-        try (HarvesterMDC mdc = new HarvesterMDC(httpConfig)) {
-            if (harvestTasks.keySet().contains(httpConfig.getId())) {
-                LOGGER.debug("still harvesting, not rescheduled");
-                return;
+            if (runningTasks.isRunning( httpConfig )) {
+                LOGGER.info("still harvesting, not rescheduled");
+                continue;
             }
             try {
                 if (httpConfig.isEnabled()
                         && runScheduleFactory.newRunScheduleFrom(httpConfig.getSchedule())
-                                .isSatisfiedBy(new Date(), httpConfig.getLastHarvested())) {
-                       harvestTasks.put(httpConfig.getId(),
-                                httpHarvesterBean.harvest(httpConfig));
+                        .isSatisfiedBy(new Date(), httpConfig.getLastHarvested())) {
+                    Set<FileHarvest> fileHarvests = httpHarvesterBean.listFiles(httpConfig);
+                    if ( ! fileHarvests.isEmpty() ){
+                        runningTasks.add( httpConfig );
+                        httpHarvesterBean.harvest(httpConfig);
+                    }
                 }
             } catch (HarvestException e) {
                 LOGGER.error("error while scheduling harvest", e);
-            }
-        }
-    }
-
-    /* Todo: remove */
-    private void sendResults() {
-        final Iterator<Map.Entry<Integer, Future<Set<FileHarvest>>>>
-                iterator = harvestTasks.entrySet().iterator();
-
-        while (iterator.hasNext()) {
-            final Map.Entry<Integer, Future<Set<FileHarvest>>> configEntry =
-                    iterator.next();
-            final int id = configEntry.getKey();
-            final Optional<Class> type = harvesterConfigRepository.getHarvesterConfigType(id);
-            if (!type.isPresent()) {
-                // this should never happen
-                LOGGER.error("unable to find type for config with id {}", id);
-                iterator.remove();
-                continue;
-            }
-            final AbstractHarvesterConfigEntity config = harvesterConfigRepository
-                .find(type.get(), id);
-            try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-                try {
-                    final Future<Set<FileHarvest>> result = configEntry.getValue();
-                    if (result.isDone()) {
-                        iterator.remove();
-                        final Set<FileHarvest> fileHarvests = result.get();
-                        if (fileHarvests.isEmpty()) {
-                            LOGGER.warn("no files harvested");
-                            continue;
-                        }
-                        ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
-                        config.setLastHarvested(Date.from(Instant.now()));
-                        config.setSeqno(fileHarvests.stream()
-                                .map(FileHarvest::getSeqno)
-                                .filter(Objects::nonNull)
-                                .max(Comparator.comparing(Integer::valueOf))
-                                .orElse(0));
-
-                        if (config instanceof HttpHarvesterConfig) {
-                            harvesterConfigRepository.save(HttpHarvesterConfig.class,
-                                    (HttpHarvesterConfig) config);
-                        } else {
-                            harvesterConfigRepository.save(FtpHarvesterConfig.class,
-                                    (FtpHarvesterConfig) config);
-                        }
-                    }
-                } catch (InterruptedException | ExecutionException | HarvestException e) {
-                    LOGGER.error("harvest task not completed: {}", e.getMessage(), e);
-                }
             }
         }
     }
