@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ScheduledHarvesterBeanIT {
+class ScheduledHarvesterBeanTest {
     private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
     private static final RunningTasks runningTasks = new RunningTasks();
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
