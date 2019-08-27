@@ -46,12 +46,9 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     }
 
     private FtpClient getFtpClient() {
-        return new FtpClient()
-            .withHost("localhost")
-            .withPort(fakeFtpServer.getServerControlPort())
-            .withUsername(USERNAME)
-            .withPassword(PASSWORD)
-            .cd(PUT_DIR);
+        return FtpClientFactory.createFtpClient("localhost",
+                fakeFtpServer.getServerControlPort(),
+                USERNAME, PASSWORD, PUT_DIR,null );
     }
 
     private Set<FileHarvest> getFileHarvests(String filenamePrefix, String ...contentList) {

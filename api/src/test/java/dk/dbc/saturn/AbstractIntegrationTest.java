@@ -98,7 +98,7 @@ public abstract class AbstractIntegrationTest {
         migrator.migrate();
     }
 
-    HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
+    public static HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setName("MyName'sNotRick!");
         config.setSchedule("* * * * *");
@@ -108,6 +108,7 @@ public abstract class AbstractIntegrationTest {
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
+        config.setId(1);
         config.setEnabled(true);
         return config;
     }
@@ -131,7 +132,7 @@ public abstract class AbstractIntegrationTest {
         return config;
     }
 
-    Date getDate(String date, String timezone) throws ParseException {
+    public static Date getDate(String date, String timezone) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone(timezone));
         return sdf.parse(date);

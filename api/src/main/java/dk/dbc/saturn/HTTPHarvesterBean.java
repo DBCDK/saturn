@@ -26,12 +26,14 @@ import javax.ejb.Stateless;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
+import java.util.Optional;
+import java.util.Objects;
+import java.util.Comparator;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -41,6 +43,9 @@ import java.util.regex.Pattern;
 @Stateless
 public class HTTPHarvesterBean {
     @EJB ProxyHandlerBean proxyHandlerBean;
+    @EJB FtpSenderBean ftpSenderBean;
+    @EJB RunningTasks runningTasks;
+    @EJB HarvesterConfigRepository harvesterConfigRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         HTTPHarvesterBean.class);
@@ -55,19 +60,76 @@ public class HTTPHarvesterBean {
     private static Pattern filenamePattern =
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
+    public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
+        String url = config.getUrl();
+        InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
+        LOGGER.info("Listing files from {}", url);
+        if (config.getUrlPattern() ==null || config.getUrlPattern().isEmpty() ){
+            return listFiles(url);
+        }
+        else {
+            return listFiles(url, config.getUrlPattern());
+        }
+    }
+
+    private Set<FileHarvest> listFiles(String url, String urlPattern) throws HarvestException {
+        LOGGER.info("looking for pattern {} in {}", urlPattern, url);
+        final String datafileUrl = findInContent(url, urlPattern);
+        LOGGER.info("found url {} for pattern {}", datafileUrl, urlPattern);
+        return listFiles(datafileUrl);
+    }
+
+    private Set<FileHarvest> listFiles(String url) throws HarvestException {
+        final Client client = getHttpClient();
+        final Stopwatch stopwatch = new Stopwatch();
+        try {
+            final Response response = getResponse(client, url);
+            if (response.hasEntity()) {
+                final Optional<String> filename = getFilenameFromResponse(response);
+                final Set<FileHarvest> fileHarvests = new HashSet<>();
+                if (filename.isPresent()) {
+                    final FileHarvest fileHarvest = new HttpFileHarvest(
+                            filename.get(), client, url, null);
+                    fileHarvests.add(fileHarvest);
+                } else {
+                    final FileHarvest fileHarvest = new HttpFileHarvest(
+                            getFilename(url), client, url, null);
+                    fileHarvests.add(fileHarvest);
+                }
+                return fileHarvests;
+            } else {
+                throw new HarvestException(String.format(
+                        "no entity found on response for url \"%s\"", url));
+            }
+        } finally {
+            LOGGER.info("Listing of {} took {} ms", url,
+                    stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+        }
+    }
 
     @Asynchronous
-    public Future<Set<FileHarvest>> harvest(HttpHarvesterConfig config) throws HarvestException {
+    public Future<Void> harvest( HttpHarvesterConfig config ) throws HarvestException {
+        doHarvest(config);
+        return new AsyncResult<Void>(null);
+    }
+
+    private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
+        LOGGER.info("Do harvestingf of url {}", config.getUrl());
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-            if (config.getUrlPattern() == null
-                    || config.getUrlPattern().isEmpty()) {
-                return new AsyncResult<>(
-                        harvest(config.getUrl()));
-            }
-            // look in response from url to get the real
-            // url for data harvesting
-            return new AsyncResult<>(
-                    harvest(config.getUrl(), config.getUrlPattern()));
+            LOGGER.info( "Starting harvest of {}", config.getName());
+            Set<FileHarvest> fileHarvests = listFiles( config );
+            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
+            config.setLastHarvested(Date.from(Instant.now()));
+            config.setSeqno(fileHarvests.stream()
+                    .map(FileHarvest::getSeqno)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.comparing(Integer::valueOf))
+                    .orElse(0));
+            fileHarvests.stream().forEach(FileHarvest::close);
+
+            harvesterConfigRepository.save( HttpHarvesterConfig.class, config );
+            LOGGER.info( "Ended harvest of {}", config.getName() );
+            runningTasks.remove( config );
         }
     }
 
@@ -83,55 +145,7 @@ public class HTTPHarvesterBean {
         return HttpClient.newClient(clientConfig);
     }
 
-    public Set<FileHarvest> harvest(String url) throws HarvestException {
-        InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
-        final Stopwatch stopwatch = new Stopwatch();
-        LOGGER.info("harvesting {}", url);
 
-        final Client client = getHttpClient();
-
-        try {
-            final Response response = getResponse(client, url);
-            if (response.hasEntity()) {
-                InputStream is = response.readEntity(InputStream.class);
-                final Optional<String> filename = getFilenameFromResponse(response);
-                final Set<FileHarvest> fileHarvests = new HashSet<>();
-                if (filename.isPresent()) {
-                    final FileHarvest fileHarvest = new HttpFileHarvest(
-                        filename.get(), client, url, null);
-                    fileHarvests.add(fileHarvest);
-                } else {
-                    final FileHarvest fileHarvest = new HttpFileHarvest(
-                        getFilename(url), client, url, null);
-                    fileHarvests.add(fileHarvest);
-                }
-                return fileHarvests;
-            } else {
-                throw new HarvestException(String.format(
-                    "no entity found on response for url \"%s\"", url));
-            }
-        } finally {
-            LOGGER.info("harvesting of {} took {} ms", url,
-                    stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
-        }
-    }
-
-    /**
-     * harvest data from a url found in the response from the first url
-     *
-     * @param url url pointing to a page containing a url pointing to a datafile
-     * @param pattern pattern of the url to the datafile
-     * @return a FileHarvest object containing the fetched resource
-     * @throws HarvestException on empty response from the first url or
-     * failure to match the pattern against the response
-     */
-    public Set<FileHarvest> harvest(String url, String pattern)
-            throws HarvestException {
-        LOGGER.info("looking for pattern {} in {}", pattern, url);
-        final String datafileUrl = findInContent(url, pattern);
-        LOGGER.info("found url {} for pattern {}", datafileUrl, pattern);
-        return harvest(datafileUrl);
-    }
 
     protected static Response getResponse(Client client, String url) throws HarvestException {
         final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(

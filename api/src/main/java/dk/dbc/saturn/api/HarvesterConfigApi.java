@@ -165,7 +165,7 @@ public class HarvesterConfigApi {
         if (config.isPresent()) {
             // sort files using TreeSet
             final Set<FileHarvest> fileHarvests = new TreeSet<>(
-                    httpHarvesterBean.harvest(config.get()).get());
+                    httpHarvesterBean.listFiles(config.get()));
             fileHarvests.forEach(fileHarvest -> {
                 try {
                     fileHarvest.getContent().close();
@@ -216,7 +216,7 @@ public class HarvesterConfigApi {
         if (config.isPresent()) {
             // sort files using TreeSet
             final Set<FileHarvest> fileHarvests = new TreeSet<>(
-                    ftpHarvesterBean.harvest(config.get()).get());
+                    ftpHarvesterBean.listFiles(config.get()));
             fileHarvests.forEach(fileHarvest -> {
                LOGGER.info("Found: {}",fileHarvest.getFilename());
             });
