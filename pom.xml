@@ -42,6 +42,8 @@
         <stopwatch.version>1.0-SNAPSHOT</stopwatch.version>
         <wiremock.version>2.20.0</wiremock.version>
         <yarn.version>v1.7.0</yarn.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <repositories>
