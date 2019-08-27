@@ -48,8 +48,6 @@ class ScheduledHarvesterBeanTest {
                 thenReturn(future);
         when(future.isDone()).thenReturn(true);
 
-        scheduledHarvesterBean.runningTasks = runningTasks;
-
         when( scheduledHarvesterBean.httpHarvesterBean.listFiles( any(HttpHarvesterConfig.class)) )
                 .thenReturn(fileHarvests);
         config.setId(1);
@@ -58,7 +56,7 @@ class ScheduledHarvesterBeanTest {
 
         // Test that no new harvest is launched if an earlier version is still running..
         assertThat("task list after first run", runningTasks.size(), is(1));
-        verify( scheduledHarvesterBean.httpHarvesterBean, times( 0)).harvest(config);
+        verify(scheduledHarvesterBean.httpHarvesterBean, times( 0)).harvest(config);
         runningTasks.remove(config);
         assertThat("task list after removing this config", runningTasks.size(), is(0));
 
@@ -66,7 +64,7 @@ class ScheduledHarvesterBeanTest {
         assertThat("empty task list after second run", runningTasks.size(), is(1));
 
         // verify that harvest was called once
-        verify( scheduledHarvesterBean.httpHarvesterBean, times( 1)).harvest(config);
+        verify(scheduledHarvesterBean.httpHarvesterBean, times( 1)).harvest(config);
     }
 
     private ScheduledHarvesterBean getScheduledHarvesterBean( ) {
@@ -76,6 +74,7 @@ class ScheduledHarvesterBeanTest {
         scheduledHarvesterBean.ftpSenderBean = ftpSenderBean;
         scheduledHarvesterBean.harvesterConfigRepository = mock(HarvesterConfigRepository.class);
         scheduledHarvesterBean.httpHarvesterBean = httpHarvesterBean;
+        scheduledHarvesterBean.runningTasks = runningTasks;
         return scheduledHarvesterBean;
     }
 }

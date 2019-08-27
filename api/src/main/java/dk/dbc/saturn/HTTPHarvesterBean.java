@@ -27,7 +27,13 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Optional;
+import java.util.Objects;
+import java.util.Comparator;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -54,26 +60,26 @@ public class HTTPHarvesterBean {
     private static Pattern filenamePattern =
         Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
-    public Set<FileHarvest> listFiles( HttpHarvesterConfig config ) throws HarvestException {
+    public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
         String url = config.getUrl();
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
         LOGGER.info("Listing files from {}", url);
         if (config.getUrlPattern() ==null || config.getUrlPattern().isEmpty() ){
-            return listFiles( url );
+            return listFiles(url);
         }
         else {
-            return listFiles( url, config.getUrlPattern() );
+            return listFiles(url, config.getUrlPattern());
         }
     }
 
-    private Set<FileHarvest> listFiles( String url, String urlPattern) throws HarvestException {
+    private Set<FileHarvest> listFiles(String url, String urlPattern) throws HarvestException {
         LOGGER.info("looking for pattern {} in {}", urlPattern, url);
         final String datafileUrl = findInContent(url, urlPattern);
         LOGGER.info("found url {} for pattern {}", datafileUrl, urlPattern);
         return listFiles(datafileUrl);
     }
 
-    private Set<FileHarvest> listFiles( String url ) throws HarvestException {
+    private Set<FileHarvest> listFiles(String url) throws HarvestException {
         final Client client = getHttpClient();
         final Stopwatch stopwatch = new Stopwatch();
         try {
@@ -107,7 +113,7 @@ public class HTTPHarvesterBean {
         return new AsyncResult<Void>(null);
     }
 
-    private void doHarvest(HttpHarvesterConfig config ) throws HarvestException {
+    private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
         LOGGER.info("Do harvestingf of url {}", config.getUrl());
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info( "Starting harvest of {}", config.getName());
