@@ -8,13 +8,14 @@ package dk.dbc.saturn.api;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
-import dk.dbc.saturn.FileHarvest;
-import dk.dbc.saturn.FtpHarvesterBean;
-import dk.dbc.saturn.HTTPHarvesterBean;
-import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.HTTPHarvesterBean;
+import dk.dbc.saturn.FtpHarvesterBean;
+import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.FileHarvest;
+import dk.dbc.saturn.MockFileHarvest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +28,9 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.Optional;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -279,11 +281,10 @@ class HarvesterConfigApiTest {
                 .thenReturn(Optional.of(config));
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
-        final CompletableFuture<Set<FileHarvest>> future =
-                CompletableFuture.completedFuture(fileHarvests);
-        when(harvesterConfigApi.httpHarvesterBean.harvest(config))
-            .thenReturn(future);
+                Collections.singletonList( new MockFileHarvest("filename", "content", 42)));
+
+        when(harvesterConfigApi.httpHarvesterBean.listFiles(config))
+            .thenReturn(fileHarvests);
 
         Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
@@ -304,7 +305,7 @@ class HarvesterConfigApiTest {
 
     @Test
     void test_testFtpHarvesterConfig()
-            throws JSONBException, InterruptedException, ExecutionException {
+            throws JSONBException, InterruptedException, ExecutionException, HarvestException {
         final FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
         when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
@@ -312,11 +313,11 @@ class HarvesterConfigApiTest {
                 .thenReturn(Optional.of(config));
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList(new FileHarvest("filename", inputStream, 42)));
-        final CompletableFuture<Set<FileHarvest>> future =
-                CompletableFuture.completedFuture(fileHarvests);
-        when(harvesterConfigApi.ftpHarvesterBean.harvest(config))
-                .thenReturn(future);
+                Collections.singletonList( new MockFileHarvest ("filename", "content", 42)));
+        final CompletableFuture<Void> future =
+                CompletableFuture.completedFuture(null);
+        when(harvesterConfigApi.ftpHarvesterBean.listFiles( config ))
+                .thenReturn(fileHarvests);
 
         final Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));

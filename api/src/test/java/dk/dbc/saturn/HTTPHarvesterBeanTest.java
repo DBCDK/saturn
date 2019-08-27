@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,9 +35,9 @@ public class HTTPHarvesterBeanTest {
     private static ClientAndProxy mockProxy;
 
     private final FileHarvest squarepantsFileHarvest =
-            new FileHarvest("squarepants.jpg", null, null);
+            new HttpFileHarvest("squarepants.jpg", null, null, null);
     private final FileHarvest squarepantsNoHeaderFileHarvest =
-            new FileHarvest("squarepants", null, null);
+            new HttpFileHarvest("squarepants", null, null, null);
 
     @BeforeAll
     public static void setUp() throws IOException {
@@ -72,8 +73,8 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
-            "/spongebob/squarepants");
+        Set<FileHarvest> result = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants", null ) );
         assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
             is(true));
         final FileHarvest fileHarvest = result.iterator().next();
@@ -96,8 +97,8 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
-            "/spongebob/squarepants");
+        Set<FileHarvest> result = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig(wireMockHost + "/spongebob/squarepants", null ) );
         assertThat("has squarepants harvest", result.contains(squarepantsNoHeaderFileHarvest),
             is(true));
         final FileHarvest fileHarvest = result.iterator().next();
@@ -121,8 +122,8 @@ public class HTTPHarvesterBeanTest {
             ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
-            "/spongebob/squarepants/");
+        Set<FileHarvest> result = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants/", null ) );
         assertThat("has squarepants harvest", result.contains(squarepantsNoHeaderFileHarvest),
             is(true));
         final FileHarvest fileHarvest = result.iterator().next();
@@ -140,7 +141,8 @@ public class HTTPHarvesterBeanTest {
     public void test_harvest_nullPointer() throws HarvestException {
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
-            httpHarvesterBean.harvest((String) null);
+            httpHarvesterBean.listFiles(
+                    getHttpHarvesterConfig( null, null ) );
             fail("expected nullpointer exception");
         } catch(NullPointerException e) {}
     }
@@ -149,7 +151,8 @@ public class HTTPHarvesterBeanTest {
     public void test_harvest_emptyUrl() throws HarvestException {
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
-            httpHarvesterBean.harvest("");
+            httpHarvesterBean.listFiles(
+                    getHttpHarvesterConfig( "", null) );
             fail("expected illegalargument exception");
         } catch(IllegalArgumentException e) {}
     }
@@ -160,7 +163,8 @@ public class HTTPHarvesterBeanTest {
             .willReturn(aResponse().withStatus(200)));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
-            httpHarvesterBean.harvest(wireMockHost + "/spongebob/squarepants");
+            httpHarvesterBean.listFiles(
+                    getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants", null ));
             fail("expected harvestexception");
         } catch(HarvestException e) {}
     }
@@ -171,7 +175,8 @@ public class HTTPHarvesterBeanTest {
             .willReturn(aResponse().withStatus(404)));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         try {
-            httpHarvesterBean.harvest(wireMockHost + "/spongebob/squarepants");
+            httpHarvesterBean.listFiles(
+                    getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants", null ) );
             fail("expected harvestexception");
         } catch(HarvestException e) {}
     }
@@ -196,11 +201,12 @@ public class HTTPHarvesterBeanTest {
             "/viaf/data/viaf-20180701-clusters-marc21.iso.gz")).willReturn(
             aResponse().withStatus(200).withBody("viaf-data")));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        final Set<FileHarvest> results = httpHarvesterBean.harvest(wireMockHost + "/patternpants",
-            String.format("%s/viaf*iso.gz", wireMockHost));
+        final Set<FileHarvest> results = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig(wireMockHost + "/patternpants",
+                                        String.format("%s/viaf*iso.gz", wireMockHost)) );
         assertThat("results size", results.size(), is(1));
-        final FileHarvest viafHarvest = new FileHarvest(
-            "viaf-20180701-clusters-marc21.iso.gz", null, null);
+        final FileHarvest viafHarvest = new HttpFileHarvest(
+            "viaf-20180701-clusters-marc21.iso.gz", null, targetUrl, null);
         assertThat("contains viaf harvest", results.contains(viafHarvest),
             is(true));
 
@@ -228,8 +234,8 @@ public class HTTPHarvesterBeanTest {
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
         httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
-        Set<FileHarvest> result = httpHarvesterBean.harvest(wireMockHost +
-            "/spongebob/squarepants");
+        Set<FileHarvest> result = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants", null ) );
         assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
             is(true));
         final FileHarvest fileHarvest = result.iterator().next();
@@ -297,5 +303,11 @@ public class HTTPHarvesterBeanTest {
         httpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;
+    }
+    private static HttpHarvesterConfig getHttpHarvesterConfig( String url, String urlPattern ){
+        HttpHarvesterConfig config = new HttpHarvesterConfig();
+        config.setUrl( url );
+        config.setUrlPattern( urlPattern );
+        return config;
     }
 }

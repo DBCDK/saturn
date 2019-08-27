@@ -15,6 +15,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,6 +42,8 @@ public class FtpSenderBean {
 
     private static final String APPLICATION_ID = "saturn";
 
+
+
     /**
      * send files to an ftp server
      * @param files map of filenames and corresponding input streams
@@ -48,31 +51,31 @@ public class FtpSenderBean {
      * @param transfileTemplate transfile content template
      */
     public void send(Set<FileHarvest> files, String filenamePrefix,
-            String transfileTemplate) {
+            String transfileTemplate) throws HarvestException    {
         final Stopwatch stopwatch = new Stopwatch();
         try {
-            files.forEach(f -> f.setFilenamePrefix(filenamePrefix));
-            final String filenames = files.stream().map(FileHarvest::getFilename)
-                    .sorted().collect(Collectors.joining(", "));
-            LOGGER.info("downloading to ftp: {}", filenames);
+            final List<String> filenames = files.stream()
+                    .map( fileHarvest-> fileHarvest.getUploadFilename(filenamePrefix) )
+                    .sorted()
+                    .collect( Collectors.toList() );
+            LOGGER.info("Files to upload to ftp: {}", String.join(",", filenames));
             final String transfile = TransfileGenerator
-                    .generateTransfile(transfileTemplate,
-                            files.stream().map(FileHarvest::getFilename)
-                                    .sorted().collect(Collectors.toList()));
+                    .generateTransfile(
+                            transfileTemplate,
+                            filenames );
             final String transfileName = String.format("%s.%s.trans",
                     filenamePrefix, APPLICATION_ID);
-            LOGGER.info("creating transfile {} with content: {}", transfileName, transfile);
-            FtpClient ftpClient = new FtpClient()
-                    .withHost(host)
-                    .withPort(Integer.parseInt(port))
-                    .withUsername(username)
-                    .withPassword(password)
-                    .cd(dir);
+            FtpClient ftpClient = FtpClientFactory.createFtpClient( host, Integer.parseInt(port),
+                    username, password, dir, null );
             try {
                 for (FileHarvest fileHarvest : files) {
-                    ftpClient.put(fileHarvest.getFilename(),
-                            fileHarvest.getContent(), FtpClient.FileType.BINARY);
+                    ftpClient.put(
+                            fileHarvest.getUploadFilename( filenamePrefix ),
+                            fileHarvest.getContent(),
+                            FtpClient.FileType.BINARY );
+                    fileHarvest.close();
                 }
+                LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfile);
                 ftpClient.put(transfileName, new ByteArrayInputStream(
                                 transfile.getBytes(StandardCharsets.UTF_8)),
                         FtpClient.FileType.BINARY);

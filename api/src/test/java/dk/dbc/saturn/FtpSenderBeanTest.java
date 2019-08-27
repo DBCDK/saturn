@@ -7,21 +7,17 @@ package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class FtpSenderBeanTest extends AbstractFtpBeanTest {
     @Test
-    void send() throws IOException  {
+    void send() throws IOException, HarvestException  {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
-        Set<FileHarvest> inputStreams = getFileHarvests("sponge", "bob");
+        Set<FileHarvest> inputStreams = getFileHarvests("krusty","sponge", "bob");
         final String transfile = "b=transfile";
         final String transfileName = "krusty.saturn.trans";
         ftpSenderBean.send(inputStreams, "krusty", transfile);
@@ -50,26 +46,18 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     }
 
     private FtpClient getFtpClient() {
-        return new FtpClient()
-            .withHost("localhost")
-            .withPort(fakeFtpServer.getServerControlPort())
-            .withUsername(USERNAME)
-            .withPassword(PASSWORD)
-            .cd(PUT_DIR);
+        return FtpClientFactory.createFtpClient("localhost",
+                fakeFtpServer.getServerControlPort(),
+                USERNAME, PASSWORD, PUT_DIR,null );
     }
 
-    private Set<FileHarvest> getFileHarvests(String ...contentList) {
+    private Set<FileHarvest> getFileHarvests(String filenamePrefix, String ...contentList) {
         final Set<FileHarvest> fileHarvests = new HashSet<>(contentList.length);
         for (String content : contentList) {
-            try {
-                fileHarvests.add(new FileHarvest(content,
-                        new ByteArrayInputStream(content.getBytes("utf8")),
-                        null));
-            } catch (UnsupportedEncodingException e) {
-                fileHarvests.add(new FileHarvest(content,
-                        new ByteArrayInputStream(e.toString().getBytes()), null));
-                    }
+            fileHarvests.
+                    add( new MockFileHarvest( content, content, 0) );
         }
         return fileHarvests;
     }
+
 }
