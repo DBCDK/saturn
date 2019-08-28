@@ -5,7 +5,6 @@
 
 package dk.dbc.saturn;
 
-import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.slf4j.Logger;

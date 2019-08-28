@@ -7,7 +7,6 @@ package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
-import org.apache.commons.net.ftp.FTPClient;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
