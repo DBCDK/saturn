@@ -40,8 +40,8 @@ pipeline {
 			steps {
 				step([$class: 'hudson.plugins.pmd.PmdPublisher',
 					  pattern: '**/target/pmd.xml',
-					  unstableTotalAll: "1",
-					  failedTotalAll: "1"])
+					  unstableTotalAll: "0",
+					  failedTotalAll: "0"])
 			}
 		}
 		stage("docker build") {
