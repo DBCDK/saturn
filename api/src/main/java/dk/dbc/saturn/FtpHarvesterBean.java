@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
+
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionAttribute;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.nio.file.Paths;
@@ -59,7 +62,7 @@ public class FtpHarvesterBean {
     }
 
 
-
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Set<FileHarvest> listFiles( FtpHarvesterConfig ftpHarvesterConfig ) {
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher( ftpHarvesterConfig );
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(ftpHarvesterConfig.getFilesPattern());
