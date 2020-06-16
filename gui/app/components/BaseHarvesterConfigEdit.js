@@ -96,6 +96,7 @@ class FileHarvest extends React.Component {
         return (
             <tr>
                 <td>{this.props.filename}</td>
+                <td>{this.props.status}</td>
                 <td>{this.props.seqno}</td>
             </tr>
         );
@@ -186,13 +187,14 @@ class BaseHarvesterConfigEdit extends React.Component {
                 <thead>
                     <tr>
                         <th>filename</th>
+                        <th>status</th>
                         <th>seqno</th>
                     </tr>
                 </thead>
                 <tbody>
                 {this.props.testResult.map(harvestFile =>
                         <FileHarvest key={harvestFile.filename}
-                            filename={harvestFile.filename} seqno={harvestFile.seqno}/>)}
+                            filename={harvestFile.filename} status={harvestFile.status} seqno={harvestFile.seqno}/>)}
                 </tbody>
             </table>);
         }
