@@ -12,7 +12,7 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
     private String dir;
     private String content;
 
-    public MockFileHarvest(String filename, String content, int seqno){
+    public MockFileHarvest(String filename, String content, int seqno) {
         this.filename=filename;
         this.content=content;
         this.seqno=seqno;
@@ -31,6 +31,11 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
     @Override
     public Integer getSeqno() {
         return seqno;
+    }
+
+    @Override
+    public Status getStatus() {
+        return null;
     }
 
     @Override

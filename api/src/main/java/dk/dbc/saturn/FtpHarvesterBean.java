@@ -90,7 +90,8 @@ public class FtpHarvesterBean {
                             ftpHarvesterConfig.getDir(),
                             file,
                             seqnoMatcher.getSeqno(),
-                            ftpClient);
+                            ftpClient,
+                            FileHarvest.Status.AWAITING_DOWNLOAD);
                     fileHarvests.add(fileHarvest);
                 }
             }

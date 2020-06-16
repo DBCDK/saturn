@@ -11,12 +11,14 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private final Integer seqno;
     private FtpClient ftpClient;
     private String dir;
+    private final FileHarvest.Status status;
 
-    public FtpFileHarvest(String dir, String filename, Integer seqno, FtpClient ftpClient) {
+    public FtpFileHarvest(String dir, String filename, Integer seqno, FtpClient ftpClient, FileHarvest.Status status) {
         this.filename = filename;
         this.seqno = seqno;
         this.ftpClient = ftpClient;
         this.dir = dir;
+        this.status = status;
     }
 
     @Override
@@ -44,6 +46,11 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     }
 
     @Override
+    public FileHarvest.Status getStatus() {
+        return status;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -51,19 +58,37 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         FtpFileHarvest that = (FtpFileHarvest) o;
-        return Objects.equals(filename, that.filename);
+
+        if (!Objects.equals(filename, that.filename)) {
+            return false;
+        }
+        if (!Objects.equals(seqno, that.seqno)) {
+            return false;
+        }
+        if (!Objects.equals(dir, that.dir)) {
+            return false;
+        }
+        return status == that.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filename);
+        int result = filename != null ? filename.hashCode() : 0;
+        result = 31 * result + (seqno != null ? seqno.hashCode() : 0);
+        result = 31 * result + (dir != null ? dir.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return "FileHarvest{" +
+        return "FtpFileHarvest{" +
                 "filename='" + filename + '\'' +
+                ", seqno=" + seqno +
+                ", dir='" + dir + '\'' +
+                ", status=" + status +
                 '}';
     }
 
