@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,13 +23,9 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     public void test_harvest() throws IOException, HarvestException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
+        final String ftpDir = createFtpDir("test_harvest");
         final FtpClient ftpClient = FtpClientFactory.createFtpClient(
-                "localhost",
-                fakeFtpServer.getServerControlPort(),
-                USERNAME,
-                PASSWORD,
-                PUT_DIR,
-                null );
+                "localhost", fakeFtpServer.getServerControlPort(), USERNAME, PASSWORD, ftpDir, null);
         ftpClient.put(putFile1, "Barnacle Boy!");
         ftpClient.put(putFile2, "Mermaid Man!");
         ftpClient.close();
@@ -36,9 +33,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
         FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
 
         FtpHarvesterConfig config = getFtpHarvesterConfig(
-                "localhost", USERNAME, PASSWORD,
-                String.join("/", HOME_DIR, PUT_DIR),
-                fakeFtpServer.getServerControlPort(), null);
+                "localhost", USERNAME, PASSWORD, ftpDir, fakeFtpServer.getServerControlPort(), null);
 
         Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles( config );
 
@@ -109,6 +104,39 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
             assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
                 is(contentMap.get(fileHarvest.getFilename())));
         }
+    }
+
+    @Test
+    public void listAllFiles() {
+        final String putFile1 = "file1.xml";
+        final String putFile2 = "file2.txt";
+        final String putFile3 = "file3.txt";
+        final String ftpDir = createFtpDir("listAllFiles");
+        final FtpClient ftpClient = FtpClientFactory.createFtpClient(
+                "localhost", fakeFtpServer.getServerControlPort(), USERNAME, PASSWORD, ftpDir, null);
+        ftpClient.put(putFile1, "file1");
+        ftpClient.put(putFile2, "file2");
+        ftpClient.put(putFile3, "file3");
+        ftpClient.close();
+
+        final FtpHarvesterBean ftpHarvesterBean = getFtpHarvesterBean();
+
+        final FtpHarvesterConfig config = getFtpHarvesterConfig(
+                "localhost", USERNAME, PASSWORD, ftpDir, fakeFtpServer.getServerControlPort(), "*.txt");
+        config.setSeqnoExtract("5");
+        config.setSeqno(2);
+
+        final Set<FileHarvest> fileHarvests = ftpHarvesterBean.listAllFiles(config);
+
+        assertThat("result size", fileHarvests.size(), is(3));
+        final Set<FileHarvest> expectedFileHarvests = new HashSet<>();
+        expectedFileHarvests.add(new FtpFileHarvest(
+                ftpDir, putFile1, null, null, FileHarvest.Status.SKIPPED_BY_FILENAME));
+        expectedFileHarvests.add(new FtpFileHarvest(
+                ftpDir, putFile2, null, null, FileHarvest.Status.SKIPPED_BY_SEQNO));
+        expectedFileHarvests.add(new FtpFileHarvest(
+                ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD));
+        assertThat(fileHarvests, is(expectedFileHarvests));
     }
 
     private static FtpHarvesterBean getFtpHarvesterBean() {

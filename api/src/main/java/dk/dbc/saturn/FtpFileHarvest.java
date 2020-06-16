@@ -64,9 +64,6 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         if (!Objects.equals(filename, that.filename)) {
             return false;
         }
-        if (!Objects.equals(seqno, that.seqno)) {
-            return false;
-        }
         if (!Objects.equals(dir, that.dir)) {
             return false;
         }
@@ -76,7 +73,6 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     @Override
     public int hashCode() {
         int result = filename != null ? filename.hashCode() : 0;
-        result = 31 * result + (seqno != null ? seqno.hashCode() : 0);
         result = 31 * result + (dir != null ? dir.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
@@ -86,7 +82,6 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     public String toString() {
         return "FtpFileHarvest{" +
                 "filename='" + filename + '\'' +
-                ", seqno=" + seqno +
                 ", dir='" + dir + '\'' +
                 ", status=" + status +
                 '}';

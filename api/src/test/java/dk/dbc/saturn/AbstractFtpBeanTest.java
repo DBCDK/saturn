@@ -53,4 +53,11 @@ public abstract class AbstractFtpBeanTest {
             return sb.toString().trim();
         }
     }
+
+    static String createFtpDir(String dirname) {
+        final String dirpath = String.join("/", HOME_DIR, PUT_DIR, dirname);
+        final FileSystem fileSystem = fakeFtpServer.getFileSystem();
+        fileSystem.add(new DirectoryEntry(dirpath));
+        return dirpath;
+    }
 }
