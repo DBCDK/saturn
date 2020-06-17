@@ -203,23 +203,19 @@ public class HarvesterConfigApi {
     /**
      * Tests a single ftp harvester config
      * @param id harvester config id
-     * @return 200 OK with list of files that would be harvested if run for real
+     * @return 200 OK with list of files found on the FTP server
      *         404 Not Found if no config with the given id is found
      */
     @GET
     @Path(FTP_TEST_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response testFtpHarvesterConfig(@PathParam("id") int id)
-            throws JSONBException, ExecutionException, InterruptedException {
+    public Response testFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
         final Optional<FtpHarvesterConfig> config = harvesterConfigRepository
                 .getHarvesterConfig(FtpHarvesterConfig.class, id);
         if (config.isPresent()) {
             // sort files using TreeSet
             final Set<FileHarvest> fileHarvests = new TreeSet<>(
-                    ftpHarvesterBean.listFiles(config.get()));
-            fileHarvests.forEach(fileHarvest -> {
-               LOGGER.info("Found: {}",fileHarvest.getFilename());
-            });
+                    ftpHarvesterBean.listAllFiles(config.get()));
             return Response.ok(jsonbContext.marshall(fileHarvests)).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();

@@ -11,32 +11,31 @@ import dk.dbc.httpclient.HttpGet;
 import dk.dbc.invariant.InvariantUtil;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionAttribute;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-
-
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Optional;
-import java.util.Objects;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -93,11 +92,11 @@ public class HTTPHarvesterBean {
                 final Set<FileHarvest> fileHarvests = new HashSet<>();
                 if (filename.isPresent()) {
                     final FileHarvest fileHarvest = new HttpFileHarvest(
-                            filename.get(), client, url, null);
+                            filename.get(), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD);
                     fileHarvests.add(fileHarvest);
                 } else {
                     final FileHarvest fileHarvest = new HttpFileHarvest(
-                            getFilename(url), client, url, null);
+                            getFilename(url), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD);
                     fileHarvests.add(fileHarvest);
                 }
                 return fileHarvests;

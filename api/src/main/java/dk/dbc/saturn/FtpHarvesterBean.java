@@ -90,7 +90,8 @@ public class FtpHarvesterBean {
                             ftpHarvesterConfig.getDir(),
                             file,
                             seqnoMatcher.getSeqno(),
-                            ftpClient);
+                            ftpClient,
+                            FileHarvest.Status.AWAITING_DOWNLOAD);
                     fileHarvests.add(fileHarvest);
                 }
             }
@@ -104,4 +105,42 @@ public class FtpHarvesterBean {
         return fileHarvests;
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Set<FileHarvest> listAllFiles(FtpHarvesterConfig ftpHarvesterConfig) {
+        final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(ftpHarvesterConfig);
+        final FileNameMatcher fileNameMatcher = new FileNameMatcher(ftpHarvesterConfig.getFilesPattern());
+        final FileNameMatcher allFilesMatcher = new FileNameMatcher("*");
+        final Stopwatch stopwatch = new Stopwatch();
+        Set<FileHarvest> fileHarvests = new HashSet<>();
+        FtpClient ftpClient = FtpClientFactory.createFtpClient(ftpHarvesterConfig, proxyHandlerBean);
+        for (String file : ftpClient.list(allFilesMatcher)) {
+            if (file != null && !file.isEmpty()) {
+                if (!fileNameMatcher.matches(file)) {
+                    fileHarvests.add(new FtpFileHarvest(
+                            ftpHarvesterConfig.getDir(),
+                            file,
+                            seqnoMatcher.getSeqno(),
+                            ftpClient,
+                            FileHarvest.Status.SKIPPED_BY_FILENAME));
+                    continue;
+                }
+                final String filename = Paths.get(file).getFileName().toString().trim();
+                final FileHarvest.Status status;
+                if (seqnoMatcher.shouldFetch(filename)) {
+                    status = FileHarvest.Status.AWAITING_DOWNLOAD;
+                } else {
+                   status = FileHarvest.Status.SKIPPED_BY_SEQNO;
+                }
+                fileHarvests.add(new FtpFileHarvest(
+                        ftpHarvesterConfig.getDir(), file, seqnoMatcher.getSeqno(), ftpClient, status));
+            }
+        }
+        ftpClient.close();
+        LOGGER.info("Listing all files from {}@{}:{}/{} took {} ms", ftpHarvesterConfig.getUsername(),
+                ftpHarvesterConfig.getHost(),
+                ftpHarvesterConfig.getPort(),
+                ftpHarvesterConfig.getDir(),
+                stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+        return fileHarvests;
+    }
 }
