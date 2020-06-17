@@ -117,10 +117,7 @@ public class FtpHarvesterBean {
             if (file != null && !file.isEmpty()) {
                 if (!fileNameMatcher.matches(file)) {
                     fileHarvests.add(new FtpFileHarvest(
-                            ftpHarvesterConfig.getDir(),
-                            file,
-                            seqnoMatcher.getSeqno(),
-                            ftpClient,
+                            ftpHarvesterConfig.getDir(), file, null, ftpClient,
                             FileHarvest.Status.SKIPPED_BY_FILENAME));
                     continue;
                 }
