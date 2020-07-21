@@ -22,15 +22,7 @@ public class SFtpClientFactory {
 
     private SFtpClientFactory() {}
 
-    private static void makeAUTHORIZED_FILES(SFtpHarvesterConfig config) throws IOException, InterruptedException {
-        final Process p = Runtime.getRuntime()
-                .exec(String
-                        .format("ssh-keyscan -H -t rsa %s > %s", config.getHost(), knownHostsFile));
-        p.waitFor();
-    }
-
     private static ChannelSftp createSFtpClient(SFtpHarvesterConfig config, ProxyHandlerBean proxyHandlerBean) throws JSchException, IOException, InterruptedException, SftpException {
-        makeAUTHORIZED_FILES(config);
         Properties jschConfig = new Properties();
         LOGGER.info("Trying to connect to '{}' at port '{}' with user '{}' at path '{}'",
                 config.getHost(),
