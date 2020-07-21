@@ -29,6 +29,13 @@
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.junit.platform</groupId>
@@ -138,6 +145,23 @@
                         <goals>
                             <goal>shutdown</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>${exec.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>build-sftp-docker-image</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>api/src/test/resources/docker/sftp/build</executable>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -281,6 +305,16 @@
             <groupId>dk.dbc</groupId>
             <artifactId>run-schedule</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>${jsch.sftp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
