@@ -1,5 +1,5 @@
 FROM docker.dbc.dk/dbc-buster:latest
-MAINTAINER Adrian Dvergsdal [atmoz.net]
+LABEL maintaier=metascrum@dbc.dk
 
 # Steps done in one RUN layer:
 # - Install packages
