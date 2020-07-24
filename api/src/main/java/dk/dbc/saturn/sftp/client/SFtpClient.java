@@ -131,5 +131,39 @@ public class SFtpClient implements AutoCloseable {
         }
     }
 
+    public void mkdir(String dirname) {
+        verifyConnection();
+        try {
+            channelSftp.mkdir(dirname);
+        } catch (SftpException e) {
+            throw new SFtpClientException(e);
+        }
+    }
 
+    public void cd(String dirname) {
+        verifyConnection();
+        try {
+            channelSftp.cd(dirname);
+        } catch (SftpException e) {
+            throw new SFtpClientException(e);
+        }
+    }
+
+    public void rm(String filename) {
+        verifyConnection();
+        try {
+            channelSftp.rm(filename);
+        } catch (SftpException e) {
+            throw new SFtpClientException(e);
+        }
+    }
+
+    public void rmdir(String dirname) {
+        verifyConnection();
+        try {
+            channelSftp.rmdir(dirname);
+        } catch (SftpException e) {
+            throw new SFtpClientException(e);
+        }
+    }
 }
