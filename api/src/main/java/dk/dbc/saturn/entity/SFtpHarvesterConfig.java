@@ -125,4 +125,16 @@ public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
         result = 31 * result + filesPattern.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "SFtpHarvesterConfig{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", dir='" + dir + '\'' +
+                ", filesPattern='" + filesPattern + '\'' +
+                '}';
+    }
 }
