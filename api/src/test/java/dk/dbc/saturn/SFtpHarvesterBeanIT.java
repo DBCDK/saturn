@@ -12,8 +12,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -51,57 +53,22 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
                 is(contentMap.get(fileHarvest.getFilename())));
             fileHarvest.close();
         }
-    }
-
-    /*@Test
-    public void test_harvest_dirArgumentIsEmpty() throws IOException, HarvestException {
-        final String putFile1 = "bb.txt";
-        final String putFile2 = "mm.txt";
-        final FtpClient ftpClient = FtpClientFactory.createFtpClient(
-                "localhost",
-                fakeFtpServer.getServerControlPort(),
-                USERNAME,
-                PASSWORD,
-                "",
-                null );
-        ftpClient.put(putFile1, "Barnacle Boy!");
-        ftpClient.put(putFile2, "Mermaid Man!");
-        ftpClient.close();
-        SFtpHarvesterBean sFtpHarvesterBean = getSFtpHarvesterBean();
-        FtpHarvesterConfig config = getFtpHarvesterConfig(
-                "localhost", USERNAME, PASSWORD, "", fakeFtpServer.getServerControlPort(),
-                "*.txt" );
-        Set<FileHarvest> fileHarvests = sFtpHarvesterBean.listFiles( config );
-
-        assertThat("result size", fileHarvests.size(), is(2));
-        final Map<String, String> contentMap = new HashMap<>(2);
-        contentMap.put("bb.txt", "Barnacle Boy!");
-        contentMap.put("mm.txt", "Mermaid Man!");
-        for (FileHarvest fileHarvest : fileHarvests) {
-            assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
-                is(contentMap.get(fileHarvest.getFilename())));
-        }
+        removeFilesAndDir("", Arrays.asList(putFile1, putFile2));
     }
 
     @Test
     void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
         final String putFile1 = " 12v24.txt";
-        final FtpClient ftpClient = FtpClientFactory.createFtpClient(
-                "localhost",
-                fakeFtpServer.getServerControlPort(),
-                USERNAME,
-                PASSWORD,
-                "",
-                null );
-        ftpClient.put(putFile1, "Barnacle Boy!");
-        ftpClient.close();
+        try (final SFtpClient sftpClient = SFtpClient.getClient(
+                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, "upload", null)) {
+            sftpClient.putContent(putFile1, toInputStream("Barnacle Boy!"));
+        }
 
-        FtpHarvesterBean ftpHarvesterBean = getSFtpHarvesterBean();
-        FtpHarvesterConfig config = getFtpHarvesterConfig(
-                "localhost", USERNAME, PASSWORD, "", fakeFtpServer.getServerControlPort(),
-                "*.txt" );
+        SFtpHarvesterBean sFtpHarvesterBean = getSFtpHarvesterBean();
+        final SFtpHarvesterConfig config = getSFtpHarvesterConfig(
+                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_DIR, SFTP_PORT, "*.txt");
         config.setSeqnoExtract("1-2,4-5");
-        Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles( config );
+        Set<FileHarvest> fileHarvests = sFtpHarvesterBean.listFiles( config );
 
         assertThat("result size", fileHarvests.size(), is(1));
         final Map<String, String> contentMap = new HashMap<>(1);
@@ -111,7 +78,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
                 is(contentMap.get(fileHarvest.getFilename())));
         }
     }
-    */
+
     @Test
     public void test_listAllFiles() {
         final String putFile1 = "file1.xml";
@@ -145,16 +112,9 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         expectedFileHarvests.add(new SFtpFileHarvest(
                 ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD));
 
-        try (SFtpClient sFtpClient = SFtpClient.getClient(SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, SFTP_DIR, null)) {
-            sFtpClient.cd(listAllFiles);
-            sFtpClient.rm(putFile1);
-            sFtpClient.rm(putFile2);
-            sFtpClient.rm(putFile3);
-            sFtpClient.cd("..");
-            sFtpClient.rmdir(listAllFiles);
-        }
 
         assertThat(fileHarvests, is(expectedFileHarvests));
+        removeFilesAndDir(listAllFiles, Arrays.asList(putFile1, putFile2, putFile3));
     }
 
     private static SFtpHarvesterBean getSFtpHarvesterBean() {
@@ -174,6 +134,21 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         config.setPort(port);
         config.setFilesPattern(filesPattern);
         return config;
+    }
+
+    private static void removeFilesAndDir(String subdir, List<String> files) {
+        try (SFtpClient sFtpClient = SFtpClient.getClient(SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, SFTP_DIR, null)) {
+            if (!subdir.isEmpty()) {
+                sFtpClient.cd(subdir);
+            }
+            for(String file: files) {
+                sFtpClient.rm(file);
+            }
+            sFtpClient.cd("..");
+            if (!subdir.isEmpty()) {
+                sFtpClient.rmdir(subdir);
+            }
+        }
     }
 
     private static ByteArrayInputStream toInputStream(String s) {
