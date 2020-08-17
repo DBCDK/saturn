@@ -10,6 +10,7 @@ import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -43,6 +44,8 @@ public class HarvesterConfigRepository {
             queryName = FtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME;
         } else if (type == HttpHarvesterConfig.class) {
             queryName = HttpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME;
+        } else if (type == SFtpHarvesterConfig.class) {
+            queryName = SFtpHarvesterConfig.GET_HARVESTER_CONFIGS_NAME;
         } else {
             throw new IllegalArgumentException(String.format(
                 "unknown type %s", type));
@@ -107,6 +110,14 @@ public class HarvesterConfigRepository {
         httpConfigQuery.setMaxResults(1);
         if(ftpConfigQuery.getSingleResult() > 0) {
             return Optional.of(FtpHarvesterConfig.class);
+        }
+        final TypedQuery<Long> sftpConfigQuery = entityManager
+                .createNamedQuery(SFtpHarvesterConfig
+                        .GET_HARVESTER_CONFIG_COUNT_BY_ID_NAME, Long.class);
+        sftpConfigQuery.setParameter("id", id);
+        sftpConfigQuery.setMaxResults(1);
+        if(sftpConfigQuery.getSingleResult() > 0) {
+            return Optional.of(SFtpHarvesterConfig.class);
         }
         return Optional.empty();
     }

@@ -15,6 +15,7 @@ import dk.dbc.saturn.HarvesterConfigRepository;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +51,16 @@ public class HarvesterConfigApi {
     private static final String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
     private static final String HTTP_TEST_SINGLE_CONFIG_ENDPOINT = "http/test/{id}";
     private static final String FTP_LIST_ENDPOINT = "ftp/list";
+    private static final String SFTP_LIST_ENDPOINT = "sftp/list";
     private static final String FTP_ADD_ENDPOINT = "ftp/add";
+    private static final String SFTP_ADD_ENDPOINT = "sftp/add";
     private static final String FTP_GET_SINGLE_CONFIG_ENDPOINT = "ftp/get/{id}";
+    private static final String SFTP_GET_SINGLE_CONFIG_ENDPOINT = "sftp/get/{id}";
     private static final String FTP_TEST_SINGLE_CONFIG_ENDPOINT = "ftp/test/{id}";
+    private static final String SFTP_TEST_SINGLE_CONFIG_ENDPOINT = "sftp/test/{id}";
     private static final String HTTP_DELETE_ENDPOINT = "http/delete/{id}";
     private static final String FTP_DELETE_ENDPOINT = "ftp/delete/{id}";
+    private static final String SFTP_DELETE_ENDPOINT = "sftp/delete/{id}";
     private static final JSONBContext jsonbContext = new JSONBContext();
 
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -79,6 +85,24 @@ public class HarvesterConfigApi {
     }
 
     /**
+     * list sftp harvester configs
+     * @param start harvester config id to start from
+     * @param limit limit of returned list
+     * @return 200 OK response with json list of harvester configs
+     * @throws JSONBException on marshalling failure
+     */
+    @GET
+    @Path(SFTP_LIST_ENDPOINT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listSFtpHarvesterConfigs(@QueryParam("start") int start,
+            @QueryParam("limit") int limit) throws JSONBException {
+        final List<SFtpHarvesterConfig> configs = harvesterConfigRepository
+            .list(SFtpHarvesterConfig.class, start, limit);
+        return Response.ok(jsonbContext.marshall(configs)).build();
+    }
+    /* todo: Add rest of the endpoints for sftp here */
+
+    /**
      * list ftp harvester configs
      * @param start harvester config id to start from
      * @param limit limit of returned list
@@ -89,9 +113,9 @@ public class HarvesterConfigApi {
     @Path(FTP_LIST_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
     public Response listFtpHarvesterConfigs(@QueryParam("start") int start,
-            @QueryParam("limit") int limit) throws JSONBException {
+                                            @QueryParam("limit") int limit) throws JSONBException {
         final List<FtpHarvesterConfig> configs = harvesterConfigRepository
-            .list(FtpHarvesterConfig.class, start, limit);
+                .list(FtpHarvesterConfig.class, start, limit);
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
 

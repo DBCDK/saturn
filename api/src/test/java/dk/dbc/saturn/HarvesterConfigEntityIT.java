@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
@@ -312,27 +313,36 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     void test_getHarvesterConfigType() throws ParseException {
         FtpHarvesterConfig ftpHarvesterConfig = getFtpHarvesterConfig();
         HttpHarvesterConfig httpHarvesterConfig = getHttpHarvesterConfig();
+        SFtpHarvesterConfig sFtpHarvesterConfig = getSFtpHarvesterConfig();
 
         harvesterConfigRepository.entityManager.persist(ftpHarvesterConfig);
         harvesterConfigRepository.entityManager.persist(httpHarvesterConfig);
+        harvesterConfigRepository.entityManager.persist(sFtpHarvesterConfig);
         harvesterConfigRepository.entityManager.flush();
 
         Optional ftpConfigOptional = harvesterConfigRepository
             .getHarvesterConfigType(ftpHarvesterConfig.getId());
         Optional httpConfigOptional = harvesterConfigRepository
             .getHarvesterConfigType(httpHarvesterConfig.getId());
+        Optional sFtpConfigOptional = harvesterConfigRepository
+                .getHarvesterConfigType(sFtpHarvesterConfig.getId());
 
         assertThat("ftpharvesterconfig is present",
             ftpConfigOptional.isPresent(), is(true));
+        assertThat("sftpharvesterconfig is present",
+            sFtpConfigOptional.isPresent(), is(true));
         assertThat("httpharvesterconfig is present",
-            httpConfigOptional.isPresent(), is(true));
+                httpConfigOptional.isPresent(), is(true));
         assertThat("ftpharvesterconfig type", ftpConfigOptional.get(),
             is(equalTo(FtpHarvesterConfig.class)));
         assertThat("httpharvesterconfig type", httpConfigOptional.get(),
             is(equalTo(HttpHarvesterConfig.class)));
+        assertThat("sftpharvesterconfig type", sFtpConfigOptional.get(),
+                is(equalTo(SFtpHarvesterConfig.class)));
 
         assertThat("some large id value not present",
             harvesterConfigRepository.getHarvesterConfigType(
             Integer.MAX_VALUE).isPresent(), is(false));
+
     }
 }
