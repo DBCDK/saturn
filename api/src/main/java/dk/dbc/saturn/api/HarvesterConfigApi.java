@@ -12,6 +12,7 @@ import dk.dbc.saturn.FtpHarvesterBean;
 import dk.dbc.saturn.HTTPHarvesterBean;
 import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.SFtpHarvesterBean;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
@@ -65,6 +66,7 @@ public class HarvesterConfigApi {
 
     @EJB HarvesterConfigRepository harvesterConfigRepository;
     @EJB FtpHarvesterBean ftpHarvesterBean;
+    @EJB SFtpHarvesterBean sFtpHarvesterBean;
     @EJB HTTPHarvesterBean httpHarvesterBean;
 
     /**
@@ -100,7 +102,6 @@ public class HarvesterConfigApi {
             .list(SFtpHarvesterConfig.class, start, limit);
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
-    /* todo: Add rest of the endpoints for sftp here */
 
     /**
      * list ftp harvester configs
@@ -149,6 +150,22 @@ public class HarvesterConfigApi {
             String harvesterConfigString) {
         return addHarvesterConfig(FtpHarvesterConfig.class,
             harvesterConfigString, uriInfo);
+    }
+
+    /**
+     * add sftp harvester config entity to database
+     * @param harvesterConfigString sftp harvester config as json data
+     * @return 200 OK on successful creation of the entity
+     *         400 Bad Request on invalid json content
+     */
+    @POST
+    @Path(SFTP_ADD_ENDPOINT)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addSFtpHarvesterConfig(@Context UriInfo uriInfo,
+                                          String harvesterConfigString) {
+        return addHarvesterConfig(SFtpHarvesterConfig.class,
+                harvesterConfigString, uriInfo);
     }
 
     /**
@@ -204,6 +221,27 @@ public class HarvesterConfigApi {
     }
 
     /**
+     * get a single sftp harvester config
+     * @param id harvester config id
+     * @return 200 OK with sftp harvester config json
+     *         404 Not Found if no config with the given id is found
+     * @throws JSONBException on marshalling failure
+     */
+    @GET
+    @Path(SFTP_GET_SINGLE_CONFIG_ENDPOINT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSFtpHarvesterConfig(@PathParam("id") int id)
+            throws JSONBException {
+        Optional<SFtpHarvesterConfig> config = harvesterConfigRepository
+            .getHarvesterConfig(SFtpHarvesterConfig.class, id);
+        if(config.isPresent()) {
+            return Response.ok(jsonbContext.marshall(config.get())).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    /**
      * get a single ftp harvester config
      * @param id harvester config id
      * @return 200 OK with ftp harvester config json
@@ -216,7 +254,7 @@ public class HarvesterConfigApi {
     public Response getFtpHarvesterConfig(@PathParam("id") int id)
             throws JSONBException {
         Optional<FtpHarvesterConfig> config = harvesterConfigRepository
-            .getHarvesterConfig(FtpHarvesterConfig.class, id);
+                .getHarvesterConfig(FtpHarvesterConfig.class, id);
         if(config.isPresent()) {
             return Response.ok(jsonbContext.marshall(config.get())).build();
         } else {
@@ -245,6 +283,27 @@ public class HarvesterConfigApi {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+    /**
+     * Tests a single ftp harvester config
+     * @param id harvester config id
+     * @return 200 OK with list of files found on the FTP server
+     *         404 Not Found if no config with the given id is found
+     */
+    @GET
+    @Path(SFTP_TEST_SINGLE_CONFIG_ENDPOINT)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testSFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
+        final Optional<SFtpHarvesterConfig> config = harvesterConfigRepository
+                .getHarvesterConfig(SFtpHarvesterConfig.class, id);
+        if (config.isPresent()) {
+            // sort files using TreeSet
+            final Set<FileHarvest> fileHarvests = new TreeSet<>(
+                    sFtpHarvesterBean.listAllFiles(config.get()));
+            return Response.ok(jsonbContext.marshall(fileHarvests)).build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
     @DELETE
     @Path(HTTP_DELETE_ENDPOINT)
     public Response deleteHttpHarvesterConfig(@PathParam("id") int id) {
@@ -259,13 +318,20 @@ public class HarvesterConfigApi {
         return Response.noContent().build();
     }
 
+    @DELETE
+    @Path(SFTP_DELETE_ENDPOINT)
+    public Response deleteSFtpHarvesterConfig(@PathParam("id") int id) {
+        harvesterConfigRepository.delete(SFtpHarvesterConfig.class, id);
+        return Response.noContent().build();
+    }
+
     private <T extends AbstractHarvesterConfigEntity> Response
             addHarvesterConfig(Class<T> type, String harvesterConfigString,
             UriInfo uriInfo) {
         try {
-            T httpHarvesterConfig = jsonbContext.unmarshall(
+            T harvesterConfig = jsonbContext.unmarshall(
                 harvesterConfigString, type);
-            URI uri = harvesterConfigRepository.add(type, httpHarvesterConfig,
+            URI uri = harvesterConfigRepository.add(type, harvesterConfig,
                 uriInfo.getAbsolutePathBuilder());
             return Response.created(uri).build();
         } catch (JSONBException e) {

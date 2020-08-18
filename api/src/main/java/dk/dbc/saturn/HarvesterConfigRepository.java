@@ -72,6 +72,8 @@ public class HarvesterConfigRepository {
             queryName = FtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME;
         } else if(type == HttpHarvesterConfig.class) {
             queryName = HttpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME;
+        } else if(type == SFtpHarvesterConfig.class) {
+            queryName = SFtpHarvesterConfig.GET_HARVESTER_CONFIG_BY_ID_NAME;
         } else {
             throw new IllegalArgumentException(String.format(
                 "unknown type: %s", type));
