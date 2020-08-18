@@ -55,10 +55,7 @@ public class SFtpClient implements AutoCloseable {
             session = jsch.getSession(config.getUsername(), config.getHost(), config.getPort());
             if (proxyHandlerBean != null && proxyHandlerBean.getProxyHostname() != null &&
                     proxyHandlerBean.getProxyPort() != 0) {
-                final ProxySOCKS5 proxy =
-                        new ProxySOCKS5(proxyHandlerBean.getProxyHostname(),
-                                proxyHandlerBean.getProxyPort());
-                session.setProxy(proxy);
+                session.setProxy(proxyHandlerBean.getProxySOCKS5());
             }
             session.setPassword(config.getPassword());
             session.setConfig(jschConfig);

@@ -13,6 +13,7 @@ import javax.ejb.Startup;
 import javax.inject.Inject;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
+import com.jcraft.jsch.ProxySOCKS5;
 
 @Startup
 @Singleton
@@ -62,5 +63,11 @@ public class ProxyHandlerBean {
                 }
             }
         );
+    }
+
+    public ProxySOCKS5 getProxySOCKS5() {
+        final ProxySOCKS5 proxy = new ProxySOCKS5(proxyHostname, Integer.parseInt(proxyPort));
+        proxy.setUserPasswd(proxyUsername, proxyPassword);
+        return proxy;
     }
 }
