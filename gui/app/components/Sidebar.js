@@ -19,6 +19,9 @@ const Sidebar = () => (
             <li><Link to={constants.paths.ftpConfigList}>
                 Hentninger via FTP
             </Link></li>
+            <li><Link to={constants.paths.sftpConfigList}>
+                Hentninger via SFTP
+            </Link></li>
         </ul>
     </nav>
 )
