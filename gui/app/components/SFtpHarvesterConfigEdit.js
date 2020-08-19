@@ -209,7 +209,7 @@ class SFtpHarvesterConfigEdit extends React.Component {
                     onDelete={this.onDelete}
                     onTest={this.onTest}
                     onConfigChanged={this.onConfigChanged}
-                    title={"FTP Høster"}>
+                    title={"SFTP Høster"}>
                 <FormEntry label="Løbenummer" name="seqno" help={SEQNO_HELP}
                            value={this.state.config.seqno !== undefined ? this.state.config.seqno.toString() : "0"}
                            onChangeCallback={this.onChangeCallback}/>

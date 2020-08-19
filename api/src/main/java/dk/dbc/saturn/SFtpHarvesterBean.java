@@ -6,13 +6,9 @@
 package dk.dbc.saturn;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.SftpException;
-import dk.dbc.ftp.FtpClient;
-import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.saturn.sftp.client.SFtpClient;
 import dk.dbc.util.Stopwatch;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -79,7 +75,7 @@ public class SFtpHarvesterBean {
         try (SFtpClient sftpClient = new SFtpClient(sFtpHarvesterConfig, proxyHandlerBean)) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
-                if (filename != null && !filename.isEmpty()) {
+                if (filename != null && !filename.isEmpty() && seqnoMatcher.shouldFetch(filename.trim())) {
                     /*
                      * The sequence number comparison is done using a trimmed
                      * version of the filename because sometimes the filenames
@@ -87,15 +83,15 @@ public class SFtpHarvesterBean {
                      * to the receiver though to maintain some faithfulness to
                      * the original file.
                      */
-                    if (seqnoMatcher.shouldFetch(filename.trim())) {
-                        final FileHarvest fileHarvest = new SFtpFileHarvest(
-                                sFtpHarvesterConfig.getDir(),
-                                filename,
-                                seqnoMatcher.getSeqno(),
-                                sftpClient,
-                                FileHarvest.Status.AWAITING_DOWNLOAD);
-                        fileHarvests.add(fileHarvest);
-                    }
+
+                    final FileHarvest fileHarvest = new SFtpFileHarvest(
+                            sFtpHarvesterConfig.getDir(),
+                            filename,
+                            seqnoMatcher.getSeqno(),
+                            sftpClient,
+                            FileHarvest.Status.AWAITING_DOWNLOAD);
+                    fileHarvests.add(fileHarvest);
+
                 }
             }
             LOGGER.info("Listing from {}@{}:{}/{} took {} ms", sFtpHarvesterConfig.getUsername(),
