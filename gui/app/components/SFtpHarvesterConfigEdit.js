@@ -21,7 +21,7 @@ const SEQNO_HELP =
         <div className='help-indent'>20180901</div>
         <div className='help-indent'>4623</div>
         <br/>
-        <div className='help-text'>Filer på f.eks. en ftp server:</div>
+        <div className='help-text'>Filer på f.eks. en sftp server:</div>
         <div className='help-indent'>v46.i23.records.utf8</div>
         <div className='help-indent'>v46.i24.records.utf8</div>
         <div className='help-indent'>v46.i25.records.utf8</div>
@@ -48,7 +48,7 @@ const HOST_HELP =
         <div className='help-title'>Den FTP adresse hvorfra filerne skal hentes</div>
         <div className='help-text'>Eksempler:</div>
         <div className='help-indent'>rs7.loc.gov</div>
-        <div className='help-indent'>ftp.iacnet.com</div>
+        <div className='help-indent'>sftp.iacnet.com</div>
     </div>
 
 const PORT_HELP =
