@@ -29,13 +29,6 @@
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.junit.platform</groupId>
@@ -155,7 +148,7 @@
                 <executions>
                     <execution>
                         <id>build-sftp-docker-image</id>
-                        <phase>compile</phase>
+                        <phase> pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
