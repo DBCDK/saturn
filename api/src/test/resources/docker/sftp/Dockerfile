@@ -1,5 +1,5 @@
 FROM docker.dbc.dk/dbc-buster:latest
-LABEL maintainer=metascrum@dbc.dk
+LABEL maintainer=meta-scrum@dbc.dk
 
 # Steps done in one RUN layer:
 # - Install packages
