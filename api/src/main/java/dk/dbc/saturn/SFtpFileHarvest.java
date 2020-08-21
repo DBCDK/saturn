@@ -1,11 +1,11 @@
 package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dk.dbc.saturn.sftp.client.SFtpClient;
 import java.io.InputStream;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import dk.dbc.commons.sftpclient.SFtpClient;
 
 public class SFtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private static final Logger LOGGER = LoggerFactory.getLogger(

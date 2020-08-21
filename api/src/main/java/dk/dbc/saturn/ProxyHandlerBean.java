@@ -66,8 +66,12 @@ public class ProxyHandlerBean {
     }
 
     public ProxySOCKS5 getProxySOCKS5() {
-        final ProxySOCKS5 proxy = new ProxySOCKS5(proxyHostname, Integer.parseInt(proxyPort));
-        proxy.setUserPasswd(proxyUsername, proxyPassword);
-        return proxy;
+        if (proxyHostname != null && !proxyHostname.isEmpty() &&
+            proxyPort != null && !proxyPort.isEmpty()) {
+            final ProxySOCKS5 proxy = new ProxySOCKS5(proxyHostname, Integer.parseInt(proxyPort));
+            proxy.setUserPasswd(proxyUsername, proxyPassword);
+            return proxy;
+        }
+        else return null;
     }
 }

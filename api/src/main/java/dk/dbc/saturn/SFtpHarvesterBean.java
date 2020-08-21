@@ -6,8 +6,9 @@
 package dk.dbc.saturn;
 
 import com.jcraft.jsch.ChannelSftp;
+import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import dk.dbc.saturn.sftp.client.SFtpClient;
+import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.util.Stopwatch;
 import java.time.Instant;
 import java.util.Comparator;
@@ -37,7 +38,7 @@ public class SFtpHarvesterBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         SFtpHarvesterBean.class);
-    
+
     @Asynchronous
     public Future<Void> harvest(SFtpHarvesterConfig config) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
@@ -72,7 +73,15 @@ public class SFtpHarvesterBean {
                 sFtpHarvesterConfig.getFilesPattern());
         Set<FileHarvest> fileHarvests = new HashSet<>();
 
-        try (SFtpClient sftpClient = new SFtpClient(sFtpHarvesterConfig, proxyHandlerBean)) {
+        try (SFtpClient sftpClient = new SFtpClient(
+                new SFTPConfig()
+                .withHost(sFtpHarvesterConfig.getHost())
+                .withUsername(sFtpHarvesterConfig.getUsername())
+                .withPassword(sFtpHarvesterConfig.getPassword())
+                .withPort(sFtpHarvesterConfig.getPort())
+                .withDir(sFtpHarvesterConfig.getDir())
+                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
+                proxyHandlerBean.getProxySOCKS5())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
                 if (filename != null && !filename.isEmpty() && seqnoMatcher.shouldFetch(filename.trim())) {
@@ -110,9 +119,17 @@ public class SFtpHarvesterBean {
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(sFtpHarvesterConfig.getFilesPattern());
         final Stopwatch stopwatch = new Stopwatch();
         Set<FileHarvest> fileHarvests = new HashSet<>();
-        try (SFtpClient sftpClient = new SFtpClient(sFtpHarvesterConfig, proxyHandlerBean)) {
+        try (SFtpClient sftpClient = new SFtpClient(new SFTPConfig()
+                .withHost(sFtpHarvesterConfig.getHost())
+                .withUsername(sFtpHarvesterConfig.getUsername())
+                .withPassword(sFtpHarvesterConfig.getPassword())
+                .withPort(sFtpHarvesterConfig.getPort())
+                .withDir(sFtpHarvesterConfig.getDir())
+                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
+                proxyHandlerBean.getProxySOCKS5())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls("*")) {
                 String filename = lsEntry.getFilename();
+                LOGGER.info("Checking filename:{}", filename);
                 if (filename != null && !filename.isEmpty()) {
                     if (!fileNameMatcher.matches(filename)) {
                         fileHarvests.add(new SFtpFileHarvest(
