@@ -7,6 +7,8 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +26,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
@@ -33,11 +37,32 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 public abstract class AbstractIntegrationTest {
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
 
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
+    private static final GenericContainer sftpServerContainer;
+    private static final String SFTPSERVER_IMAGE = "docker-io.dbc.dk/sftpserver:for-tests";
+    static final String SFTP_USER = "sftp";
+    static final String SFTP_PASSWORD = "sftp";
+    static final String SFTP_DIR = "upload";
+    static final String SFTP_ADDRESS;
+    static final int SFTP_PORT;
+
+    static {
+        Network network = Network.newNetwork();
+        sftpServerContainer = new GenericContainer(SFTPSERVER_IMAGE)
+                .withNetwork(network)
+                .withExposedPorts(22)
+                .withCommand(String.format("%s:%s:::%s", SFTP_USER, SFTP_PASSWORD, SFTP_DIR))
+                .withStartupTimeout(Duration.ofMinutes(1));
+        sftpServerContainer.start();
+        SFTP_ADDRESS = sftpServerContainer.getContainerIpAddress();
+        SFTP_PORT = sftpServerContainer.getMappedPort(22);
+    }
+
 
     @BeforeAll
     public static void setUp() throws URISyntaxException {
@@ -78,7 +103,6 @@ public abstract class AbstractIntegrationTest {
         datasource.setPassword(System.getProperty("user.name"));
         return datasource;
     }
-
 
     private static EntityManager createEntityManager(
         PGSimpleDataSource dataSource, String persistenceUnitName) {
@@ -127,6 +151,25 @@ public abstract class AbstractIntegrationTest {
             "Europe/Copenhagen"));
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
+        config.setAgency("010100");
+        config.setEnabled(true);
+        return config;
+    }
+
+    SFtpHarvesterConfig getSFtpHarvesterConfig() throws ParseException {
+        SFtpHarvesterConfig config = new SFtpHarvesterConfig();
+        config.setName("MyName'sNotRick!");
+        config.setSchedule("1 * * * *");
+        config.setHost("http://nick.com");
+        config.setPort(5432);
+        config.setUsername("patrick-squarepants");
+        config.setPassword("secretpants");
+        config.setDir("rock-bottom");
+        config.setFilesPattern("glove-candy.png");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20",
+                "Europe/Copenhagen"));
+        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
+                "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
         config.setEnabled(true);
         return config;

@@ -14,6 +14,7 @@
     <persistence-unit name="saturnIT_PU" transaction-type="RESOURCE_LOCAL">
         <class>dk.dbc.saturn.entity.HttpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.FtpHarvesterConfig</class>
+        <class>dk.dbc.saturn.entity.SFtpHarvesterConfig</class>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="none"/>
             <property name="eclipselink.logging.logger" value="org.eclipse.persistence.logging.DefaultSessionLog"/>

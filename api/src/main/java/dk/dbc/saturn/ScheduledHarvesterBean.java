@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -32,6 +33,7 @@ public class ScheduledHarvesterBean {
     @Inject RunScheduleFactory runScheduleFactory;
     @EJB HTTPHarvesterBean httpHarvesterBean;
     @EJB FtpHarvesterBean ftpHarvesterBean;
+    @EJB SFtpHarvesterBean sftpHarvesterBean;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
     @EJB FtpSenderBean ftpSenderBean;
     @EJB RunningTasks runningTasks;
@@ -47,6 +49,7 @@ public class ScheduledHarvesterBean {
     public void harvest() {
         try {
             scheduleFtpHarvests();
+            scheduleSFtpHarvests();
             scheduleHttpHarvests();
         } catch (Exception e) {
             LOGGER.error("caught unexpected exception while harvesting", e);
@@ -73,6 +76,35 @@ public class ScheduledHarvesterBean {
                         runningTasks.add( ftpConfig );
                         ftpHarvesterBean.harvest( ftpConfig );
                         LOGGER.info( "Done scheduling {}", ftpConfig.getName());
+                    }
+                }
+            } catch (HarvestException e) {
+                LOGGER.error("Error while harvesting", e);
+            }
+        }
+        LOGGER.info( "Number of tasks unfinshed:{}", runningTasks.size());
+    }
+
+    private void scheduleSFtpHarvests() {
+        final List<SFtpHarvesterConfig> sftpConfigs = harvesterConfigRepository
+                .list(SFtpHarvesterConfig.class, 0, 0);
+        LOGGER.info("got {} FTP configs", sftpConfigs.size());
+        for (SFtpHarvesterConfig sftpConfig : sftpConfigs) {
+            try {
+                if ( runningTasks.isRunning(sftpConfig) ) {
+                    LOGGER.debug("still harvesting, not rescheduled");
+                    continue;
+                }
+                if (sftpConfig.isEnabled()
+                        && runScheduleFactory.newRunScheduleFrom(sftpConfig.getSchedule())
+                        .isSatisfiedBy(new Date(), sftpConfig.getLastHarvested())) {
+
+                    Set<FileHarvest> fileHarvests = sftpHarvesterBean.listFiles(sftpConfig);
+
+                    if (! fileHarvests.isEmpty()) {
+                        runningTasks.add( sftpConfig );
+                        sftpHarvesterBean.harvest( sftpConfig );
+                        LOGGER.info( "Done scheduling {}", sftpConfig.getName());
                     }
                 }
             } catch (HarvestException e) {
