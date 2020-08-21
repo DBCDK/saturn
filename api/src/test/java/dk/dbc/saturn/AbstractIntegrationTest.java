@@ -44,7 +44,7 @@ public abstract class AbstractIntegrationTest {
 
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
     private static final GenericContainer sftpServerContainer;
-    private static final String SFTPSERVER_IMAGE = "docker-io.dbc.dk/sftpserver:for-tests";
+    private static final String SFTPSERVER_IMAGE = "docker.dbc.dk/simplesftpserver:master-1";
     static final String SFTP_USER = "sftp";
     static final String SFTP_PASSWORD = "sftp";
     static final String SFTP_DIR = "upload";

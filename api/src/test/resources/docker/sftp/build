@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cd "$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-echo "Building sftpserver for integration tests."
-docker build -t docker-io.dbc.dk/sftpserver:for-tests .
