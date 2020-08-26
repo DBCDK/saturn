@@ -88,7 +88,7 @@ public class ScheduledHarvesterBean {
     private void scheduleSFtpHarvests() {
         final List<SFtpHarvesterConfig> sftpConfigs = harvesterConfigRepository
                 .list(SFtpHarvesterConfig.class, 0, 0);
-        LOGGER.info("got {} FTP configs", sftpConfigs.size());
+        LOGGER.info("got {} SFTP configs", sftpConfigs.size());
         for (SFtpHarvesterConfig sftpConfig : sftpConfigs) {
             try {
                 if ( runningTasks.isRunning(sftpConfig) ) {
