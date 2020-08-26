@@ -9,6 +9,7 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import java.time.Duration;
+import java.util.Calendar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +42,8 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractIntegrationTest {
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
-
+    final static PasswordRepository passwordRepository =
+         new PasswordRepository();
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
     private static final GenericContainer sftpServerContainer;
     private static final String SFTPSERVER_IMAGE = "docker.dbc.dk/simplesftpserver:latest";
@@ -71,6 +73,7 @@ public abstract class AbstractIntegrationTest {
         EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
         harvesterConfigRepository.entityManager = entityManager;
+        passwordRepository.entityManager = entityManager;
         when(mockedUriBuilder.path(anyString())).thenReturn(mockedUriBuilder);
         when(mockedUriBuilder.build()).thenReturn(new URI("location"));
     }
@@ -90,6 +93,8 @@ public abstract class AbstractIntegrationTest {
             "DELETE FROM httpharvester").executeUpdate();
         harvesterConfigRepository.entityManager.createNativeQuery(
             "DELETE FROM ftpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.createNativeQuery(
+                "DELETE FROM passwords").executeUpdate();
         harvesterConfigRepository.entityManager.getTransaction().commit();
     }
 
@@ -179,5 +184,21 @@ public abstract class AbstractIntegrationTest {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone(timezone));
         return sdf.parse(date);
+    }
+
+    public static Date getDatePlusDays(int days) {
+        Date now = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(now);
+        c.add(Calendar.DATE, days);
+        return c.getTime();
+    }
+
+    public static Date getDateMinusDays(int days) {
+        Date now = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(now);
+        c.add(Calendar.DATE, -days);
+        return c.getTime();
     }
 }
