@@ -1,6 +1,5 @@
 package dk.dbc.saturn.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -92,6 +90,26 @@ public class PasswordEntry {
 
     public void setActiveFrom(Date activeFrom) {
         this.activeFrom = activeFrom;
+    }
+
+    public PasswordEntry withHost(String host) {
+        this.host = host;
+        return this;
+    }
+
+    public PasswordEntry withUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public PasswordEntry withPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public PasswordEntry withActiveFrom(Date activeFrom) {
+        this.activeFrom = activeFrom;
+        return this;
     }
 
     @Override
