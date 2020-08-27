@@ -1,7 +1,5 @@
-CREATE SEQUENCE passwords_id_seq START WITH 1 INCREMENT BY 1 MINVALUE 1 CACHE 1;
-
 CREATE TABLE passwords (
-    id integer PRIMARY KEY NOT NULL,
+    id INT GENERATED ALWAYS AS IDENTITY,
     host text NOT NULL,
     username text NOT NULL,
     password text NOT NULL,

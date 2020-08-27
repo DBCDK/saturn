@@ -9,6 +9,8 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -187,18 +189,10 @@ public abstract class AbstractIntegrationTest {
     }
 
     public static Date getDatePlusDays(int days) {
-        Date now = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(now);
-        c.add(Calendar.DATE, days);
-        return c.getTime();
+        return Date.from(Instant.now().plus(days, ChronoUnit.DAYS));
     }
 
     public static Date getDateMinusDays(int days) {
-        Date now = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(now);
-        c.add(Calendar.DATE, -days);
-        return c.getTime();
+        return Date.from(Instant.now().minus(days, ChronoUnit.DAYS));
     }
 }

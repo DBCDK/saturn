@@ -1,5 +1,6 @@
 package dk.dbc.saturn.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,13 +43,7 @@ public class PasswordEntry {
     public static final String DELETE_PASSWORD_ENTRY_QUERY = "DELETE FROM PasswordEntry e WHERE e.id = :id";
 
     @Id
-    @SequenceGenerator(
-            name = "passwords_id_seq",
-            sequenceName = "passwords_id_seq",
-            allocationSize = 1)
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "passwords_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     private String host;
