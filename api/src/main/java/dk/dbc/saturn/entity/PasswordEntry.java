@@ -101,6 +101,7 @@ public class PasswordEntry {
 
         PasswordEntry entry = (PasswordEntry) o;
 
+        if (id != entry.id) return false;
         if (!host.equals(entry.host)) return false;
         if (!username.equals(entry.username)) return false;
         if (!password.equals(entry.password)) return false;
@@ -109,7 +110,8 @@ public class PasswordEntry {
 
     @Override
     public int hashCode() {
-        int result = host.hashCode();
+        int result = id;
+        result = 31 * result + host.hashCode();
         result = 31 * result + username.hashCode();
         result = 31 * result + password.hashCode();
         result = 31 * result + activeFrom.hashCode();

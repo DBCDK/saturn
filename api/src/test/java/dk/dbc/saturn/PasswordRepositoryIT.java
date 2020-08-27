@@ -58,6 +58,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
     void test_that_returned_current_password_is_the_one_valid_from_yesterday() {
         PasswordEntry expected = getPasswordEntry(1, 1, 2, yesterday);
         PasswordEntry actual = passwordRepository.getPasswordForDate("host-1", "user-1", today);
+        expected.setId(actual.getId());
         assertThat("Current password-entry is the one with date yesterday", actual, is(expected));
     }
 
