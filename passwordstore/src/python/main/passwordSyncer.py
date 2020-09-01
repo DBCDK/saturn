@@ -1,0 +1,127 @@
+import requests
+import pysftp
+import json
+import os
+import logging
+from tempfile import NamedTemporaryFile
+import paramiko
+import datetime
+from pysftp import ConnectionException
+from pysftpFactory import PySftpConnection
+import socks
+
+class PasswordSyncer:
+    harvester_names = json.loads(os.getenv("HARVESTER_CONFIG_NAMES") if not os.getenv("HARVESTER_CONFIG_NAMES") == None else "[]")
+    saturn_rest_endpoint = os.getenv("SATURN_REST_ENDPOINT") if not os.getenv("SATURN_REST_ENDPOINT") == None else "http://no-server"
+    sftp_configs_list = "configs/sftp/list"
+    sftp_configs_add =  "configs/sftp/add"
+    password_repository_list = "passwordrepository/list/{}/{}"
+    password_repository_add = "passwordrepository/add"
+    internal_datetime_format = "%Y-%m-%dT%H:%M:%S"
+    _error_map = {}
+
+    def set_error(self, k, v):
+        self._error_map[k] = v
+
+    def get_errormap(self):
+        return self._error_map
+
+    def to_internal_date(self, stringDate):
+        mdy = tuple(map(int, stringDate.split('/')))
+        return datetime.date(year=mdy[2], month=mdy[0], day=mdy[1]).strftime(self.internal_datetime_format)
+
+    def get_dates_and_passwords_from_from_sftp(self, harvester, cnopts):
+        datesandpasswords = {}
+        tmpMap = {}
+        content_lines = self.sftp_get_password_file_as_lines_of_text(harvester, cnopts)
+        if not content_lines == None:
+            tmpMap = dict(line.split("    -   ") for line in content_lines)
+        for k, v in tmpMap.items():
+            datesandpasswords[self.to_internal_date(k)] = v
+        return datesandpasswords
+
+    def sftp_get_password_file_as_lines_of_text(self, harvester, cnopts):
+        sftp = None
+        content_lines = None
+        try:
+            sftp = PySftpConnection.getSftpConnection(harvester["host"], harvester["username"],
+                                                      harvester["password"], harvester["port"])
+            tmpfile = NamedTemporaryFile(mode='w+', prefix=harvester["username"], encoding='utf-8')
+            sftp.get(harvester["username"], tmpfile.name)
+            content_lines = tmpfile.read().splitlines()
+            return content_lines
+
+        except socks.GeneralProxyError  as p:
+            logger.info("   Proxy error '{}' for '{}'".format(p, harvester["host"]))
+            self.set_error(harvester["name"], "   Proxy error '{}' for '{}'".format(p, harvester["host"]))
+
+        except (ConnectionException, paramiko.ssh_exception.SSHException):
+            self.set_error(harvester["name"], "  Connection to {} unsuccesful. Check connection settings.".format(harvester["host"]))
+            logger.error(self._error_map[harvester["name"]])
+
+        except Exception as e:
+            logger.info("   Error: {}".format(e))
+            self.set_error(harvester["name"], "   Error: {}".format(e))
+
+        finally:
+            try:
+                logger.info("   Connection to {} is about to be closed.".format(harvester["host"]))
+                sftp.close()
+                return content_lines
+            except Exception:
+                pass
+
+    def get_persisted_dates_and_passwords_from_passwordstore(self, host, user):
+        sub_url = self.password_repository_list.format(host, user)
+        user_pass_dates = self.requests_get("{}/{}".format(self.saturn_rest_endpoint, sub_url))
+        return user_pass_dates
+
+    def entry_exists(self, entry, persisted_list):
+        for p in persisted_list:
+            if entry == p["activeFrom"]:
+                return True
+        return False
+
+    def persist_to_passwordstore(self, entry):
+        self.requests_post("{}/{}".format(self.saturn_rest_endpoint, self.password_repository_add), entry)
+        logger.info(" Succesfully peristed password for {}@{} to be in effect after:{}".format(entry["username"], entry["host"], entry["activeFrom"]))
+
+    def requests_post(self, url, data):
+        requests.post(url, data=json.dumps(data, indent=2), headers={"Content-Type": "application/json"}).raise_for_status()
+
+    def requests_get(self, url):
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+
+    def persist_remote_dates_and_passwords_to_passwordstore(self):
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+
+        logger.info("Harvester names:{}".format(self.harvester_names))
+        logger.info("Saturn rest endpoint: {}".format(self.saturn_rest_endpoint))
+        harvesters = self.requests_get("{}/{}".format(self.saturn_rest_endpoint, self.sftp_configs_list))
+        for harvester in harvesters:
+            if harvester["name"] in self.harvester_names:
+                logger.info("Harvester: '{}'".format(harvester["name"]))
+                pwd_list = self.get_dates_and_passwords_from_from_sftp(harvester, cnopts)
+                persisted_list = self.get_persisted_dates_and_passwords_from_passwordstore(harvester["host"], harvester["username"])
+
+                if pwd_list != {}:
+                    for pwd_entry_date, pw in pwd_list.items():
+                        if not self.entry_exists(pwd_entry_date, persisted_list):
+                            self.persist_to_passwordstore({"host":harvester["host"],
+                                    "username": harvester["username"],
+                                    "password":pw,
+                                    "activeFrom": pwd_entry_date})
+
+def set_logging():
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s:%(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    return logger
+
+logger = set_logging()

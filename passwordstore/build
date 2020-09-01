@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+echo "### building passwordstoresync docker ###"
+cd passwordstore
+docker build --pull --no-cache -f src/docker/Dockerfile  -t docker-io.dbc.dk/passwordstoresync:devel . || exit 1
+if [[ ! -z "$BUILD_NUMBER" ]]; then
+    docker tag docker-io.dbc.dk/passwordstoresync:devel docker-io.dbc.dk/passwordstoresync:${BRANCH_NAME}-${BUILD_NUMBER}
+fi
