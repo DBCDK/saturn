@@ -6,9 +6,9 @@ from tempfile import NamedTemporaryFile
 from logger import logger
 from errormap import set_error, get_error
 import paramiko
-import datetime
 from pysftp import ConnectionException
 from pysftpFactory import PySftpConnection
+from internaldate import to_internal_date
 import socks
 
 class PasswordSyncer:
@@ -18,11 +18,6 @@ class PasswordSyncer:
     sftp_configs_add =  "configs/sftp/add"
     password_repository_list = "passwordrepository/list/{}/{}"
     password_repository_add = "passwordrepository/add"
-    internal_datetime_format = "%Y-%m-%dT%H:%M:%S"
-
-    def to_internal_date(self, stringDate):
-        mdy = tuple(map(int, stringDate.split('/')))
-        return datetime.date(year=mdy[2], month=mdy[0], day=mdy[1]).strftime(self.internal_datetime_format)
 
     def get_dates_and_passwords_from_from_sftp(self, harvester, cnopts):
         datesandpasswords = {}
@@ -31,7 +26,7 @@ class PasswordSyncer:
         if not content_lines == None:
             tmpMap = dict(line.split("    -   ") for line in content_lines)
         for k, v in tmpMap.items():
-            datesandpasswords[self.to_internal_date(k)] = v
+            datesandpasswords[to_internal_date(k)] = v
         return datesandpasswords
 
     def sftp_get_password_file_as_lines_of_text(self, harvester, cnopts):
