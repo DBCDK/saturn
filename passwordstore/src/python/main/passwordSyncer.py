@@ -2,8 +2,9 @@ import requests
 import pysftp
 import json
 import os
-import logging
 from tempfile import NamedTemporaryFile
+from logger import logger
+from errormap import set_error, get_error
 import paramiko
 import datetime
 from pysftp import ConnectionException
@@ -18,13 +19,6 @@ class PasswordSyncer:
     password_repository_list = "passwordrepository/list/{}/{}"
     password_repository_add = "passwordrepository/add"
     internal_datetime_format = "%Y-%m-%dT%H:%M:%S"
-    _error_map = {}
-
-    def set_error(self, k, v):
-        self._error_map[k] = v
-
-    def get_errormap(self):
-        return self._error_map
 
     def to_internal_date(self, stringDate):
         mdy = tuple(map(int, stringDate.split('/')))
@@ -53,15 +47,15 @@ class PasswordSyncer:
 
         except socks.GeneralProxyError  as p:
             logger.info("   Proxy error '{}' for '{}'".format(p, harvester["host"]))
-            self.set_error(harvester["name"], "   Proxy error '{}' for '{}'".format(p, harvester["host"]))
+            set_error(harvester["name"], "   Proxy error '{}' for '{}'".format(p, harvester["host"]))
 
         except (ConnectionException, paramiko.ssh_exception.SSHException):
-            self.set_error(harvester["name"], "  Connection to {} unsuccesful. Check connection settings.".format(harvester["host"]))
-            logger.error(self._error_map[harvester["name"]])
+            set_error(harvester["name"], "  Connection to {} unsuccesful. Check connection settings.".format(harvester["host"]))
+            logger.error(get_error(harvester["name"]))
 
         except Exception as e:
             logger.info("   Error: {}".format(e))
-            self.set_error(harvester["name"], "   Error: {}".format(e))
+            set_error(harvester["name"], "   Error: {}".format(e))
 
         finally:
             try:
@@ -115,13 +109,3 @@ class PasswordSyncer:
                                     "password":pw,
                                     "activeFrom": pwd_entry_date})
 
-def set_logging():
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s %(levelname)s:%(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-    return logger
-
-logger = set_logging()
