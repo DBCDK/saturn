@@ -11,7 +11,7 @@ from pysftpFactory import PySftpConnection
 import socks
 
 class PasswordSyncer:
-    harvester_names = json.loads(os.getenv("HARVESTER_CONFIG_NAMES") if not os.getenv("HARVESTER_CONFIG_NAMES") == None else "[]")
+    password_change_enabled_sftp_host_names = json.loads(os.getenv("PASSWORD_CHANGE_ENABLED_SFTP_HOSTS") if not os.getenv("PASSWORD_CHANGE_ENABLED_SFTP_HOSTS") == None else "[]")
     saturn_rest_endpoint = os.getenv("SATURN_REST_ENDPOINT") if not os.getenv("SATURN_REST_ENDPOINT") == None else "http://no-server"
     sftp_configs_list = "configs/sftp/list"
     sftp_configs_add =  "configs/sftp/add"
@@ -98,11 +98,11 @@ class PasswordSyncer:
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
 
-        logger.info("Harvester names:{}".format(self.harvester_names))
+        logger.info("SFTP host names to be checked:{}".format(self.password_change_enabled_sftp_host_names))
         logger.info("Saturn rest endpoint: {}".format(self.saturn_rest_endpoint))
         harvesters = self.requests_get("{}/{}".format(self.saturn_rest_endpoint, self.sftp_configs_list))
         for harvester in harvesters:
-            if harvester["name"] in self.harvester_names:
+            if harvester["host"] in self.password_change_enabled_sftp_host_names:
                 logger.info("Harvester: '{}'".format(harvester["name"]))
                 pwd_list = self.get_dates_and_passwords_from_from_sftp(harvester, cnopts)
                 persisted_list = self.get_persisted_dates_and_passwords_from_passwordstore(harvester["host"], harvester["username"])
