@@ -31,6 +31,7 @@ class SFtpHarvesterConfig extends BaseHarvesterConfig {
         config.password = json.password;
         config.dir = json.dir;
         config.filesPattern = json.filesPattern;
+        config.lastHarvested = json.lastHarvested;
         return config;
     }
 }
