@@ -22,6 +22,7 @@ function formatDate(date) {
     var secs = date.getSeconds();
     secs = secs < 10 ? '0'+secs : secs;
     days = days < 10 ? '0'+days : days;
+    hours = hours < 10 ? '0'+hours : hours;
     months = months < 10 ? '0'+months : months;
     minutes = minutes < 10 ? '0'+minutes : minutes;
     var strTime = hours + ':' + minutes + ':' + secs;
