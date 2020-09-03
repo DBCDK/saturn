@@ -277,10 +277,10 @@ public class HarvesterConfigApi {
         final Optional<FtpHarvesterConfig> config = harvesterConfigRepository
                 .getHarvesterConfig(FtpHarvesterConfig.class, id);
         if (config.isPresent()) {
-            // sort files using TreeSet
-            final Set<FileHarvest> fileHarvests = new TreeSet<>(
-                    ftpHarvesterBean.listAllFiles(config.get()));
-            return Response.ok(jsonbContext.marshall(fileHarvests)).build();
+            // sort files in reverse
+            SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
+            sortedSet.addAll(ftpHarvesterBean.listAllFiles(config.get()));
+            return Response.ok(jsonbContext.marshall(sortedSet)).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
