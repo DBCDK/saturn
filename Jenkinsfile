@@ -53,7 +53,7 @@ pipeline {
 				}
 			}
 		}
-		stage("docker build passwordstoresync") {
+		stage("docker build saturn-passwordstoresync") {
 			steps {
 				script {
 					sh """
@@ -62,14 +62,14 @@ pipeline {
 				}
 			}
 		}
-		stage("docker push passwordstoresync") {
+		stage("docker push saturn-passwordstoresync") {
 			when {
 				branch "master"
 			}
 			steps {
 				script {
 					sh """
-						docker push docker-io.dbc.dk/passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
+						docker push docker-io.dbc.dk/saturn-passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
 					"""
 				}
 			}
