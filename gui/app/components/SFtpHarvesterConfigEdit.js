@@ -12,7 +12,7 @@ import SFtpHarvesterConfig from "../model/SFtpHarvesterConfig";
 import constants from "../constants";
 import {getStringValue} from "../utils";
 
-const SFTP_PORT = "21";
+const SFTP_PORT = "22";
 
 const SEQNO_HELP =
     <div>

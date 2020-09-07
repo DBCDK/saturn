@@ -5,8 +5,9 @@
 
 package dk.dbc.saturn;
 
+import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import dk.dbc.saturn.sftp.client.SFtpClient;
+import dk.dbc.commons.sftpclient.SFtpClient;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,14 +28,21 @@ import static org.hamcrest.core.Is.is;
 
 public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SFtpHarvesterBeanIT.class);
+    private static final SFTPConfig sftpConfig = new SFTPConfig()
+            .withHost(SFTP_ADDRESS)
+            .withUsername(SFTP_USER)
+            .withPassword(SFTP_PASSWORD)
+            .withPort(SFTP_PORT)
+            .withDir("upload")
+            .withFilesPattern("*");
+
 
     @Test
     public void test_harvest() throws IOException, HarvestException {
         final String putFile1 = "bb.txt";
         final String putFile2 = "mm.txt";
 
-        try (final SFtpClient sftpClient = SFtpClient.getClient(
-                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, "upload", null)) {
+        try (final SFtpClient sftpClient = new SFtpClient(sftpConfig, null)) {
             sftpClient.putContent(putFile1, toInputStream("Barnacle Boy!"));
             sftpClient.putContent(putFile2, toInputStream("Mermaid Man!"));
         }
@@ -59,8 +67,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     @Test
     void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
         final String putFile1 = " 12v24.txt";
-        try (final SFtpClient sftpClient = SFtpClient.getClient(
-                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, "upload", null)) {
+        try (final SFtpClient sftpClient = new SFtpClient(sftpConfig, null)) {
             sftpClient.putContent(putFile1, toInputStream("Barnacle Boy!"));
         }
 
@@ -86,7 +93,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         final String putFile3 = "file3.txt";
         final String listAllFiles = "listAllFiles";
 
-        try (SFtpClient sFtpClient = SFtpClient.getClient(SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, SFTP_DIR, null)) {
+        try (SFtpClient sFtpClient = new SFtpClient(sftpConfig, null)) {
             sFtpClient.mkdir(listAllFiles);
             sFtpClient.cd(listAllFiles);
             sFtpClient.putContent(putFile1, toInputStream("file1"));
@@ -137,7 +144,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     }
 
     private static void removeFilesAndDir(String subdir, List<String> files) {
-        try (SFtpClient sFtpClient = SFtpClient.getClient(SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, SFTP_DIR, null)) {
+        try (SFtpClient sFtpClient = new SFtpClient(sftpConfig, null)) {
             if (!subdir.isEmpty()) {
                 sFtpClient.cd(subdir);
             }

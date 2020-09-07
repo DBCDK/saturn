@@ -11,6 +11,7 @@ import Path from "../Path";
 import {BaseHarvesterConfigList,ConfigEntry} from "./BaseHarvesterConfigList";
 
 import {mapResponseToConfigList} from "../model/BaseHarvesterConfig";
+import {formatDate} from "../utils";
 
 class FtpHarvesterConfigList extends React.Component {
     constructor(props) {
@@ -57,6 +58,7 @@ class FtpHarvesterConfigList extends React.Component {
                         return <ConfigEntry key={item.id} id={item.id}
                                             name={item.name} url={path.path}
                                             enabled={item.enabled}
+                                            lastHarvested={item.lastHarvested==null?"Endnu ikke høstet":formatDate(new Date(item.lastHarvested))}
                                             onEnabledChanged={this.onEnabledChanged}/>;
                         }
                     )

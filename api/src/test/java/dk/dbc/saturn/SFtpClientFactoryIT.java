@@ -1,6 +1,7 @@
 package dk.dbc.saturn;
 
-import dk.dbc.saturn.sftp.client.SFtpClient;
+import dk.dbc.commons.sftpclient.SFTPConfig;
+import dk.dbc.commons.sftpclient.SFtpClient;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,7 +17,14 @@ class SFtpClientFactoryIT extends AbstractIntegrationTest {
 
     @Test
     public void test_simpleTest() throws IOException {
-        try (SFtpClient sFtpClient = SFtpClient.getClient(SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_PORT, "upload", null)) {
+        try (SFtpClient sFtpClient = new SFtpClient(
+                new SFTPConfig()
+                .withHost(SFTP_ADDRESS)
+                .withUsername(SFTP_USER)
+                .withPassword(SFTP_PASSWORD)
+                .withPort(SFTP_PORT)
+                .withDir("upload")
+                .withFilesPattern("*"), null)) {
             LOGGER.info("host: {}, user: {}, dir:{}", SFTP_ADDRESS, SFTP_USER, SFTP_DIR);
             sFtpClient.putContent("hej.txt", new ByteArrayInputStream("Hej".getBytes()));
             LOGGER.info("LS:{}", sFtpClient.ls("*"));

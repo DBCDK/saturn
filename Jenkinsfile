@@ -53,6 +53,27 @@ pipeline {
 				}
 			}
 		}
+		stage("docker build saturn-passwordstoresync") {
+			steps {
+				script {
+					sh """
+						passwordstore/build
+					"""
+				}
+			}
+		}
+		stage("docker push saturn-passwordstoresync") {
+			when {
+				branch "master"
+			}
+			steps {
+				script {
+					sh """
+						docker push docker-io.dbc.dk/saturn-passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
+					"""
+				}
+			}
+		}
 		stage("update staging version") {
 			agent {
 				docker {

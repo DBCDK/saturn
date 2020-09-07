@@ -9,6 +9,9 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +44,11 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractIntegrationTest {
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
-
+    final static PasswordRepository passwordRepository =
+         new PasswordRepository();
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
     private static final GenericContainer sftpServerContainer;
-    private static final String SFTPSERVER_IMAGE = "docker-io.dbc.dk/sftpserver:for-tests";
+    private static final String SFTPSERVER_IMAGE = "docker.dbc.dk/simplesftpserver:latest";
     static final String SFTP_USER = "sftp";
     static final String SFTP_PASSWORD = "sftp";
     static final String SFTP_DIR = "upload";
@@ -71,6 +75,7 @@ public abstract class AbstractIntegrationTest {
         EntityManager entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
         harvesterConfigRepository.entityManager = entityManager;
+        passwordRepository.entityManager = entityManager;
         when(mockedUriBuilder.path(anyString())).thenReturn(mockedUriBuilder);
         when(mockedUriBuilder.build()).thenReturn(new URI("location"));
     }
@@ -90,6 +95,8 @@ public abstract class AbstractIntegrationTest {
             "DELETE FROM httpharvester").executeUpdate();
         harvesterConfigRepository.entityManager.createNativeQuery(
             "DELETE FROM ftpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.createNativeQuery(
+                "DELETE FROM passwords").executeUpdate();
         harvesterConfigRepository.entityManager.getTransaction().commit();
     }
 
@@ -179,5 +186,13 @@ public abstract class AbstractIntegrationTest {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone(timezone));
         return sdf.parse(date);
+    }
+
+    public static Date getDatePlusDays(int days) {
+        return Date.from(Instant.now().plus(days, ChronoUnit.DAYS));
+    }
+
+    public static Date getDateMinusDays(int days) {
+        return Date.from(Instant.now().minus(days, ChronoUnit.DAYS));
     }
 }

@@ -7,6 +7,8 @@
         <jta-data-source>jdbc/saturn/harvesterconfig</jta-data-source>
         <class>dk.dbc.saturn.entity.HttpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.FtpHarvesterConfig</class>
+        <class>dk.dbc.saturn.entity.SFtpHarvesterConfig</class>
+        <class>dk.dbc.saturn.entity.PasswordEntry</class>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="none"/>
         </properties>
@@ -15,6 +17,7 @@
         <class>dk.dbc.saturn.entity.HttpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.FtpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.SFtpHarvesterConfig</class>
+        <class>dk.dbc.saturn.entity.PasswordEntry</class>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="none"/>
             <property name="eclipselink.logging.logger" value="org.eclipse.persistence.logging.DefaultSessionLog"/>

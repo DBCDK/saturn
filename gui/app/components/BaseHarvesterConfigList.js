@@ -25,6 +25,7 @@ class ConfigEntry extends React.Component {
         return (
             <tr>
                 <td><Link to={this.props.url}>{this.props.name}</Link></td>
+                <td>{this.props.lastHarvested}</td>
                 <td className="center">
                     <input name="enabled" type="checkbox"
                            checked={this.state.enabled}
@@ -39,6 +40,7 @@ ConfigEntry.propTypes = {
     name: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
     enabled: PropTypes.bool,
+    lastHarvested: PropTypes.string,
     onEnabledChanged: PropTypes.func,
 };
 
@@ -57,6 +59,7 @@ class BaseHarvesterConfigList extends React.Component {
                     <thead>
                         <tr>
                             <th>Navn</th>
+                            <th>Sidst høstet</th>
                             <th>Aktiv</th>
                         </tr>
                     </thead>
