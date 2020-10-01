@@ -29,6 +29,9 @@ import java.util.Set;
 public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);
+    private boolean scheduleThreadHealthy = true;
+
+    private Exception latestException = null;
 
     @Inject RunScheduleFactory runScheduleFactory;
     @EJB HTTPHarvesterBean httpHarvesterBean;
@@ -51,9 +54,20 @@ public class ScheduledHarvesterBean {
             scheduleFtpHarvests();
             scheduleSFtpHarvests();
             scheduleHttpHarvests();
+            scheduleThreadHealthy = true;
         } catch (Exception e) {
+            scheduleThreadHealthy = false;
+            latestException = e;
             LOGGER.error("caught unexpected exception while harvesting", e);
         }
+    }
+
+    public boolean isScheduleThreadHealthy() {
+        return scheduleThreadHealthy;
+    }
+
+    public Exception getLatestException() {
+        return latestException;
     }
 
     private void scheduleFtpHarvests() {
