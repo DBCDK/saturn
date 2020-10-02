@@ -36,6 +36,7 @@ public class HarvesterConfigRepository {
      * @param <T> type parameter
      * @return list of harvester configs
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T extends AbstractHarvesterConfigEntity> List<T> list(
             Class<T> type, int start, int limit) {
         InvariantUtil.checkNotNullOrThrow(type, "type");
