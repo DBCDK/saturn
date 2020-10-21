@@ -24,9 +24,9 @@ class PasswordSyncer:
         tmpMap = {}
         content_lines = self.sftp_get_password_file_as_lines_of_text(harvester, cnopts)
         if not content_lines == None:
-            tmpMap = dict(line.split("    -   ") for line in content_lines)
+            tmpMap = dict(line.split(" - ") for line in content_lines)
         for k, v in tmpMap.items():
-            datesandpasswords[to_internal_date(k)] = v
+            datesandpasswords[to_internal_date(k.strip())] = v.strip()
         return datesandpasswords
 
     def sftp_get_password_file_as_lines_of_text(self, harvester, cnopts):
