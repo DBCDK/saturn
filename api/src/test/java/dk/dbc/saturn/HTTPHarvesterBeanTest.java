@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -237,6 +238,7 @@ public class HTTPHarvesterBeanTest {
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
         httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
         httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
+        httpHarvesterBean.proxyHandlerBean.nonProxyHosts.clear();
         Set<FileHarvest> result = httpHarvesterBean.listFiles(
                 getHttpHarvesterConfig( wireMockHost + "/spongebob/squarepants", null ) );
         assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
@@ -304,6 +306,10 @@ public class HTTPHarvesterBeanTest {
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
         HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean();
         httpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
+        httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
+        httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
+        httpHarvesterBean.proxyHandlerBean.nonProxyHosts = new HashSet<>();
+        httpHarvesterBean.proxyHandlerBean.nonProxyHosts.add("localhost");
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;
     }
