@@ -13,8 +13,6 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +26,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -83,9 +83,9 @@ public class HTTPHarvesterBean {
     }
 
     private Set<FileHarvest> listFiles(String url) throws HarvestException {
-        final Client client = getHttpClient();
         final Stopwatch stopwatch = new Stopwatch();
         try {
+            final Client client = getHttpClient(new URL(url));
             final Response response = getResponse(client, url);
             if (response.hasEntity()) {
                 final Optional<String> filename = getFilenameFromResponse(response);
@@ -104,6 +104,8 @@ public class HTTPHarvesterBean {
                 throw new HarvestException(String.format(
                         "no entity found on response for url \"%s\"", url));
             }
+        } catch (MalformedURLException e) {
+            throw new HarvestException(String.format("invalid URL: %s - %s", url, e));
         } finally {
             LOGGER.info("Listing of {} took {} ms", url,
                     stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
@@ -136,47 +138,46 @@ public class HTTPHarvesterBean {
         }
     }
 
-    private  Client getHttpClient(){
+    private Client getHttpClient(URL url) throws HarvestException {
         final ClientConfig clientConfig = new ClientConfig();
-        final Optional<HttpUrlConnectorProvider> connectorProvider =
-                getConnectorProvider();
-        connectorProvider.ifPresent(clientConfig::connectorProvider);
-        clientConfig.register(new JacksonFeature());
-        // for logging requests and responses (LoggingFilter is deprecated
-        // in jersey 2.23 though)
-        //clientConfig.register(LoggingFilter.class);
+        if (proxyHandlerBean.useProxy(url.getHost())) {
+            clientConfig.connectorProvider(proxyHandlerBean.getHttpUrlConnectorProvider());
+            LOGGER.info("Using proxy: {}:{}", proxyHandlerBean.getProxyHostname(), proxyHandlerBean.getProxyPort());
+        }
         return HttpClient.newClient(clientConfig);
     }
 
-
-
     protected static Response getResponse(Client client, String url) throws HarvestException {
-        final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(
-            client, RETRY_POLICY);
-        final Response response = new HttpGet(failSafeHttpClient)
-            .withBaseUrl(url)
-            .execute();
+        try {
+            final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, RETRY_POLICY);
+            final Response response = new HttpGet(failSafeHttpClient)
+                    .withBaseUrl(url)
+                    .execute();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new HarvestException(String.format(
-                "got status \"%s\" when trying url \"%s\"",
-                response.getStatus(), url));
+            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+                throw new HarvestException(String.format(
+                        "got status \"%s\" when trying url \"%s\"",
+                        response.getStatus(), url));
+            }
+            return response;
+        } catch (Exception e) {
+            if (client != null) {
+                client.close();
+            }
+            if (e instanceof HarvestException) {
+                throw e;
+            }
+            throw new HarvestException("error getting response: " + e);
         }
-        return response;
     }
 
     // finds a string matching a pattern in the content fetched from the given url
     protected String findInContent(String url, String pattern) throws HarvestException {
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(pattern);
-        final ClientConfig clientConfig = new ClientConfig();
-        clientConfig.register(new JacksonFeature());
-        final Optional<HttpUrlConnectorProvider> connectorProvider =
-            getConnectorProvider();
-        connectorProvider.ifPresent(clientConfig::connectorProvider);
-        final Client client = HttpClient.newClient(clientConfig);
         try {
+            final Client client = getHttpClient(new URL(url));
             final Response response = getResponse(client, url);
-            if(response.hasEntity()) {
+            if (response.hasEntity()) {
                 final String result = response.readEntity(String.class);
                 final Matcher matcher = fileNameMatcher.getPattern()
                     .matcher(result);
@@ -200,8 +201,8 @@ public class HTTPHarvesterBean {
                 throw new HarvestException(String.format("response for url " +
                     "%s return empty body", url));
             }
-        } finally {
-            client.close();
+        } catch (MalformedURLException e) {
+            throw new HarvestException(String.format("invalid URL: %s - %s", url, e));
         }
     }
 
@@ -222,22 +223,5 @@ public class HTTPHarvesterBean {
             url = url.substring(0, url.length() - 1);
         }
         return url.substring(url.lastIndexOf("/") + 1, url.length());
-    }
-
-    private Optional<HttpUrlConnectorProvider> getConnectorProvider() {
-        if (proxyHandlerBean.getProxyHostname() != null
-                && proxyHandlerBean.getProxyPort() != 0) {
-            LOGGER.debug("using proxy: host = {} port = {}",
-                    proxyHandlerBean.getProxyHostname(),
-                    proxyHandlerBean.getProxyPort());
-            final SocksConnectionFactory connectionFactory = new SocksConnectionFactory(
-                    proxyHandlerBean.getProxyHostname(), proxyHandlerBean.getProxyPort());
-            final HttpUrlConnectorProvider connectorProvider =
-                new HttpUrlConnectorProvider();
-            connectorProvider.connectionFactory(connectionFactory);
-
-            return Optional.of(connectorProvider);
-        }
-        return Optional.empty();
     }
 }
