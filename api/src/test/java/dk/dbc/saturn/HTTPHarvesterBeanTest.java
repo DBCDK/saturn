@@ -10,6 +10,7 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndProxy;
 
@@ -40,6 +41,9 @@ public class HTTPHarvesterBeanTest {
                     FileHarvest.Status.AWAITING_DOWNLOAD);
     private final FileHarvest squarepantsNoHeaderFileHarvest =
             new HttpFileHarvest("squarepants", null, null, null,
+                    FileHarvest.Status.AWAITING_DOWNLOAD);
+    private final FileHarvest squarepantsWithQueryStringFileHarvest =
+            new HttpFileHarvest("squarepants%3Fpage%3D0", null, null, null,
                     FileHarvest.Status.AWAITING_DOWNLOAD);
 
     @BeforeAll
@@ -108,6 +112,31 @@ public class HTTPHarvesterBeanTest {
         BufferedReader in = new BufferedReader(new InputStreamReader(
             fileHarvest.getContent()));
         StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = in.readLine()) != null) {
+            sb.append(line);
+        }
+        assertThat(sb.toString(), is("barnacles!"));
+    }
+
+    @Test
+    public void test_harvest_noFilenameHeaderWithQueryString() throws HarvestException, IOException {
+        wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants?page=0"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("barnacles!")));
+
+        final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        final Set<FileHarvest> result = httpHarvesterBean.listFiles(
+                getHttpHarvesterConfig(wireMockHost + "/spongebob/squarepants?page=0", null));
+
+        assertThat("has squarepants harvest", result.contains(squarepantsWithQueryStringFileHarvest),
+                is(true));
+
+        final FileHarvest fileHarvest = result.iterator().next();
+        final BufferedReader in = new BufferedReader(new InputStreamReader(
+                fileHarvest.getContent()));
+        final StringBuilder sb = new StringBuilder();
         String line;
         while((line = in.readLine()) != null) {
             sb.append(line);
