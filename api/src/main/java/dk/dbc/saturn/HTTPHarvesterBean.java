@@ -26,8 +26,11 @@ import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
@@ -149,6 +152,9 @@ public class HTTPHarvesterBean {
 
     protected static Response getResponse(Client client, String url) throws HarvestException {
         try {
+            // Jersey client breaks if '{' or '}' are included in URLs in their decoded form
+            url = url.replaceAll("\\{", "%7B");
+            url = url.replaceAll("\\}", "%7D");
             final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, RETRY_POLICY);
             final Response response = new HttpGet(failSafeHttpClient)
                     .withBaseUrl(url)
@@ -222,6 +228,11 @@ public class HTTPHarvesterBean {
         if(url.charAt(url.length() - 1) == '/') {
             url = url.substring(0, url.length() - 1);
         }
-        return url.substring(url.lastIndexOf("/") + 1, url.length());
+        try {
+            // URL encode filename to avoid illegal characters when creating data+transfiles
+            return URLEncoder.encode(url.substring(url.lastIndexOf("/") + 1), StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
