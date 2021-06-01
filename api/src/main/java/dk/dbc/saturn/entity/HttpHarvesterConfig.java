@@ -6,6 +6,8 @@
 package dk.dbc.saturn.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -41,8 +43,15 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
     static final String GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY =
         "SELECT COUNT(config.id) FROM HttpHarvesterConfig config WHERE config.id = :id";
 
+    public enum ListFilesHandler {
+        STANDARD
+    }
+
     private String url;
     private String urlPattern;
+
+    @Enumerated(EnumType.STRING)
+    private ListFilesHandler listFilesHandler = ListFilesHandler.STANDARD;
 
     public String getUrl() {
         return url;
@@ -60,25 +69,43 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         this.urlPattern = urlPattern;
     }
 
+    public ListFilesHandler getListFilesHandler() {
+        return listFilesHandler;
+    }
+
+    public void setListFilesHandler(ListFilesHandler listFilesHandler) {
+        this.listFilesHandler = listFilesHandler;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof HttpHarvesterConfig)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
 
         HttpHarvesterConfig that = (HttpHarvesterConfig) o;
 
-        return super.equals(o)
-            && (urlPattern == null || urlPattern.equals(that.urlPattern))
-            && url.equals(that.url);
+        if (url != null ? !url.equals(that.url) : that.url != null) {
+            return false;
+        }
+        if (urlPattern != null ? !urlPattern.equals(that.urlPattern) : that.urlPattern != null) {
+            return false;
+        }
+        return listFilesHandler == that.listFilesHandler;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + url.hashCode();
-        if(urlPattern != null) {
-            result = 31 * result + urlPattern.hashCode();
-        }
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (urlPattern != null ? urlPattern.hashCode() : 0);
+        result = 31 * result + (listFilesHandler != null ? listFilesHandler.hashCode() : 0);
         return result;
     }
 }
