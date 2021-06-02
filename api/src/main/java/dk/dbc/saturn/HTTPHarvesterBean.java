@@ -89,11 +89,10 @@ public class HTTPHarvesterBean {
     }
 
     HttpListFilesHandler getHttpListFilesHandler(HttpHarvesterConfig config) {
-        final HttpListFilesHandler httpListFilesHandler;
-        switch (config.getListFilesHandler()) {
-            default: httpListFilesHandler = new HttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
+        if (config.getListFilesHandler() == HttpHarvesterConfig.ListFilesHandler.LITTERATURSIDEN) {
+            return new LitteratursidenHttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
         }
-        return httpListFilesHandler;
+        return new HttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
     }
 
     private void doHarvest(HttpHarvesterConfig config) throws HarvestException {

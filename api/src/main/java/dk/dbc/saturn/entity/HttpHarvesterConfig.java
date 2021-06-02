@@ -44,6 +44,7 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         "SELECT COUNT(config.id) FROM HttpHarvesterConfig config WHERE config.id = :id";
 
     public enum ListFilesHandler {
+        LITTERATURSIDEN,
         STANDARD
     }
 
