@@ -98,16 +98,16 @@ public class HttpListFilesHandler {
             if (response.hasEntity()) {
                 final String result = response.readEntity(String.class);
                 final Matcher matcher = fileNameMatcher.getPattern().matcher(result);
-                final Set<String> groups = new HashSet<>();
+                final Set<String> urlCandidates = new HashSet<>();
                 while (matcher.find()) {
-                    groups.add(matcher.group());
+                    urlCandidates.add(matcher.group());
                 }
                 /* a search for a url where the pattern needs to be contained
                  * in globable characters (i.e. not having access to lookaround
                  * and other more advanced regex features) may return several
                  * matches. we assume the shortest match is the most relevant.
                  */
-                Optional<String> smallestMatch = groups.stream().min(Comparator.comparingInt(String::length));
+                Optional<String> smallestMatch = urlCandidates.stream().min(Comparator.comparingInt(String::length));
                 if (smallestMatch.isPresent()) {
                     return smallestMatch.get();
                 }
