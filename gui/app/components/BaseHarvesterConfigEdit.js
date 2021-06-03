@@ -88,6 +88,41 @@ FormEntry.defaultProps = {
     value: "",
 };
 
+class FormSelect extends React.Component {
+    constructor(props) {
+        super(props);
+        this.onChange = this.onChange.bind(this);
+    }
+    onChange({target}) {
+        this.props.onChangeCallback(this.props.name, target.value);
+    }
+    render() {
+        const {name} = this.props;
+        const tooltip = this.props.help ? <ReactTooltip id={name} type="info" place="right" effect="solid">{this.props.help}</ReactTooltip> : null;
+        return (
+            <div className="form-group">
+                <label htmlFor={name}>{this.props.label}</label>
+                <select name={name} value={this.props.value} onChange={this.onChange}>{
+                    this.props.options.map((option) => (
+                        <option value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+                {tooltip}
+            </div>
+        )
+    }
+}
+
+FormSelect.propTypes = {
+    options: PropTypes.arrayOf(PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        value: PropTypes.string.isRequired
+    })).isRequired,
+    value: PropTypes.string,
+    onChangeCallback: PropTypes.func.isRequired,
+    help: PropTypes.element
+}
+
 class FileHarvest extends React.Component {
     constructor(props) {
         super(props);
@@ -282,4 +317,4 @@ BaseHarvesterConfigEdit.defaultProps = {
     onTest: (event) => console.log("no-op for BaseHarvesterConfigEdit.onTest"),
 };
 
-export {BaseHarvesterConfigEdit, FormEntry};
+export {BaseHarvesterConfigEdit, FormEntry, FormSelect};

@@ -6,7 +6,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import {BaseHarvesterConfigEdit, FormEntry} from "./BaseHarvesterConfigEdit";
+import {BaseHarvesterConfigEdit, FormEntry, FormSelect} from "./BaseHarvesterConfigEdit";
 import {BaseHarvesterConfig} from "../model/BaseHarvesterConfig";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 import constants from "../constants";
@@ -24,6 +24,25 @@ const URL_PATTERN_HELP =
         <div className='help-title'>URL Struktur</div>
     </div>
 
+const LIST_FILES_HANDLER_HELP =
+    <div>
+        <div className='help-title'>Høstermetodik</div>
+        <div className='help-text'>Der findes pt. to måder hvorpå HTTP høstninger kan håndteres:</div>
+        <div className='help-indent'>STANDARD</div>
+        <div className='help-indent'>LITTERATURSIDEN</div>
+        <div className='help-text'>LITTERATURSIDEN er en specialisering som ene og alene håndterer den API som udstilles af litteratursiden.dk</div>
+    </div>
+
+const LIST_FILES_HANDLER_OPTIONS = [
+    {
+        label: "LITTERATURSIDEN",
+        value: "LITTERATURSIDEN",
+    },
+    {
+        label: "STANDARD",
+        value: "STANDARD",
+    }
+]
 
 class HttpHarvesterConfigEdit extends React.Component {
     constructor(props) {
@@ -84,6 +103,9 @@ class HttpHarvesterConfigEdit extends React.Component {
             case "enabled":
                 config.enabled = form[i].checked;
                 break;
+            case "listFilesHandler":
+                config.listFilesHandler = form[i].value;
+                break;
             default:
                 break;
             }
@@ -132,6 +154,9 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onTest={this.onTest}
                     onConfigChanged={this.onConfigChanged}
                     title={"HTTP Høster"}>
+                <FormSelect label="Type" name="listFilesHandler" value={getStringValue(this.state.config.listFilesHandler)}
+                            onChangeCallback={this.onChangeCallback} options={LIST_FILES_HANDLER_OPTIONS}
+                            help={LIST_FILES_HANDLER_HELP}/>
                 <FormEntry label="URL" name="url" value={getStringValue(this.state.config.url)} help={URL_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 <FormEntry label="URL struktur" name="urlPattern" value={getStringValue(this.state.config.urlPattern)} help={URL_PATTERN_HELP}
