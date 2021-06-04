@@ -151,8 +151,7 @@
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>json-binding</artifactId>
-            <version>${json.binding.version}</version>
+            <artifactId>dbc-commons-json-binding</artifactId>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>

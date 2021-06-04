@@ -6,16 +6,16 @@
 package dk.dbc.saturn.api;
 
 import com.fasterxml.jackson.databind.type.CollectionType;
-import dk.dbc.jsonb.JSONBContext;
-import dk.dbc.jsonb.JSONBException;
-import dk.dbc.saturn.HarvesterConfigRepository;
-import dk.dbc.saturn.HTTPHarvesterBean;
+import dk.dbc.commons.jsonb.JSONBContext;
+import dk.dbc.commons.jsonb.JSONBException;
+import dk.dbc.saturn.FileHarvest;
 import dk.dbc.saturn.FtpHarvesterBean;
+import dk.dbc.saturn.HTTPHarvesterBean;
 import dk.dbc.saturn.HarvestException;
+import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.MockFileHarvest;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
-import dk.dbc.saturn.FileHarvest;
-import dk.dbc.saturn.MockFileHarvest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +28,8 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
-
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
