@@ -45,7 +45,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("uuuuMMddHHmmss");
     private final Pattern pagePattern = Pattern.compile("(?:\\?|&)page=(\\d+)", Pattern.MULTILINE);
 
-    public LitteratursidenHttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy retryPolicy) {
+    public LitteratursidenHttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy) {
         super(proxyHandler, retryPolicy);
     }
 

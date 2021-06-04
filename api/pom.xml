@@ -205,8 +205,7 @@
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <artifactId>dbc-commons-httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
