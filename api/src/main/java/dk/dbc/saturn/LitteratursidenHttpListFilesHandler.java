@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles files listing for site litteratursiden.dk:
@@ -41,6 +43,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(LitteratursidenHttpListFilesHandler.class);
 
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("uuuuMMddHHmmss");
+    private final Pattern pagePattern = Pattern.compile("(?:\\?|&)page=(\\d+)", Pattern.MULTILINE);
 
     public LitteratursidenHttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy retryPolicy) {
         super(proxyHandler, retryPolicy);
@@ -63,6 +66,10 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
         do {
             valuesMap.put("PAGE_NO", String.valueOf(nextPageNo));
             final String url = StringSubstitutor.replace(templateUrl, valuesMap);
+            if (!hasPageNo(url, nextPageNo)) {
+                LOGGER.error("Looks like PAGE_NO variable is not used correctly in {}", templateUrl);
+                break;
+            }
             final Stopwatch stopwatch = new Stopwatch();
             try {
                 final Client client = getHttpClient(new URL(url));
@@ -96,5 +103,13 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
             LOGGER.info("Listing of {} found {} records", url, recordCount);
             return recordCount;
         }
+    }
+
+    private boolean hasPageNo(String url, int pageNo) {
+        final Matcher pageMatcher = pagePattern.matcher(url);
+        if (pageMatcher.find()) {
+            return Integer.parseInt(pageMatcher.group(1)) == pageNo;
+        }
+        return false;
     }
 }
