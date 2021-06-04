@@ -27,7 +27,6 @@ public class Saturn extends Application {
 
     private static final Set<Class<?>> classes = new HashSet<>();
     static {
-        classes.add(StatusBean.class);
         classes.add(HarvesterConfigApi.class);
         classes.add(ConfigFieldApi.class);
         classes.add(PasswordRepositoryApi.class);
