@@ -154,7 +154,7 @@ class HttpHarvesterConfigEdit extends React.Component {
                     onTest={this.onTest}
                     onConfigChanged={this.onConfigChanged}
                     title={"HTTP Høster"}>
-                <FormSelect label="Type" name="listFilesHandler" value={getStringValue(this.state.config.listFilesHandler)}
+                <FormSelect label="Type" name="listFilesHandler" value={this.state.config.listFilesHandler || "STANDARD"}
                             onChangeCallback={this.onChangeCallback} options={LIST_FILES_HANDLER_OPTIONS}
                             help={LIST_FILES_HANDLER_HELP}/>
                 <FormEntry label="URL" name="url" value={getStringValue(this.state.config.url)} help={URL_HELP}
