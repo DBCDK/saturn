@@ -43,7 +43,7 @@ public class FtpHarvesterBean {
     @Asynchronous
     public Future<Void> harvest( FtpHarvesterConfig config ) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-            LOGGER.info( "Starting harvest of {}", config.getName());
+            LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
             ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
             config.setLastHarvested(Date.from(Instant.now()));
@@ -55,9 +55,10 @@ public class FtpHarvesterBean {
             fileHarvests.stream().forEach(FileHarvest::close);
 
             harvesterConfigRepository.save(FtpHarvesterConfig.class, config);
-            LOGGER.info( "Ended harvest of {}", config.getName() );
-            runningTasks.remove( config );
+            LOGGER.info("Ended harvest of {}", config.getName());
             return new AsyncResult<Void>(null);
+        } finally {
+            runningTasks.remove(config);
         }
     }
 

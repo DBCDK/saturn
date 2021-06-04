@@ -97,7 +97,7 @@ public class HTTPHarvesterBean {
     private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
         LOGGER.info("Harvesting url {}", config.getUrl());
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-            LOGGER.info( "Starting harvest of {}", config.getName());
+            LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
             ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
             config.setLastHarvested(Date.from(Instant.now()));
@@ -108,9 +108,10 @@ public class HTTPHarvesterBean {
                     .orElse(0));
             fileHarvests.stream().forEach(FileHarvest::close);
 
-            harvesterConfigRepository.save( HttpHarvesterConfig.class, config );
-            LOGGER.info( "Ended harvest of {}", config.getName() );
-            runningTasks.remove( config );
+            harvesterConfigRepository.save(HttpHarvesterConfig.class, config);
+            LOGGER.info("Ended harvest of {}", config.getName());
+        } finally {
+            runningTasks.remove(config);
         }
     }
 }

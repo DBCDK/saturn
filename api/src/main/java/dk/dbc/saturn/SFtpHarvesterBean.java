@@ -7,9 +7,19 @@ package dk.dbc.saturn;
 
 import com.jcraft.jsch.ChannelSftp;
 import dk.dbc.commons.sftpclient.SFTPConfig;
-import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -18,15 +28,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @LocalBean
 @Stateless
@@ -42,7 +43,7 @@ public class SFtpHarvesterBean {
     @Asynchronous
     public Future<Void> harvest(SFtpHarvesterConfig config) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-            LOGGER.info( "Starting harvest of {}", config.getName());
+            LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles(config);
             ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile());
             config.setLastHarvested(Date.from(Instant.now()));
@@ -54,9 +55,10 @@ public class SFtpHarvesterBean {
             fileHarvests.stream().forEach(FileHarvest::close);
 
             harvesterConfigRepository.save(SFtpHarvesterConfig.class, config);
-            LOGGER.info( "Ended harvest of {}", config.getName() );
-            runningTasks.remove( config );
+            LOGGER.info("Ended harvest of {}", config.getName() );
             return new AsyncResult<Void>(null);
+        } finally {
+            runningTasks.remove(config);
         }
     }
 
