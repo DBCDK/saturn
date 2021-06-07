@@ -35,9 +35,9 @@ public class HttpListFilesHandler {
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
     final ProxyHandlerBean proxyHandler;
-    final RetryPolicy retryPolicy;
+    final RetryPolicy<Response> retryPolicy;
 
-    public HttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy retryPolicy) {
+    public HttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy) {
         this.proxyHandler = proxyHandler;
         this.retryPolicy = retryPolicy;
     }

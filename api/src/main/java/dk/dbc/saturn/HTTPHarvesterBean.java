@@ -22,14 +22,13 @@ import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 @LocalBean
 @Stateless
@@ -41,14 +40,14 @@ public class HTTPHarvesterBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPHarvesterBean.class);
 
-    static RetryPolicy RETRY_POLICY = new RetryPolicy()
-        .retryOn(Collections.singletonList(ProcessingException.class))
-        .retryIf((Response response) ->
-                           response.getStatus() == 404
-                        || response.getStatus() == 500
-                        || response.getStatus() == 502)
-        .withDelay(10, TimeUnit.SECONDS)
-        .withMaxRetries(6);
+    static RetryPolicy<Response> RETRY_POLICY = new RetryPolicy<Response>()
+            .handle(ProcessingException.class)
+            .handleResultIf(response ->
+                       response.getStatus() == 404
+                    || response.getStatus() == 500
+                    || response.getStatus() == 502)
+            .withDelay(Duration.ofSeconds(10))
+            .withMaxRetries(6);
 
     static Response getResponse(Client client, String url) throws HarvestException {
         try {

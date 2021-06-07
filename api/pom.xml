@@ -205,18 +205,12 @@
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <artifactId>dbc-commons-httpclient</artifactId>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>ftp-client</artifactId>
             <version>${ftpclient.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>serviceutils</artifactId>
-            <version>${serviceutils.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
