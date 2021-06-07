@@ -1,0 +1,1 @@
+ALTER TABLE httpharvester ADD COLUMN listfileshandler TEXT DEFAULT 'STANDARD' NOT NULL;

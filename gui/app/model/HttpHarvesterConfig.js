@@ -28,6 +28,7 @@ class HttpHarvesterConfig extends BaseHarvesterConfig {
         config.url = json.url;
         config.urlPattern = json.urlPattern;
         config.lastHarvested = json.lastHarvested;
+        config.listFilesHandler = json.listFilesHandler;
         return config;
     }
 }

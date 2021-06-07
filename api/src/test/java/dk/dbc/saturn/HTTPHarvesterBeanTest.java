@@ -10,7 +10,6 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockserver.integration.ClientAndProxy;
 
@@ -299,7 +298,9 @@ public class HTTPHarvesterBeanTest {
         wireMockServer.stubFor(get(urlEqualTo("/viaf")).willReturn(
             aResponse().withStatus(200).withBody(html)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        final String result = httpHarvesterBean.findInContent(
+        final HttpListFilesHandler httpListFilesHandler =
+                httpHarvesterBean.getHttpListFilesHandler(new HttpHarvesterConfig());
+        final String result = httpListFilesHandler.findInContent(
             wireMockHost + "/viaf", "http://viaf.org*iso.gz");
         assertThat(result, is("http://viaf.org/viaf/data/viaf-" +
             "20180701-clusters-marc21.iso.gz"));
@@ -311,8 +312,10 @@ public class HTTPHarvesterBeanTest {
         wireMockServer.stubFor(get(urlEqualTo("/nothing")).willReturn(
             aResponse().withStatus(200).withBody(html)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        final HttpListFilesHandler httpListFilesHandler =
+                httpHarvesterBean.getHttpListFilesHandler(new HttpHarvesterConfig());
         try {
-            final String result = httpHarvesterBean.findInContent(
+            final String result = httpListFilesHandler.findInContent(
                 wireMockHost + "/nothing", "no-match");
             fail(String.format("expected harvestexception. instead result " +
                 "\"%s\" was returned", result));
@@ -324,8 +327,10 @@ public class HTTPHarvesterBeanTest {
         wireMockServer.stubFor(get(urlEqualTo("/empty")).willReturn(
             aResponse().withStatus(200)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+        final HttpListFilesHandler httpListFilesHandler =
+                httpHarvesterBean.getHttpListFilesHandler(new HttpHarvesterConfig());
         try {
-            final String result = httpHarvesterBean.findInContent(
+            final String result = httpListFilesHandler.findInContent(
                 wireMockHost + "/empty", "PatternPants");
             fail(String.format("expected harvestexception. instead result " +
                 "\"%s\" was returned", result));
@@ -342,6 +347,7 @@ public class HTTPHarvesterBeanTest {
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;
     }
+
     private static HttpHarvesterConfig getHttpHarvesterConfig( String url, String urlPattern ){
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setUrl( url );
