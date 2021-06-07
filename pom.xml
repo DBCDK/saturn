@@ -27,7 +27,6 @@
         <ftpclient.version>1.0-SNAPSHOT</ftpclient.version>
         <invariant-utils.version>0.1.0</invariant-utils.version>
         <jersey.version>2.22.2</jersey.version>
-        <json.binding.version>0.1-SNAPSHOT</json.binding.version>
         <junit.surefire.provider.version>1.1.0</junit.surefire.provider.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <!-- older versions of surefire and failsafe due to junit5 compatibility -->
@@ -53,6 +52,11 @@
                 <groupId>dk.dbc</groupId>
                 <artifactId>dbc-commons-httpclient</artifactId>
                 <version>1.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>dk.dbc</groupId>
+                <artifactId>dbc-commons-json-binding</artifactId>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
