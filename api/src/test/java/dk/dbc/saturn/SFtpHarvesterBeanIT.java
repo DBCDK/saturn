@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
 public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SFtpHarvesterBeanIT.class);
@@ -52,14 +53,16 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         SFtpHarvesterConfig config = getSFtpHarvesterConfig(
                 SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_DIR, SFTP_PORT, "*");
         Set<FileHarvest> fileHarvests = sFtpHarvesterBean.listFiles( config );
-        assertThat("result size", fileHarvests.size(), is(2));
+        assertThat("result size", fileHarvests.size(), greaterThanOrEqualTo(2));
         final Map<String, String> contentMap = new HashMap<>(2);
         contentMap.put("bb.txt", "Barnacle Boy!");
         contentMap.put("mm.txt", "Mermaid Man!");
         for (FileHarvest fileHarvest : fileHarvests) {
-            assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
-                is(contentMap.get(fileHarvest.getFilename())));
-            fileHarvest.close();
+            if (contentMap.containsKey(fileHarvest.getFilename())) {
+                assertThat(fileHarvest.getFilename(), readInputStream(fileHarvest.getContent()),
+                        is(contentMap.get(fileHarvest.getFilename())));
+                fileHarvest.close();
+            }
         }
         removeFilesAndDir("", Arrays.asList(putFile1, putFile2));
     }
