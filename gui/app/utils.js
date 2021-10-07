@@ -14,6 +14,37 @@ const getStringValue = value => {
     return value !== null ? value : "";
 };
 
+const getHttpHeadersAsText = list => {
+    try {
+        if (list === undefined || list === null) {
+            return "";
+        }
+        if (typeof list === "string") {
+            return list;
+        }
+        const newList = list.map((header) => {
+            return `{"${header.key}": "${header.value}"}`
+        }).join();
+
+        return list !== null ? "["+newList+"]" : "";
+    } catch (e) {
+        return "";
+    }
+}
+
+const getHttpHeadersTable = text => {
+    try {
+        const newList = JSON.parse(text).map((header) => {
+            return {"key": Object.keys(header)[0] , "value": Object.values(header)[0]};
+        });
+
+        return text !== null ? newList : [];
+    } catch (e) {
+        console.log(e);
+        return [];
+    }
+}
+
 function formatDate(date) {
     var hours = date.getHours();
     var minutes = date.getMinutes();
@@ -30,4 +61,4 @@ function formatDate(date) {
     return date.getFullYear() + "-" + months + "-" + days + ' ' + strTime;
 }
 
-export {getArgValue, getStringValue, formatDate};
+export {getArgValue, getStringValue, getHttpHeadersAsText, getHttpHeadersTable, formatDate};
