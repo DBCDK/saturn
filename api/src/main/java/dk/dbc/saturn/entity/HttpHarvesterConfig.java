@@ -5,12 +5,8 @@
 
 package dk.dbc.saturn.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "httpharvester")
@@ -51,6 +47,11 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
     private String url;
     private String urlPattern;
 
+    @Column(columnDefinition = "jsonb")
+    @Convert(converter = CustomHttpHeaderToJsonArrayConverter.class)
+    private List<CustomHttpHeader> httpHeaders;
+
+
     @Enumerated(EnumType.STRING)
     private ListFilesHandler listFilesHandler = ListFilesHandler.STANDARD;
 
@@ -68,6 +69,14 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
 
     public void setUrlPattern(String urlPattern) {
         this.urlPattern = urlPattern;
+    }
+
+    public void setHttpHeaders(List<CustomHttpHeader> httpHeaders) {
+        this.httpHeaders = httpHeaders;
+    }
+
+    public List<CustomHttpHeader> getHttpHeaders() {
+        return this.httpHeaders;
     }
 
     public ListFilesHandler getListFilesHandler() {

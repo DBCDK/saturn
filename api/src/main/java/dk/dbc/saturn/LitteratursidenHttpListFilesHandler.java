@@ -46,7 +46,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
     private final Pattern pagePattern = Pattern.compile("(?:\\?|&)page=(\\d+)", Pattern.MULTILINE);
 
     public LitteratursidenHttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy) {
-        super(proxyHandler, retryPolicy);
+        super(proxyHandler, retryPolicy, null);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
                 final Response response = HTTPHarvesterBean.getResponse(client, url);
                 if (getNumberOfRecordsInResponse(response, url) > 0) {
                     fileHarvests.add(new HttpFileHarvest(String.format("%s.page%d", formattedDateTime, nextPageNo),
-                            client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD));
+                            client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, null));
                     nextPageNo++;       // continue testing next page number
                 } else {
                     nextPageNo = -1;    // no more pages need to be tested

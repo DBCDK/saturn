@@ -6,30 +6,37 @@
 package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dk.dbc.saturn.entity.CustomHttpHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
-    private String filename;
+    private final String filename;
     private final Client client;
     private final String url;
     private final Integer seqno;
     private final FileHarvest.Status status;
+    private final List<CustomHttpHeader> headers;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HttpFileHarvest.class);
 
-    public HttpFileHarvest(String filename, Client client, String url, Integer seqno, FileHarvest.Status status) {
+    public HttpFileHarvest(String filename, Client client, String url,
+                           Integer seqno, FileHarvest.Status status,
+                           List<CustomHttpHeader> headers) {
         this.filename = filename;
         this.client = client;
         this.url = url;
         this.seqno = seqno;
         this.status = status;
+        this.headers = headers;
     }
 
     public String getFilename() {
@@ -46,7 +53,7 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         /*
         todo: stopwatch timing
          */
-        final Response response = HTTPHarvesterBean.getResponse(client, url);
+        final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
         if (response.hasEntity()) {
             InputStream is = response.readEntity(InputStream.class);
             return is;

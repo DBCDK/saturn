@@ -5,6 +5,7 @@
 
 package dk.dbc.saturn;
 
+import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
@@ -14,10 +15,10 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
@@ -171,6 +172,11 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
                 httpHarvesterConfig, mockedUriBuilder);
             httpHarvesterConfig.setUrlPattern("http://" + name);
             httpHarvesterConfig.setEnabled(true);
+            httpHarvesterConfig.setHttpHeaders(List.of(
+                    new CustomHttpHeader().withKey("myKey1").withValue("myValue1"),
+                    new CustomHttpHeader().withKey("myKey1").withValue("myValue2"),
+                    new CustomHttpHeader().withKey("myKey2").withValue("myValue1.2")
+            ));
         }
 
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -186,6 +192,13 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             is("larry"));
         assertThat("entity 3 transfile", configs.get(2).getTransfile(),
             is("squidward"));
+
+        // Check only one of the configs for headers, since all are equipped with same three
+        // pair of headers.
+        assertThat("first header pair", configs.get(0).getHttpHeaders(),
+                hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue1")));
+        assertThat("second header pair", configs.get(0).getHttpHeaders(),
+                hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue2")));
     }
 
     @Test

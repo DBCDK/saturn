@@ -18,6 +18,8 @@ import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -45,6 +47,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class HarvesterConfigApiTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterConfigApiTest.class);
     private final static HarvesterConfigApi harvesterConfigApi =
         new HarvesterConfigApi();
     private final static JSONBContext jsonbContext = new JSONBContext();
@@ -163,9 +166,10 @@ class HarvesterConfigApiTest {
     }
 
     @Test
-    void test_add_httpHarvester() {
+    void test_add_httpHarvester() throws JSONBException {
         final String harvesterConfig = "{\"url\": \"spongebob\", " +
-            "\"schedule\": \"!!\", \"transfile\": \"squarepants\"}";
+            "\"name\":\"headerTester\", \"schedule\": \"!!\", \"transfile\": \"squarepants\", " +
+                "\"httpHeaders\":[{\"key\":\"a\", \"value\":\"b\"}]}";
         Response response = harvesterConfigApi.addHttpHarvesterConfig(
             mockedUriInfo, harvesterConfig);
         assertThat("status", response.getStatus(), is(201));

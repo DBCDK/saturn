@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpGet;
+import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
@@ -22,12 +23,10 @@ import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 
 @LocalBean
@@ -50,15 +49,21 @@ public class HTTPHarvesterBean {
             .withMaxRetries(6);
 
     static Response getResponse(Client client, String url) throws HarvestException {
+        return getResponse(client, url, null);
+    }
+
+    static Response getResponse(Client client, String url, List<CustomHttpHeader> headers) throws HarvestException {
         try {
             // Jersey client breaks if '{' or '}' are included in URLs in their decoded form
             url = url.replaceAll("\\{", "%7B");
             url = url.replaceAll("\\}", "%7D");
             final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, RETRY_POLICY);
-            final Response response = new HttpGet(failSafeHttpClient)
-                    .withBaseUrl(url)
-                    .execute();
-
+            HttpGet httpGet = new HttpGet(failSafeHttpClient)
+                    .withBaseUrl(url);
+            if (headers != null) {
+                headers.forEach(header -> httpGet.withHeader(header.getKey(), header.getValue()));
+            }
+            final Response response = httpGet.execute();
             if (response.getStatus() != Response.Status.OK.getStatusCode()) {
                 throw new HarvestException(String.format(
                         "got status \"%s\" when trying url \"%s\"",
@@ -76,6 +81,7 @@ public class HTTPHarvesterBean {
         }
     }
 
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
         return getHttpListFilesHandler(config).listFiles(config);
@@ -91,7 +97,7 @@ public class HTTPHarvesterBean {
         if (config.getListFilesHandler() == HttpHarvesterConfig.ListFilesHandler.LITTERATURSIDEN) {
             return new LitteratursidenHttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
         }
-        return new HttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
+        return new HttpListFilesHandler(proxyHandlerBean, RETRY_POLICY, config.getHttpHeaders());
     }
 
     private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
@@ -114,4 +120,5 @@ public class HTTPHarvesterBean {
             runningTasks.remove(config);
         }
     }
+
 }
