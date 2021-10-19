@@ -28,7 +28,7 @@ const HTTP_HEADERS_HELP =
     <div>
         <div className='help-title'>Http headers</div>
         <div className='help-text'>Her kan sættes en række http headers der er nødvendige for at kunne
-        nå igennem til http serveren. Det kan fx være ift authentication. Feltet efterlades tomt, hvis det ikke er nødvendigt med ekstra
+        nå igennem til http serveren. Det kan fx være ift authentication. Feltet efterlades med [ ], hvis det ikke er nødvendigt med ekstra
         headers. Eksempel:</div>
         <div className='help-indent'>
             &#91;&#123;"Authorization"&#58; "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="&#125;,
@@ -127,6 +127,9 @@ class HttpHarvesterConfigEdit extends React.Component {
                     config.listFilesHandler = form[i].value;
                     break;
                 case "httpHeaders":
+                    if(form[i].value === null || form[i].value.trim() === '') {
+                        break;
+                    }
                     JSON.parse(form[i].value);
                     const headerArray =  getHttpHeadersTable(form[i].value);
                     config.httpHeaders = headerArray;
