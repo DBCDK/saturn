@@ -337,6 +337,7 @@ public class HarvesterConfigApi {
                 uriInfo.getAbsolutePathBuilder());
             return Response.created(uri).build();
         } catch (JSONBException e) {
+            LOGGER.error("Error:{}", e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(e.toString())
                 .build();

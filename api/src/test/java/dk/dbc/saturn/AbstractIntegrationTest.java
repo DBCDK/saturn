@@ -5,9 +5,13 @@
 
 package dk.dbc.saturn;
 
+import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -42,6 +46,8 @@ import static org.mockito.Mockito.when;
 
 
 public abstract class AbstractIntegrationTest {
+    static final EmbeddedPostgres pg = pgStart();
+    protected static EntityManager entityManager;
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
     final static PasswordRepository passwordRepository =
@@ -54,6 +60,14 @@ public abstract class AbstractIntegrationTest {
     static final String SFTP_DIR = "upload";
     static final String SFTP_ADDRESS;
     static final int SFTP_PORT;
+
+    private static EmbeddedPostgres pgStart() {
+        try {
+            return EmbeddedPostgres.start();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     static {
         Network network = Network.newNetwork();
@@ -72,7 +86,7 @@ public abstract class AbstractIntegrationTest {
     public static void setUp() throws URISyntaxException {
         final PGSimpleDataSource dataSource = getDataSource();
         migrateDatabase(dataSource);
-        EntityManager entityManager = createEntityManager(dataSource,
+        entityManager = createEntityManager(dataSource,
             "saturnIT_PU");
         harvesterConfigRepository.entityManager = entityManager;
         passwordRepository.entityManager = entityManager;
@@ -102,12 +116,9 @@ public abstract class AbstractIntegrationTest {
 
     private static PGSimpleDataSource getDataSource() {
         final PGSimpleDataSource datasource = new PGSimpleDataSource();
-        datasource.setDatabaseName("saturn");
-        datasource.setServerName("localhost");
-        datasource.setPortNumber(Integer.parseInt(System.getProperty(
-            "postgresql.port", "5432")));
-        datasource.setUser(System.getProperty("user.name"));
-        datasource.setPassword(System.getProperty("user.name"));
+        datasource.setURL( pg.getJdbcUrl("postgres", "postgres"));
+        datasource.setUser("postgres");
+        datasource.setPassword("");
         return datasource;
     }
 

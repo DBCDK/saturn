@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.httpclient.HttpClient;
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
@@ -21,10 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,10 +34,12 @@ public class HttpListFilesHandler {
 
     final ProxyHandlerBean proxyHandler;
     final RetryPolicy<Response> retryPolicy;
+    final List<CustomHttpHeader> headers;
 
-    public HttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy) {
+    public HttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy, List<CustomHttpHeader> headers) {
         this.proxyHandler = proxyHandler;
         this.retryPolicy = retryPolicy;
+        this.headers = headers;
     }
 
     public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
@@ -63,17 +63,17 @@ public class HttpListFilesHandler {
         final Stopwatch stopwatch = new Stopwatch();
         try {
             final Client client = getHttpClient(new URL(url));
-            final Response response = HTTPHarvesterBean.getResponse(client, url);
+            final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
             if (response.hasEntity()) {
                 final Optional<String> filename = getFilenameFromResponse(response);
                 final Set<FileHarvest> fileHarvests = new HashSet<>();
                 final FileHarvest fileHarvest;
                 if (filename.isPresent()) {
                     fileHarvest = new HttpFileHarvest(
-                            filename.get(), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD);
+                            filename.get(), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers);
                 } else {
                     fileHarvest = new HttpFileHarvest(
-                            getFilenameFromURL(url), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD);
+                            getFilenameFromURL(url), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers);
                 }
                 fileHarvests.add(fileHarvest);
                 return fileHarvests;
@@ -94,7 +94,7 @@ public class HttpListFilesHandler {
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(pattern);
         try {
             final Client client = getHttpClient(new URL(url));
-            final Response response = HTTPHarvesterBean.getResponse(client, url);
+            final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
             if (response.hasEntity()) {
                 final String result = response.readEntity(String.class);
                 final Matcher matcher = fileNameMatcher.getPattern().matcher(result);

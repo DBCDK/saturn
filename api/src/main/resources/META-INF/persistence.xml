@@ -5,6 +5,8 @@
              version="2.1">
     <persistence-unit name="saturn_PU" transaction-type="JTA">
         <jta-data-source>jdbc/saturn/harvesterconfig</jta-data-source>
+        <class>dk.dbc.commons.jpa.converter.StringListToJsonArrayConverter</class>
+        <class>dk.dbc.saturn.entity.CustomHttpHeaderToJsonArrayConverter</class>
         <class>dk.dbc.saturn.entity.HttpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.FtpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.SFtpHarvesterConfig</class>
@@ -18,6 +20,9 @@
         <class>dk.dbc.saturn.entity.FtpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.SFtpHarvesterConfig</class>
         <class>dk.dbc.saturn.entity.PasswordEntry</class>
+        <class>dk.dbc.commons.jpa.converter.EnumConverter</class>
+        <class>dk.dbc.commons.jpa.converter.StringListToJsonArrayConverter</class>
+        <class>dk.dbc.saturn.entity.CustomHttpHeaderToJsonArrayConverter</class>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="none"/>
             <property name="eclipselink.logging.logger" value="org.eclipse.persistence.logging.DefaultSessionLog"/>
