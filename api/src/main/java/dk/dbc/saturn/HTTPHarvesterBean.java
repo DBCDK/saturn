@@ -23,7 +23,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
-import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;

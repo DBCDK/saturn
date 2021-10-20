@@ -9,7 +9,6 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 @Converter
 public class CustomHttpHeaderToJsonArrayConverter implements AttributeConverter<List<CustomHttpHeader>, PGobject> {
