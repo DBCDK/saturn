@@ -162,6 +162,9 @@ class SFtpHarvesterConfigEdit extends React.Component {
             case "enabled":
                 config.enabled = form[i].checked;
                 break;
+            case "gzip":
+                config.gzip = form[i].checked;
+                break;
             default:
                 break;
             }

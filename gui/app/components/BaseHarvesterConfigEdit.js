@@ -281,11 +281,13 @@ class BaseHarvesterConfigEdit extends React.Component {
                 <FormEntry label="Biblioteksnummer+præfiks" name="agency" value={config.agency} help={AGENCY_HELP}
                            onChangeCallback={this.onChangeCallback}/>
                 {this.props.children}
+                <FormCheckbox label="Gzip udgående fil" name="gzip" enabled={config.gzip}
+                              onChangeCallback={this.onChangeCallback}/>
                 <FormCheckbox label="Aktiv" name="enabled" enabled={config.enabled}
                            onChangeCallback={this.onChangeCallback}/>
                 <button type="submit" className="save-button" onClick={this.onClick}>Gem</button>
                 {config.id !== undefined ?
-                    <button type="submit" className="delete-button" onClick={this.onDelete}>Slet</button>
+                        <button type="submit" className="delete-button" onClick={this.onDelete}>Slet</button>
                     : <div/> }
                 {config.id !== undefined ?
                     <button type="submit" className="test-button" onClick={this.onClickTest}>Test</button>

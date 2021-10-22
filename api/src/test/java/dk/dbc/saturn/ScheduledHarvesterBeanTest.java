@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
@@ -55,13 +56,13 @@ class ScheduledHarvesterBeanTest {
         scheduledHarvesterBean.harvest();
 
         // Test that no new harvest is launched if an earlier version is still running..
-        assertThat("task list after first run", runningTasks.size(), is(1));
+        MatcherAssert.assertThat("task list after first run", runningTasks.size(), is(1));
         verify(scheduledHarvesterBean.httpHarvesterBean, times( 0)).harvest(config);
         runningTasks.remove(config);
-        assertThat("task list after removing this config", runningTasks.size(), is(0));
+        MatcherAssert.assertThat("task list after removing this config", runningTasks.size(), is(0));
 
         scheduledHarvesterBean.harvest();
-        assertThat("empty task list after second run", runningTasks.size(), is(1));
+        MatcherAssert.assertThat("empty task list after second run", runningTasks.size(), is(1));
 
         // verify that harvest was called once
         verify(scheduledHarvesterBean.httpHarvesterBean, times( 1)).harvest(config);

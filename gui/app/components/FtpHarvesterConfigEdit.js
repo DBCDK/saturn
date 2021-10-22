@@ -162,6 +162,9 @@ class FtpHarvesterConfigEdit extends React.Component {
             case "enabled":
                 config.enabled = form[i].checked;
                 break;
+            case "gzip":
+                config.gzip = form[i].gzip;
+                break;
             default:
                 break;
             }
