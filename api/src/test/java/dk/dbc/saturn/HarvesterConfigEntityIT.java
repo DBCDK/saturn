@@ -9,6 +9,7 @@ import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
@@ -206,9 +209,9 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
                 hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue2")));
         for (HttpHarvesterConfig harvesterConfig : configs) {
             if (harvesterConfig.getName().startsWith("s")) {
-                assertThat(harvesterConfig.getName()+" is gzipped", harvesterConfig.getGzip());
+                Assertions.assertTrue(harvesterConfig.getGzip(), harvesterConfig.getName()+" is gzipped");
             } else {
-                assertThat(harvesterConfig.getName()+" is NOT gzipped", !harvesterConfig.getGzip());
+                Assertions.assertFalse(harvesterConfig.getGzip(), harvesterConfig.getName() + " is NOT gzipped");
             }
       }
     }
