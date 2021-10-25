@@ -45,15 +45,18 @@ pipeline {
 					  failedTotalAll: "0"])
 			}
 		}
-		stage("docker build") {
-			steps {
-				script {
-					def image = docker.build("docker-io.dbc.dk/saturn-service:${env.DOCKER_TAG}",
-						"--pull --no-cache .")
-					image.push()
-				}
-			}
-		}
+		stage("docker push") {
+            when {
+                branch "master"
+            }
+            steps {
+                script {
+                    sh """
+                        docker push docker-io.dbc.dk/saturn:${BRANCH_NAME}-${BUILD_NUMBER}
+                    """
+                }
+            }
+        }
 		stage("docker build saturn-passwordstoresync") {
 			steps {
 				script {

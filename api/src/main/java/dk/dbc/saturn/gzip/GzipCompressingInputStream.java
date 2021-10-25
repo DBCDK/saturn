@@ -29,7 +29,7 @@ public class GzipCompressingInputStream extends SequenceInputStream
         super(new StatefullGzipStreamEnumerator(in,bufferSize));
     }
 
-    static enum StreamState
+    enum StreamState
     {
         HEADER,
         CONTENT,
