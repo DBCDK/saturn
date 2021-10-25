@@ -20,7 +20,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> inputStreams = getFileHarvests("krusty","sponge", "bob");
         final String transfile = "b=transfile";
         final String transfileName = "krusty.saturn.trans";
-        ftpSenderBean.send(inputStreams, "krusty", transfile);
+        ftpSenderBean.send(inputStreams, "krusty", transfile, false);
 
         FtpClient ftpClient = getFtpClient();
 
@@ -30,6 +30,26 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
             is("bob"));
         assertThat("transfile", readInputStream(ftpClient.get(transfileName)),
             is("b=transfile,f=krusty.bob\nb=transfile,f=krusty.sponge\nslut"));
+
+        ftpClient.close();
+    }
+
+    @Test
+    void send_zipped() throws IOException, HarvestException  {
+        FtpSenderBean ftpSenderBean = getFtpSenderBean();
+        Set<FileHarvest> inputStreams = getFileHarvests("krusty","sponge", "bob");
+        final String transfile = "b=transfile";
+        final String transfileName = "krusty.saturn.trans";
+        ftpSenderBean.send(inputStreams, "krusty", transfile, true);
+
+        FtpClient ftpClient = getFtpClient();
+
+        assertThat("file 1", decompressToString(ftpClient.get("krusty.sponge.gz", FtpClient.FileType.BINARY)),
+                is("sponge"));
+        assertThat("file 2", decompressToString(ftpClient.get("krusty.bob.gz", FtpClient.FileType.BINARY)),
+                is("bob"));
+        assertThat("transfile", readInputStream(ftpClient.get(transfileName)),
+                is("b=transfile,f=krusty.bob.gz\nb=transfile,f=krusty.sponge.gz\nslut"));
 
         ftpClient.close();
     }

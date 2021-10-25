@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.saturn.gzip.GzipCompressingInputStream;
 import dk.dbc.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
@@ -49,9 +51,10 @@ public class FtpSenderBean {
      * @param files map of filenames and corresponding input streams
      * @param filenamePrefix prefix for data files and transfile
      * @param transfileTemplate transfile content template
+     * @param gzip zip output contents (not tramsfile)?
      */
     public void send(Set<FileHarvest> files, String filenamePrefix,
-            String transfileTemplate) throws HarvestException    {
+            String transfileTemplate, Boolean gzip) throws HarvestException    {
         final Stopwatch stopwatch = new Stopwatch();
         try {
             final List<String> filenames = files.stream()
@@ -60,18 +63,18 @@ public class FtpSenderBean {
                     .collect( Collectors.toList() );
             LOGGER.info("Files to upload to ftp: {}", String.join(",", filenames));
             final String transfile = TransfileGenerator
-                    .generateTransfile(
-                            transfileTemplate,
-                            filenames );
+                    .generateTransfile(transfileTemplate, filenames, gzip);
             final String transfileName = String.format("%s.%s.trans",
                     filenamePrefix, APPLICATION_ID);
             FtpClient ftpClient = FtpClientFactory.createFtpClient( host, Integer.parseInt(port),
                     username, password, dir, null );
+            String filename = "";
             try {
                 for (FileHarvest fileHarvest : files) {
+                    filename = fileHarvest.getUploadFilename(filenamePrefix);
                     ftpClient.put(
-                            fileHarvest.getUploadFilename( filenamePrefix ),
-                            fileHarvest.getContent(),
+                            gzip ? filename + ".gz": filename,
+                            gzip ? new GzipCompressingInputStream(fileHarvest.getContent()) : fileHarvest.getContent(),
                             FtpClient.FileType.BINARY );
                     fileHarvest.close();
                 }
@@ -79,6 +82,8 @@ public class FtpSenderBean {
                 ftpClient.put(transfileName, new ByteArrayInputStream(
                                 transfile.getBytes(StandardCharsets.UTF_8)),
                         FtpClient.FileType.BINARY);
+            } catch (IOException e) {
+                throw new HarvestException(String.format("GZip of file '%s' failed.",filename));
             } finally {
                 ftpClient.close();
             }

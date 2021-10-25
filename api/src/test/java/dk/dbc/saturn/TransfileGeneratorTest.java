@@ -38,7 +38,7 @@ class TransfileGeneratorTest {
         final List<String> filenames = Stream.of("fish-paste!", "barnacles!",
             "tartar sauce!").collect(Collectors.toList());
         final String transfile = TransfileGenerator.generateTransfile(
-            transfileTemplate, filenames);
+            transfileTemplate, filenames,false);
         final String expectedTransfile = "b=databroendpr3,t=abmxml," +
             "c=latin-1,o=littsiden,m=kildepost@dbc.dk,f=fish-paste!\n" +
             "b=databroendpr3,t=abmxml," +

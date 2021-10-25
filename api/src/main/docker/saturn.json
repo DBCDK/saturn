@@ -1,5 +1,6 @@
 {
     "appName": "saturn",
+    "profiles": ["long-running-requests"],
     "jdbc": {
         "jdbc/saturn/harvesterconfig": {
             "url": "${DB_URL}"
