@@ -29,10 +29,10 @@ const HTTP_HEADERS_HELP =
         <div className='help-title'>Http headers</div>
         <div className='help-text'>Her kan sættes en række http headers der er nødvendige for at kunne
         nå igennem til http serveren. Det kan fx være ift authentication. Feltet efterlades med [ ], hvis det ikke er nødvendigt med ekstra
-        headers. Eksempel:</div>
+        headers. <br/>Eksempel:<br/></div>
         <div className='help-indent'>
-            &#91;&#123;"Authorization"&#58; "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="&#125;,
-            &#123;"My header"&#58; "My header value"&#125;&#93;
+            &#91;<br/>&#123;"Authorization"&#58; "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="&#125;,<br/>
+            &#123;"My header"&#58; "My header value"&#125;<br/>&#93;
         </div>
 
     </div>
