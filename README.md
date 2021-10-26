@@ -38,7 +38,7 @@ mvn verify
 To start a local instance:
 
 ```bash
-docker run -it --name saturn --rm --env-file $(pwd)/env.devel -p 8080:8080 docker-io.dbc.dk/saturn:devel
+docker run -it --name saturn --rm --env-file $(pwd)/env.devel -p 8080:8080 docker-io.dbc.dk/saturn-service:devel
 ```
 (Assuming that you have placed your ```env.devel``` in your working dir.)
 
