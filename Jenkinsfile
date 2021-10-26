@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        docker push docker-io.dbc.dk/saturn:${BRANCH_NAME}-${BUILD_NUMBER}
+                        docker push docker-io.dbc.dk/saturn-service:${BRANCH_NAME}-${BUILD_NUMBER}
                     """
                 }
             }
