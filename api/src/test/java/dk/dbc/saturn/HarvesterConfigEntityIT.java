@@ -9,19 +9,25 @@ import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterConfigEntityIT.class);
+
     @Test
     void test_httpHarvesterEntities() throws ParseException {
         final HttpHarvesterConfig config1 = new HttpHarvesterConfig();
@@ -172,6 +178,8 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
                 httpHarvesterConfig, mockedUriBuilder);
             httpHarvesterConfig.setUrlPattern("http://" + name);
             httpHarvesterConfig.setEnabled(true);
+            httpHarvesterConfig.setGzip(name.startsWith("s"));
+            LOGGER.info("Gzip {} {}", name, httpHarvesterConfig.getGzip());
             httpHarvesterConfig.setHttpHeaders(List.of(
                     new CustomHttpHeader().withKey("myKey1").withValue("myValue1"),
                     new CustomHttpHeader().withKey("myKey1").withValue("myValue2"),
@@ -199,6 +207,13 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
                 hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue1")));
         assertThat("second header pair", configs.get(0).getHttpHeaders(),
                 hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue2")));
+        for (HttpHarvesterConfig harvesterConfig : configs) {
+            if (harvesterConfig.getName().startsWith("s")) {
+                Assertions.assertTrue(harvesterConfig.getGzip(), harvesterConfig.getName()+" is gzipped");
+            } else {
+                Assertions.assertFalse(harvesterConfig.getGzip(), harvesterConfig.getName() + " is NOT gzipped");
+            }
+      }
     }
 
     @Test

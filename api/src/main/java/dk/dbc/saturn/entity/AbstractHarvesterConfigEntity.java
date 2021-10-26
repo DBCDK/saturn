@@ -45,6 +45,8 @@ public abstract class AbstractHarvesterConfigEntity {
 
     private Boolean enabled;
 
+    private Boolean gzip;
+
     public void setId(int id) {
         this.id = id;
     }
@@ -120,6 +122,14 @@ public abstract class AbstractHarvesterConfigEntity {
         this.enabled = enabled;
     }
 
+    public Boolean getGzip() {
+        return gzip;
+    }
+
+    public void setGzip(Boolean gzip) {
+        this.gzip = gzip;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -137,12 +147,13 @@ public abstract class AbstractHarvesterConfigEntity {
                 Objects.equals(seqno, that.seqno) &&
                 Objects.equals(seqnoExtract, that.seqnoExtract) &&
                 Objects.equals(agency, that.agency) &&
-                Objects.equals(enabled, that.enabled);
+                Objects.equals(enabled, that.enabled) &&
+                Objects.equals(gzip, that.gzip);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, schedule, lastHarvested,
-                transfile, seqno, seqnoExtract, agency, enabled);
+                transfile, seqno, seqnoExtract, agency, enabled, gzip);
     }
 }

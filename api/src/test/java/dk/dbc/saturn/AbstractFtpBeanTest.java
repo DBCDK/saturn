@@ -9,9 +9,13 @@ import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.zip.GZIPInputStream;
 
 public abstract class AbstractFtpBeanTest {
     static final String USERNAME = "FtpClientTest";
@@ -52,6 +56,21 @@ public abstract class AbstractFtpBeanTest {
             }
             return sb.toString().trim();
         }
+    }
+
+    public static String decompressToString(InputStream is) throws IOException {
+        Path tmpFile = Files.createTempFile("my-gzipped", ".gz");
+        try (GZIPInputStream gis = new GZIPInputStream(is);
+             FileOutputStream fos = new FileOutputStream(tmpFile.toFile())) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = gis.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+            }
+        }
+        String returnedData = Files.readString(tmpFile);
+        Files.deleteIfExists(tmpFile);
+        return returnedData;
     }
 
     static String createFtpDir(String dirname) {

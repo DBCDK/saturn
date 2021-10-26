@@ -28,10 +28,10 @@ public class TransfileGenerator {
      * @return generated transfile
      */
     public static String generateTransfile(String transfileTemplate,
-            List<String> filenames) {
+            List<String> filenames, Boolean gzip) {
         StringBuilder sb = new StringBuilder();
         for(String file : filenames) {
-            sb.append(transfileTemplate).append(",f=").append(file)
+            sb.append(transfileTemplate).append(",f=").append(gzip ? file + ".gz" : file)
                 .append("\n");
         }
         sb.append("slut");
