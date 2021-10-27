@@ -123,11 +123,14 @@ public abstract class AbstractHarvesterConfigEntity {
     }
 
     public Boolean getGzip() {
+        if (gzip == null) {
+            return false;
+        }
         return gzip;
     }
 
     public void setGzip(Boolean gzip) {
-        this.gzip = gzip;
+        this.gzip = Objects.requireNonNullElse(gzip, false);
     }
 
     @Override
