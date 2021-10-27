@@ -51,7 +51,7 @@ public class FtpSenderBean {
      * @param files map of filenames and corresponding input streams
      * @param filenamePrefix prefix for data files and transfile
      * @param transfileTemplate transfile content template
-     * @param gzip zip output contents (not tramsfile)?
+     * @param gzip zip output contents (not transfile)?
      */
     public void send(Set<FileHarvest> files, String filenamePrefix,
             String transfileTemplate, Boolean gzip) throws HarvestException    {
@@ -62,7 +62,7 @@ public class FtpSenderBean {
                     .sorted()
                     .collect( Collectors.toList() );
             LOGGER.info("Files to upload to ftp: {}", String.join(",", filenames));
-            final String transfile = TransfileGenerator
+            final String transfileContent = TransfileGenerator
                     .generateTransfile(transfileTemplate, filenames, gzip);
             final String transfileName = String.format("%s.%s.trans",
                     filenamePrefix, APPLICATION_ID);
@@ -78,9 +78,9 @@ public class FtpSenderBean {
                             FtpClient.FileType.BINARY );
                     fileHarvest.close();
                 }
-                LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfile);
+                LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfileContent);
                 ftpClient.put(transfileName, new ByteArrayInputStream(
-                                transfile.getBytes(StandardCharsets.UTF_8)),
+                                transfileContent.getBytes(StandardCharsets.UTF_8)),
                         FtpClient.FileType.BINARY);
             } catch (IOException e) {
                 throw new HarvestException(String.format("GZip of file '%s' failed.",filename));
