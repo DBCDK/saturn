@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
@@ -18,11 +19,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -302,9 +306,7 @@ public class HTTPHarvesterBeanTest {
                 ));
 
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
-        httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
-        httpHarvesterBean.proxyHandlerBean.nonProxyHosts.clear();
+        httpHarvesterBean.proxyBean.withNonProxyHosts(Set.of());
         Set<FileHarvest> result = httpHarvesterBean.listFiles(
                 getHttpHarvesterConfig(wireMockHost + "/spongebob/squarepants", null));
         assertThat("has squarepants harvest", result.contains(squarepantsFileHarvest),
@@ -379,11 +381,8 @@ public class HTTPHarvesterBeanTest {
 
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
         HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean();
-        httpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
-        httpHarvesterBean.proxyHandlerBean.proxyHostname = "localhost";
-        httpHarvesterBean.proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
-        httpHarvesterBean.proxyHandlerBean.nonProxyHosts = new HashSet<>();
-        httpHarvesterBean.proxyHandlerBean.nonProxyHosts.add("localhost");
+        httpHarvesterBean.proxyBean = new ProxyBean("localhost", mockProxy.getPort())
+                .withNonProxyHosts(Set.of("localhost"));
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;
     }

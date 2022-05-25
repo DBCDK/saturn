@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
@@ -45,7 +46,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("uuuuMMddHHmmss");
     private final Pattern pagePattern = Pattern.compile("(?:\\?|&)page=(\\d+)", Pattern.MULTILINE);
 
-    public LitteratursidenHttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy) {
+    public LitteratursidenHttpListFilesHandler(ProxyBean proxyHandler, RetryPolicy<Response> retryPolicy) {
         super(proxyHandler, retryPolicy, null);
     }
 

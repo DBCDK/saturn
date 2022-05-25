@@ -1,6 +1,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ public class FtpClientFactory {
 
     private FtpClientFactory() {}
 
-    public static FtpClient createFtpClient( FtpHarvesterConfig config, ProxyHandlerBean proxyHandlerBean ){
+    public static FtpClient createFtpClient( FtpHarvesterConfig config, ProxyBean proxyBean ){
         final String username = config.getUsername();
         final String host = config.getHost();
         final int port = config.getPort();
@@ -28,17 +29,17 @@ public class FtpClientFactory {
                 .withPort(port)
                 .withUsername(username)
                 .withPassword(password);
-        if( proxyHandlerBean != null && proxyHandlerBean.getProxyHostname() != null &&
-                proxyHandlerBean.getProxyPort() != 0 ) {
+        if( proxyBean != null && proxyBean.getProxyHostname() != null &&
+                proxyBean.getProxyPort() != 0 ) {
             final InetSocketAddress address = new InetSocketAddress(
-                    proxyHandlerBean.getProxyHostname(),
-                    proxyHandlerBean.getProxyPort());
+                    proxyBean.getProxyHostname(),
+                    proxyBean.getProxyPort());
             final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
             ftpClient.withProxy(proxy);
             LOGGER.debug("using proxy for {}: proxyhost = {} proxyport = {}",
                     host,
-                    proxyHandlerBean.getProxyHostname(),
-                    proxyHandlerBean.getProxyPort());
+                    proxyBean.getProxyHostname(),
+                    proxyBean.getProxyPort());
         }
         if(!dir.isEmpty()) {
             ftpClient.cd(dir);
@@ -48,14 +49,14 @@ public class FtpClientFactory {
 
     public static FtpClient createFtpClient( String host, int port,
                                              String username, String password, String dir,
-                                             ProxyHandlerBean proxyHandlerBean ) {
+                                             ProxyBean proxyBean ) {
         FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost( host );
         config.setPort( port );
         config.setUsername( username );
         config.setPassword( password );
         config.setDir( dir );
-        return createFtpClient( config, proxyHandlerBean );
+        return createFtpClient( config, proxyBean );
     }
 
 }

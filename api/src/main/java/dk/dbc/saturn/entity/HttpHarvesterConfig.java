@@ -5,7 +5,14 @@
 
 package dk.dbc.saturn.entity;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import java.util.List;
 
 @Entity
@@ -117,5 +124,12 @@ public class HttpHarvesterConfig extends AbstractHarvesterConfigEntity {
         result = 31 * result + (urlPattern != null ? urlPattern.hashCode() : 0);
         result = 31 * result + (listFilesHandler != null ? listFilesHandler.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HttpHarvesterConfig{" +
+                "url='" + url + '\'' +
+                '}';
     }
 }

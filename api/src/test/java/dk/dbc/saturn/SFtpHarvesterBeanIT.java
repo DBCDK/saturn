@@ -6,8 +6,11 @@
 package dk.dbc.saturn;
 
 import dk.dbc.commons.sftpclient.SFTPConfig;
-import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
+import dk.dbc.proxy.ProxyBean;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import org.junit.jupiter.api.Test;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,16 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.core.Is.is;
 
 public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SFtpHarvesterBeanIT.class);
     private static final SFTPConfig sftpConfig = new SFTPConfig()
             .withHost(SFTP_ADDRESS)
             .withUsername(SFTP_USER)
@@ -129,7 +128,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
 
     private static SFtpHarvesterBean getSFtpHarvesterBean() {
         SFtpHarvesterBean sFtpHarvesterBean = new SFtpHarvesterBean();
-        sFtpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
+        sFtpHarvesterBean.proxyBean = new ProxyBean();
         return sFtpHarvesterBean;
     }
 

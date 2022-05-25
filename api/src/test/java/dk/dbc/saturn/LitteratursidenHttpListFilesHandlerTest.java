@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
 import org.junit.jupiter.api.AfterAll;
@@ -18,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -95,12 +96,9 @@ class LitteratursidenHttpListFilesHandlerTest {
     }
 
     private static LitteratursidenHttpListFilesHandler getLitteratursidenHttpListFilesHandler() {
-        final ProxyHandlerBean proxyHandlerBean = new ProxyHandlerBean();
-        proxyHandlerBean.proxyHostname = "localhost";
-        proxyHandlerBean.proxyPort = String.valueOf(mockProxy.getPort());
-        proxyHandlerBean.nonProxyHosts = new HashSet<>();
-        proxyHandlerBean.nonProxyHosts.add("localhost");
-        return new LitteratursidenHttpListFilesHandler(proxyHandlerBean, new RetryPolicy());
+        ProxyBean proxyBean = new ProxyBean("localhost", mockProxy.getPort())
+                .withNonProxyHosts(Set.of("localhost"));
+        return new LitteratursidenHttpListFilesHandler(proxyBean, new RetryPolicy());
     }
 
     private static HttpHarvesterConfig getHttpHarvesterConfig() {

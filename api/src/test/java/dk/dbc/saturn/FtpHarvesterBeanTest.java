@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import org.junit.jupiter.api.Test;
 
@@ -141,7 +142,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
 
     private static FtpHarvesterBean getFtpHarvesterBean() {
         FtpHarvesterBean ftpHarvesterBean = new FtpHarvesterBean();
-        ftpHarvesterBean.proxyHandlerBean = new ProxyHandlerBean();
+        ftpHarvesterBean.proxyBean = new ProxyBean();
         return ftpHarvesterBean;
     }
 
