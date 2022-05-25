@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpGet;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
@@ -25,13 +26,18 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 @LocalBean
 @Stateless
 public class HTTPHarvesterBean {
-    @EJB ProxyHandlerBean proxyHandlerBean;
+    @EJB
+    ProxyBean proxyBean;
     @EJB FtpSenderBean ftpSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -94,9 +100,9 @@ public class HTTPHarvesterBean {
 
     HttpListFilesHandler getHttpListFilesHandler(HttpHarvesterConfig config) {
         if (config.getListFilesHandler() == HttpHarvesterConfig.ListFilesHandler.LITTERATURSIDEN) {
-            return new LitteratursidenHttpListFilesHandler(proxyHandlerBean, RETRY_POLICY);
+            return new LitteratursidenHttpListFilesHandler(proxyBean, RETRY_POLICY);
         }
-        return new HttpListFilesHandler(proxyHandlerBean, RETRY_POLICY, config.getHttpHeaders());
+        return new HttpListFilesHandler(proxyBean, RETRY_POLICY, config.getHttpHeaders());
     }
 
     private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
@@ -111,7 +117,7 @@ public class HTTPHarvesterBean {
                     .filter(Objects::nonNull)
                     .max(Comparator.comparing(Integer::valueOf))
                     .orElse(0));
-            fileHarvests.stream().forEach(FileHarvest::close);
+            fileHarvests.forEach(FileHarvest::close);
 
             harvesterConfigRepository.save(HttpHarvesterConfig.class, config);
             LOGGER.info("Ended harvest of {}", config.getName());

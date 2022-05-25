@@ -163,6 +163,11 @@
     <dependencies>
         <dependency>
             <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-proxy</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
             <artifactId>saturn-gui</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
 import org.slf4j.Logger;
@@ -14,25 +15,25 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
-
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionAttribute;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Date;
-import java.util.Objects;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @LocalBean
 @Stateless
 public class FtpHarvesterBean {
-    @EJB ProxyHandlerBean proxyHandlerBean;
+    @EJB
+    ProxyBean proxyBean;
     @EJB FtpSenderBean ftpSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -52,7 +53,7 @@ public class FtpHarvesterBean {
                     .filter(Objects::nonNull)
                     .max(Comparator.comparing(Integer::valueOf))
                     .orElse(0));
-            fileHarvests.stream().forEach(FileHarvest::close);
+            fileHarvests.forEach(FileHarvest::close);
 
             harvesterConfigRepository.save(FtpHarvesterConfig.class, config);
             LOGGER.info("Ended harvest of {}", config.getName());
@@ -75,7 +76,7 @@ public class FtpHarvesterBean {
                 ftpHarvesterConfig.getDir(),
                 fileNameMatcher.getPattern());
         Set<FileHarvest> fileHarvests = new HashSet<>();
-        FtpClient ftpClient = FtpClientFactory.createFtpClient( ftpHarvesterConfig, proxyHandlerBean );
+        FtpClient ftpClient = FtpClientFactory.createFtpClient( ftpHarvesterConfig, proxyBean);
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()) {
                 /*
@@ -113,7 +114,7 @@ public class FtpHarvesterBean {
         final FileNameMatcher allFilesMatcher = new FileNameMatcher("*");
         final Stopwatch stopwatch = new Stopwatch();
         Set<FileHarvest> fileHarvests = new HashSet<>();
-        FtpClient ftpClient = FtpClientFactory.createFtpClient(ftpHarvesterConfig, proxyHandlerBean);
+        FtpClient ftpClient = FtpClientFactory.createFtpClient(ftpHarvesterConfig, proxyBean);
         for (String file : ftpClient.list(allFilesMatcher)) {
             if (file != null && !file.isEmpty()) {
                 if (!fileNameMatcher.matches(file)) {

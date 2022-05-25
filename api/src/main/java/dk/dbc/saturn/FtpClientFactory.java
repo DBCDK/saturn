@@ -1,6 +1,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ public class FtpClientFactory {
 
     private FtpClientFactory() {}
 
-    public static FtpClient createFtpClient( FtpHarvesterConfig config, ProxyHandlerBean proxyHandlerBean ){
+    public static FtpClient createFtpClient( FtpHarvesterConfig config, ProxyBean proxyHandlerBean ){
         final String username = config.getUsername();
         final String host = config.getHost();
         final int port = config.getPort();
@@ -48,7 +49,7 @@ public class FtpClientFactory {
 
     public static FtpClient createFtpClient( String host, int port,
                                              String username, String password, String dir,
-                                             ProxyHandlerBean proxyHandlerBean ) {
+                                             ProxyBean proxyHandlerBean ) {
         FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost( host );
         config.setPort( port );

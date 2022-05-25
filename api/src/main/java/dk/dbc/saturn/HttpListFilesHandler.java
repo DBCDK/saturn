@@ -7,6 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.httpclient.HttpClient;
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
@@ -22,7 +23,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,11 +37,11 @@ public class HttpListFilesHandler {
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
-    final ProxyHandlerBean proxyHandler;
+    final ProxyBean proxyHandler;
     final RetryPolicy<Response> retryPolicy;
     final List<CustomHttpHeader> headers;
 
-    public HttpListFilesHandler(ProxyHandlerBean proxyHandler, RetryPolicy<Response> retryPolicy, List<CustomHttpHeader> headers) {
+    public HttpListFilesHandler(ProxyBean proxyHandler, RetryPolicy<Response> retryPolicy, List<CustomHttpHeader> headers) {
         this.proxyHandler = proxyHandler;
         this.retryPolicy = retryPolicy;
         this.headers = headers;
