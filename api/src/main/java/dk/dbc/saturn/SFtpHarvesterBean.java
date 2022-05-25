@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Stateless
 public class SFtpHarvesterBean {
     @EJB
-    ProxyBean proxyHandlerBean;
+    ProxyBean proxyBean;
     @EJB FtpSenderBean ftpSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
@@ -82,7 +82,7 @@ public class SFtpHarvesterBean {
                 .withPort(sFtpHarvesterConfig.getPort())
                 .withDir(sFtpHarvesterConfig.getDir())
                 .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyHandlerBean.getProxy())) {
+                proxyBean.getProxy())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
                 if (filename != null && !filename.isEmpty() && seqnoMatcher.shouldFetch(filename.trim())) {
@@ -127,7 +127,7 @@ public class SFtpHarvesterBean {
                 .withPort(sFtpHarvesterConfig.getPort())
                 .withDir(sFtpHarvesterConfig.getDir())
                 .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyHandlerBean.getProxy())) {
+                proxyBean.getProxy())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls("*")) {
                 String filename = lsEntry.getFilename();
                 LOGGER.info("Checking filename:{}", filename);

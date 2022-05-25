@@ -128,7 +128,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
 
     private static SFtpHarvesterBean getSFtpHarvesterBean() {
         SFtpHarvesterBean sFtpHarvesterBean = new SFtpHarvesterBean();
-        sFtpHarvesterBean.proxyHandlerBean = new ProxyBean();
+        sFtpHarvesterBean.proxyBean = new ProxyBean();
         return sFtpHarvesterBean;
     }
 

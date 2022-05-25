@@ -25,7 +25,7 @@ import java.util.Set;
 
 @Startup
 @Singleton
-@DependsOn("ProxyHandlerBean")
+@DependsOn("ProxyBean")
 public class ScheduledHarvesterBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ScheduledHarvesterBean.class);

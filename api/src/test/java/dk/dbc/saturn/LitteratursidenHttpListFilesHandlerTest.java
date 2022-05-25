@@ -96,9 +96,9 @@ class LitteratursidenHttpListFilesHandlerTest {
     }
 
     private static LitteratursidenHttpListFilesHandler getLitteratursidenHttpListFilesHandler() {
-        ProxyBean proxyHandlerBean = new ProxyBean("localhost", mockProxy.getPort())
+        ProxyBean proxyBean = new ProxyBean("localhost", mockProxy.getPort())
                 .withNonProxyHosts(Set.of("localhost"));
-        return new LitteratursidenHttpListFilesHandler(proxyHandlerBean, new RetryPolicy());
+        return new LitteratursidenHttpListFilesHandler(proxyBean, new RetryPolicy());
     }
 
     private static HttpHarvesterConfig getHttpHarvesterConfig() {
