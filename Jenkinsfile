@@ -1,6 +1,6 @@
 #!groovy
 
-def workerNode = "devel10"
+def workerNode = "devel11"
 
 pipeline {
 	agent {label workerNode}
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        docker push docker-io.dbc.dk/saturn-service:${BRANCH_NAME}-${BUILD_NUMBER}
+                        docker push docker-metascrum.artifacts.dbccloud.dk/saturn-service:${BRANCH_NAME}-${BUILD_NUMBER}
                     """
                 }
             }
@@ -73,7 +73,7 @@ pipeline {
 			steps {
 				script {
 					sh """
-						docker push docker-io.dbc.dk/saturn-passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
+						docker push docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
 					"""
 				}
 			}
@@ -82,7 +82,7 @@ pipeline {
 			agent {
 				docker {
 					label workerNode
-					image "docker.dbc.dk/build-env"
+					image "docker-dbc.artifacts.dbccloud.dk/build-env"
 					alwaysPull true
 				}
 			}
