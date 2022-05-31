@@ -1,4 +1,4 @@
-FROM docker.dbc.dk/dbc-python3
+FROM docker-dbc.artifacts.dbccloud.dk/dbc-python3:latest
 
 ENV USER python
 RUN useradd -m $USER
