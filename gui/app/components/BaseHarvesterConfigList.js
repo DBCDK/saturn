@@ -64,7 +64,7 @@ class BaseHarvesterConfigList extends React.Component {
                             <th>Navn</th>
                             <th>Sidst høstet</th>
                             <th>Aktiv</th>
-                            <th>%</th>
+                            <th>Overført</th>
                         </tr>
                     </thead>
                     <tbody>

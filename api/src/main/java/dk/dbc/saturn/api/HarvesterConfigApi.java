@@ -345,7 +345,9 @@ public class HarvesterConfigApi {
     }
 
     private void setProgress(AbstractHarvesterConfigEntity harvesterConfig) {
-        ProgressTrackerBean.Progress progress = progressTrackerBean.get(new ProgressTrackerBean.Key(harvesterConfig.getClass(), harvesterConfig.getId()));
-        harvesterConfig.withProgress(progress);
+        if(progressTrackerBean != null) {
+            ProgressTrackerBean.Progress progress = progressTrackerBean.get(new ProgressTrackerBean.Key(harvesterConfig.getClass(), harvesterConfig.getId()));
+            harvesterConfig.withProgress(progress);
+        }
     }
 }

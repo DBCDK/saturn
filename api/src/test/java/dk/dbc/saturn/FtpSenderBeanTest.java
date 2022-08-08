@@ -17,6 +17,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class FtpSenderBeanTest extends AbstractFtpBeanTest {
+    ProgressTrackerBean progressTracker = new ProgressTrackerBean();
+
     @Test
     void send() throws IOException, HarvestException {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
@@ -30,7 +32,8 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
         assertThat("file 1", readInputStream(ftpClient.get("krusty.sponge")), is("sponge"));
         assertThat("file 2", readInputStream(ftpClient.get("krusty.bob")), is("bob"));
         assertThat("transfile", readInputStream(ftpClient.get(transfileName)), is("b=transfile,f=krusty.bob\nb=transfile,f=krusty.sponge\nslut"));
-
+        int current = progressTracker.get(new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0)).getCurrent();
+        assertThat("Two files was transferred", current, is(2));
         ftpClient.close();
     }
 
@@ -52,7 +55,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     }
 
     private FtpSenderBean getFtpSenderBean() {
-        FtpSenderBean ftpSenderBean = new FtpSenderBean();
+        FtpSenderBean ftpSenderBean = new FtpSenderBean(progressTracker);
         ftpSenderBean.host = "localhost";
         ftpSenderBean.port = String.valueOf(fakeFtpServer.getServerControlPort());
         ftpSenderBean.username = USERNAME;

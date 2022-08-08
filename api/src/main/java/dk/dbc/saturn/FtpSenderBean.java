@@ -48,7 +48,12 @@ public class FtpSenderBean {
 
     private static final String APPLICATION_ID = "saturn";
 
+    public FtpSenderBean() {
+    }
 
+    public FtpSenderBean(ProgressTrackerBean progressTrackerBean) {
+        this.progressTrackerBean = progressTrackerBean;
+    }
 
     /**
      * send files to an ftp server
@@ -80,6 +85,7 @@ public class FtpSenderBean {
                             gzip ? new GzipCompressingInputStream(fileHarvest.getContent()) : fileHarvest.getContent(),
                             FtpClient.FileType.BINARY );
                     fileHarvest.close();
+                    progressTrackerBean.get(progressKey, files.size()).inc();
                 }
                 LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfileContent);
                 ftpClient.put(transfileName, new ByteArrayInputStream(
@@ -89,7 +95,6 @@ public class FtpSenderBean {
                 throw new HarvestException(String.format("GZip of file '%s' failed.",filename));
             } finally {
                 ftpClient.close();
-                progressTrackerBean.get(progressKey, files.size()).inc();
             }
         } finally {
             LOGGER.info("send took {} ms", stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
