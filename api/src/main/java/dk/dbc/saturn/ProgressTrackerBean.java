@@ -1,5 +1,6 @@
 package dk.dbc.saturn;
 
+import dk.dbc.invariant.InvariantUtil;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 
 import javax.ejb.Singleton;
@@ -14,6 +15,7 @@ public class ProgressTrackerBean {
     private final Map<Key, Progress> progressMap = new ConcurrentHashMap<>();
 
     public Progress get(Key key, int total) {
+        InvariantUtil.checkIntLowerBoundOrThrow(total, "total", 1);
         return progressMap.computeIfAbsent(key, k -> new Progress(total));
     }
 
