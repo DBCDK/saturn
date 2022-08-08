@@ -99,6 +99,10 @@ td {
     overflow: hidden;
 }
 
+tr.running {
+    font-weight: bold;
+}
+
 .error {
     color: red;
     font-size: 130%;

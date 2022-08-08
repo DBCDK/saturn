@@ -27,8 +27,7 @@ import java.util.Set;
 @Singleton
 @DependsOn("ProxyBean")
 public class ScheduledHarvesterBean {
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        ScheduledHarvesterBean.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledHarvesterBean.class);
 
     @Inject RunScheduleFactory runScheduleFactory;
     @EJB HTTPHarvesterBean httpHarvesterBean;
@@ -69,12 +68,12 @@ public class ScheduledHarvesterBean {
                 if (ftpConfig.isEnabled()
                         && runScheduleFactory.newRunScheduleFrom(ftpConfig.getSchedule())
                         .isSatisfiedBy(new Date(), ftpConfig.getLastHarvested())) {
-
                     Set<FileHarvest> fileHarvests = ftpHarvesterBean.listFiles(ftpConfig);
 
                     if (! fileHarvests.isEmpty()) {
+                        ProgressTrackerBean.Key progressKey = new ProgressTrackerBean.Key(FtpHarvesterConfig.class, ftpConfig.getId());
                         runningTasks.add( ftpConfig );
-                        ftpHarvesterBean.harvest( ftpConfig );
+                        ftpHarvesterBean.harvest( ftpConfig, progressKey );
                         LOGGER.info( "Done scheduling {}", ftpConfig.getName());
                     }
                 }
@@ -102,8 +101,9 @@ public class ScheduledHarvesterBean {
                     Set<FileHarvest> fileHarvests = sftpHarvesterBean.listFiles(sftpConfig);
 
                     if (! fileHarvests.isEmpty()) {
+                        ProgressTrackerBean.Key progressKey = new ProgressTrackerBean.Key(SFtpHarvesterConfig.class, sftpConfig.getId());
                         runningTasks.add( sftpConfig );
-                        sftpHarvesterBean.harvest( sftpConfig );
+                        sftpHarvesterBean.harvest( sftpConfig, progressKey );
                         LOGGER.info( "Done scheduling {}", sftpConfig.getName());
                     }
                 }
@@ -129,9 +129,11 @@ public class ScheduledHarvesterBean {
                         && runScheduleFactory.newRunScheduleFrom(httpConfig.getSchedule())
                         .isSatisfiedBy(new Date(), httpConfig.getLastHarvested())) {
                     Set<FileHarvest> fileHarvests = httpHarvesterBean.listFiles(httpConfig);
+
                     if ( ! fileHarvests.isEmpty() ){
+                        ProgressTrackerBean.Key progressKey = new ProgressTrackerBean.Key(HttpHarvesterConfig.class, httpConfig.getId());
                         runningTasks.add( httpConfig );
-                        httpHarvesterBean.harvest(httpConfig);
+                        httpHarvesterBean.harvest(httpConfig, progressKey);
                     }
                 }
             } catch (HarvestException e) {

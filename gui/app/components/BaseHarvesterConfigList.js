@@ -23,7 +23,7 @@ class ConfigEntry extends React.Component {
 
     render() {
         return (
-            <tr>
+            <tr className={this.props.running ? "running" : ""}>
                 <td><Link to={this.props.url}>{this.props.name}</Link></td>
                 <td>{this.props.lastHarvested}</td>
                 <td className="center">
@@ -31,6 +31,7 @@ class ConfigEntry extends React.Component {
                            checked={this.state.enabled}
                            onChange={this.handleCheckboxChange}/>
                 </td>
+                <td>{this.props.progress}</td>
             </tr>
         )
     }
@@ -42,6 +43,8 @@ ConfigEntry.propTypes = {
     enabled: PropTypes.bool,
     lastHarvested: PropTypes.string,
     onEnabledChanged: PropTypes.func,
+    progress: PropTypes.string,
+    running: PropTypes.bool,
 };
 
 ConfigEntry.defaultProps = {
@@ -61,6 +64,7 @@ class BaseHarvesterConfigList extends React.Component {
                             <th>Navn</th>
                             <th>Sidst høstet</th>
                             <th>Aktiv</th>
+                            <th>%</th>
                         </tr>
                     </thead>
                     <tbody>

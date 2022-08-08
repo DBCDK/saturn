@@ -8,7 +8,7 @@ import React from "react";
 import constants from "../constants";
 import HttpHarvesterConfig from "../model/HttpHarvesterConfig";
 import Path from "../Path";
-import {BaseHarvesterConfigList,ConfigEntry} from "./BaseHarvesterConfigList";
+import {BaseHarvesterConfigList, ConfigEntry} from "./BaseHarvesterConfigList";
 import {formatDate} from "../utils"
 
 import {mapResponseToConfigList} from "../model/BaseHarvesterConfig";
@@ -22,8 +22,7 @@ class HttpHarvesterConfigList extends React.Component {
     componentWillMount() {
         HttpHarvesterConfig.listHttpHarvesterConfigs().end().then(
                 response => {
-            const configs = mapResponseToConfigList(
-                HttpHarvesterConfig, response.text);
+            const configs = mapResponseToConfigList(HttpHarvesterConfig, response.text);
             this.setState({configs});
         });
     }
@@ -52,14 +51,15 @@ class HttpHarvesterConfigList extends React.Component {
                 {this.state.configs.
                     sort((a,b) => a.name.localeCompare(b.name)).
                     map(item => {
-                        const path = new Path(
-                            constants.paths.editHttpHarvesterConfig);
+                        const path = new Path(constants.paths.editHttpHarvesterConfig);
                         path.bind("id", item.id);
                         return <ConfigEntry key={item.id} id={item.id}
                                             name={item.name} url={path.path}
                                             enabled={item.enabled}
                                             lastHarvested={item.lastHarvested==null?"Endnu ikke høstet":formatDate(new Date(item.lastHarvested))}
-                                            onEnabledChanged={this.onEnabledChanged}/>;
+                                            onEnabledChanged={this.onEnabledChanged}
+                                            progress={item.progress}
+                                            running={item.running}/>;
                         }
                     )
                 }

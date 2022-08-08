@@ -93,8 +93,8 @@ public class HTTPHarvesterBean {
     }
 
     @Asynchronous
-    public Future<Void> harvest( HttpHarvesterConfig config ) throws HarvestException {
-        doHarvest(config);
+    public Future<Void> harvest(HttpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
+        doHarvest(config, progressKey);
         return new AsyncResult<Void>(null);
     }
 
@@ -105,12 +105,12 @@ public class HTTPHarvesterBean {
         return new HttpListFilesHandler(proxyBean, RETRY_POLICY, config.getHttpHeaders());
     }
 
-    private void doHarvest(HttpHarvesterConfig config) throws HarvestException {
+    private void doHarvest(HttpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
         LOGGER.info("Harvesting url {}", config.getUrl());
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip());
+            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)

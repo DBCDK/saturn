@@ -8,7 +8,7 @@ import React from "react";
 import constants from "../constants";
 import FtpHarvesterConfig from "../model/FtpHarvesterConfig";
 import Path from "../Path";
-import {BaseHarvesterConfigList,ConfigEntry} from "./BaseHarvesterConfigList";
+import {BaseHarvesterConfigList, ConfigEntry} from "./BaseHarvesterConfigList";
 
 import {mapResponseToConfigList} from "../model/BaseHarvesterConfig";
 import {formatDate} from "../utils";
@@ -59,7 +59,9 @@ class FtpHarvesterConfigList extends React.Component {
                                             name={item.name} url={path.path}
                                             enabled={item.enabled}
                                             lastHarvested={item.lastHarvested==null?"Endnu ikke høstet":formatDate(new Date(item.lastHarvested))}
-                                            onEnabledChanged={this.onEnabledChanged}/>;
+                                            onEnabledChanged={this.onEnabledChanged}
+                                            progress={item.progress}
+                                            running={item.running}/>;
                         }
                     )
                 }

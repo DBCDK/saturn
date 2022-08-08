@@ -12,6 +12,7 @@ import dk.dbc.saturn.FtpHarvesterBean;
 import dk.dbc.saturn.HTTPHarvesterBean;
 import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
+import dk.dbc.saturn.ProgressTrackerBean;
 import dk.dbc.saturn.SFtpHarvesterBean;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -70,6 +72,7 @@ public class HarvesterConfigApi {
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB SFtpHarvesterBean sFtpHarvesterBean;
     @EJB HTTPHarvesterBean httpHarvesterBean;
+    @Inject ProgressTrackerBean progressTrackerBean;
 
     /**
      * list http harvester configs
@@ -81,10 +84,9 @@ public class HarvesterConfigApi {
     @GET
     @Path(HTTP_LIST_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listHttpHarvesterConfigs(@QueryParam("start") int start,
-            @QueryParam("limit") int limit) throws JSONBException {
-        final List<HttpHarvesterConfig> configs = harvesterConfigRepository
-            .list(HttpHarvesterConfig.class, start, limit);
+    public Response listHttpHarvesterConfigs(@QueryParam("start") int start, @QueryParam("limit") int limit) throws JSONBException {
+        final List<HttpHarvesterConfig> configs = harvesterConfigRepository.list(HttpHarvesterConfig.class, start, limit);
+        configs.forEach(this::setProgress);
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
 
@@ -98,10 +100,9 @@ public class HarvesterConfigApi {
     @GET
     @Path(SFTP_LIST_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listSFtpHarvesterConfigs(@QueryParam("start") int start,
-            @QueryParam("limit") int limit) throws JSONBException {
-        final List<SFtpHarvesterConfig> configs = harvesterConfigRepository
-            .list(SFtpHarvesterConfig.class, start, limit);
+    public Response listSFtpHarvesterConfigs(@QueryParam("start") int start, @QueryParam("limit") int limit) throws JSONBException {
+        final List<SFtpHarvesterConfig> configs = harvesterConfigRepository.list(SFtpHarvesterConfig.class, start, limit);
+        configs.forEach(this::setProgress);
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
 
@@ -115,10 +116,9 @@ public class HarvesterConfigApi {
     @GET
     @Path(FTP_LIST_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listFtpHarvesterConfigs(@QueryParam("start") int start,
-                                            @QueryParam("limit") int limit) throws JSONBException {
-        final List<FtpHarvesterConfig> configs = harvesterConfigRepository
-                .list(FtpHarvesterConfig.class, start, limit);
+    public Response listFtpHarvesterConfigs(@QueryParam("start") int start, @QueryParam("limit") int limit) throws JSONBException {
+        final List<FtpHarvesterConfig> configs = harvesterConfigRepository.list(FtpHarvesterConfig.class, start, limit);
+        configs.forEach(this::setProgress);
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
 
@@ -342,5 +342,10 @@ public class HarvesterConfigApi {
                 .entity(e.toString())
                 .build();
         }
+    }
+
+    private void setProgress(AbstractHarvesterConfigEntity harvesterConfig) {
+        ProgressTrackerBean.Progress progress = progressTrackerBean.get(new ProgressTrackerBean.Key(harvesterConfig.getClass(), harvesterConfig.getId()));
+        harvesterConfig.withProgress(progress);
     }
 }
