@@ -41,11 +41,11 @@ public class SFtpHarvesterBean {
         SFtpHarvesterBean.class);
 
     @Asynchronous
-    public void harvest(SFtpHarvesterConfig config) throws HarvestException {
+    public void harvest(SFtpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles(config);
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip());
+            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)

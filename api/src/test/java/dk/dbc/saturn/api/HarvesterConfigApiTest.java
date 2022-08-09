@@ -48,24 +48,16 @@ import static org.mockito.Mockito.when;
 
 class HarvesterConfigApiTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterConfigApiTest.class);
-    private final static HarvesterConfigApi harvesterConfigApi =
-        new HarvesterConfigApi();
+    private final static HarvesterConfigApi harvesterConfigApi = new HarvesterConfigApi();
     private final static JSONBContext jsonbContext = new JSONBContext();
+    final static CollectionType httpHarvesterConfigType = jsonbContext.getTypeFactory().constructCollectionType(List.class, HttpHarvesterConfig.class);
+    final static CollectionType ftpHarvesterConfigType = jsonbContext.getTypeFactory().constructCollectionType(List.class, FtpHarvesterConfig.class);
     private static UriInfo mockedUriInfo;
-
-    final static CollectionType httpHarvesterConfigType =
-        jsonbContext.getTypeFactory().constructCollectionType(
-            List.class, HttpHarvesterConfig.class);
-    final static CollectionType ftpHarvesterConfigType =
-        jsonbContext.getTypeFactory().constructCollectionType(
-            List.class, FtpHarvesterConfig.class);
-
     private final InputStream inputStream = mock(InputStream.class);
 
     @BeforeAll
     static void setup() throws URISyntaxException {
-        harvesterConfigApi.harvesterConfigRepository =
-            mock(HarvesterConfigRepository.class);
+        harvesterConfigApi.harvesterConfigRepository = mock(HarvesterConfigRepository.class);
         harvesterConfigApi.ftpHarvesterBean = mock(FtpHarvesterBean.class);
         harvesterConfigApi.httpHarvesterBean = mock(HTTPHarvesterBean.class);
         mockedUriInfo = mock(UriInfo.class);
@@ -77,131 +69,99 @@ class HarvesterConfigApiTest {
 
     @Test
     void test_list_httpEmpty() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .list(eq(HttpHarvesterConfig.class), anyInt(), anyInt()))
-            .thenReturn(Collections.emptyList());
+        when(harvesterConfigApi.harvesterConfigRepository.list(eq(HttpHarvesterConfig.class), anyInt(), anyInt())).thenReturn(Collections.emptyList());
 
-        Response response = harvesterConfigApi.listHttpHarvesterConfigs(
-            0, 0);
+        Response response = harvesterConfigApi.listHttpHarvesterConfigs(0, 0);
 
         assertThat("response status", response.getStatus(), is(200));
         assertThat("response has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final List<HttpHarvesterConfig> configs = jsonbContext.unmarshall(
-            configsJson, httpHarvesterConfigType);
+        final List<HttpHarvesterConfig> configs = jsonbContext.unmarshall(configsJson, httpHarvesterConfigType);
         assertThat("configs size", configs.size(), is(0));
     }
 
     @Test
     void test_list_ftpEmpty() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .list(eq(FtpHarvesterConfig.class), anyInt(), anyInt()))
-            .thenReturn(Collections.emptyList());
+        when(harvesterConfigApi.harvesterConfigRepository.list(eq(FtpHarvesterConfig.class), anyInt(), anyInt())).thenReturn(Collections.emptyList());
 
-        Response response = harvesterConfigApi.listFtpHarvesterConfigs(
-            0, 0);
+        Response response = harvesterConfigApi.listFtpHarvesterConfigs(0, 0);
 
         assertThat("response status", response.getStatus(), is(200));
         assertThat("response has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final List<FtpHarvesterConfig> configs = jsonbContext.unmarshall(
-            configsJson, ftpHarvesterConfigType);
+        final List<FtpHarvesterConfig> configs = jsonbContext.unmarshall(configsJson, ftpHarvesterConfigType);
         assertThat("configs size", configs.size(), is(0));
     }
 
     @Test
     void test_list_httpHarvester() throws JSONBException {
-        List<HttpHarvesterConfig> configs = Stream.of("jack_sparrow", "elizabeth_swan",
-            "hector_barbossa").map(item -> {
-                HttpHarvesterConfig entity = new HttpHarvesterConfig();
-                entity.setUrl(item);
-                return entity;
+        List<HttpHarvesterConfig> configs = Stream.of("jack_sparrow", "elizabeth_swan", "hector_barbossa").map(item -> {
+            HttpHarvesterConfig entity = new HttpHarvesterConfig();
+            entity.setUrl(item);
+            return entity;
         }).collect(Collectors.toList());
-        when(harvesterConfigApi.harvesterConfigRepository
-            .list(eq(HttpHarvesterConfig.class), anyInt(), anyInt()))
-            .thenReturn(configs);
+        when(harvesterConfigApi.harvesterConfigRepository.list(eq(HttpHarvesterConfig.class), anyInt(), anyInt())).thenReturn(configs);
 
-        Response response = harvesterConfigApi.listHttpHarvesterConfigs(
-            0, 0);
+        Response response = harvesterConfigApi.listHttpHarvesterConfigs(0, 0);
 
         assertThat("response status", response.getStatus(), is(200));
         assertThat("response has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final List<HttpHarvesterConfig> resultsConfigs = jsonbContext
-            .unmarshall(configsJson, httpHarvesterConfigType);
+        final List<HttpHarvesterConfig> resultsConfigs = jsonbContext.unmarshall(configsJson, httpHarvesterConfigType);
 
         assertThat("configs size", resultsConfigs.size(), is(3));
-        assertThat("result 1 url", resultsConfigs.get(0).getUrl(),
-            is("jack_sparrow"));
+        assertThat("result 1 url", resultsConfigs.get(0).getUrl(), is("jack_sparrow"));
     }
 
     @Test
     void test_list_ftpHarvester() throws JSONBException {
-        List<FtpHarvesterConfig> configs = Stream.of("jack_sparrow", "elizabeth_swan",
-            "hector_barbossa").map(item -> {
-                FtpHarvesterConfig entity = new FtpHarvesterConfig();
-                entity.setHost(item);
-                return entity;
+        List<FtpHarvesterConfig> configs = Stream.of("jack_sparrow", "elizabeth_swan", "hector_barbossa").map(item -> {
+            FtpHarvesterConfig entity = new FtpHarvesterConfig();
+            entity.setHost(item);
+            return entity;
         }).collect(Collectors.toList());
-        when(harvesterConfigApi.harvesterConfigRepository
-            .list(eq(FtpHarvesterConfig.class), anyInt(), anyInt()))
-            .thenReturn(configs);
+        when(harvesterConfigApi.harvesterConfigRepository.list(eq(FtpHarvesterConfig.class), anyInt(), anyInt())).thenReturn(configs);
 
-        Response response = harvesterConfigApi.listFtpHarvesterConfigs(
-            0, 0);
+        Response response = harvesterConfigApi.listFtpHarvesterConfigs(0, 0);
 
         assertThat("response status", response.getStatus(), is(200));
         assertThat("response has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final List<FtpHarvesterConfig> resultsConfigs = jsonbContext
-            .unmarshall(configsJson, ftpHarvesterConfigType);
+        final List<FtpHarvesterConfig> resultsConfigs = jsonbContext.unmarshall(configsJson, ftpHarvesterConfigType);
 
         assertThat("configs size", resultsConfigs.size(), is(3));
-        assertThat("result 1 url", resultsConfigs.get(0).getHost(),
-            is("jack_sparrow"));
+        assertThat("result 1 url", resultsConfigs.get(0).getHost(), is("jack_sparrow"));
     }
 
     @Test
     void test_add_httpHarvester() throws JSONBException {
-        final String harvesterConfig = "{\"url\": \"spongebob\", " +
-            "\"name\":\"headerTester\", \"schedule\": \"!!\", \"transfile\": \"squarepants\", " +
-                "\"httpHeaders\":[{\"key\":\"a\", \"value\":\"b\"}]}";
-        Response response = harvesterConfigApi.addHttpHarvesterConfig(
-            mockedUriInfo, harvesterConfig);
+        final String harvesterConfig = "{\"url\": \"spongebob\", " + "\"name\":\"headerTester\", \"schedule\": \"!!\", \"transfile\": \"squarepants\", " + "\"httpHeaders\":[{\"key\":\"a\", \"value\":\"b\"}]}";
+        Response response = harvesterConfigApi.addHttpHarvesterConfig(mockedUriInfo, harvesterConfig);
         assertThat("status", response.getStatus(), is(201));
     }
 
     @Test
     void test_add_httpHarvesterBadRequest() {
-        final String harvesterConfig = "{\"url\": \"patrick\", " +
-            "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
-        Response response = harvesterConfigApi.addHttpHarvesterConfig(
-            mockedUriInfo, harvesterConfig);
+        final String harvesterConfig = "{\"url\": \"patrick\", " + "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
+        Response response = harvesterConfigApi.addHttpHarvesterConfig(mockedUriInfo, harvesterConfig);
         assertThat("status", response.getStatus(), is(400));
     }
 
     @Test
     void test_add_ftpHarvester() {
-        final String harvesterConfig = "{\"host\": \"bikini_bottom\", " +
-            "\"port\": 5432, \"username\": \"patrick\", \"password\": " +
-            "\"*\", \"schedule\": \"uuuh nothing..\", \"transfile\": " +
-            "\"tartar sauce\", \"dir\": \"season_1\", \"filesPattern\": " +
-            "\"hawaii*.mp3\"}";
-        Response response = harvesterConfigApi.addFtpHarvesterConfig(
-            mockedUriInfo, harvesterConfig);
+        final String harvesterConfig = "{\"host\": \"bikini_bottom\", " + "\"port\": 5432, \"username\": \"patrick\", \"password\": " + "\"*\", \"schedule\": \"uuuh nothing..\", \"transfile\": " + "\"tartar sauce\", \"dir\": \"season_1\", \"filesPattern\": " + "\"hawaii*.mp3\"}";
+        Response response = harvesterConfigApi.addFtpHarvesterConfig(mockedUriInfo, harvesterConfig);
         assertThat("status", response.getStatus(), is(201));
     }
 
     @Test
     void test_add_ftpHarvesterBadRequest() {
-        final String harvesterConfig = "{\"url\": \"patrick\", " +
-            "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
-        Response response = harvesterConfigApi.addFtpHarvesterConfig(
-            mockedUriInfo, harvesterConfig);
+        final String harvesterConfig = "{\"url\": \"patrick\", " + "\"schedule\": \"uuuuuuhh\", \"TRANSFILE\": \"barnacles!\"}";
+        Response response = harvesterConfigApi.addFtpHarvesterConfig(mockedUriInfo, harvesterConfig);
         assertThat("status", response.getStatus(), is(400));
     }
 
@@ -209,17 +169,13 @@ class HarvesterConfigApiTest {
     void test_getHttpHarvesterConfig() throws JSONBException {
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setUrl("BubbleBuddy!");
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
         Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
         assertThat("has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final HttpHarvesterConfig configResult = jsonbContext.unmarshall(
-            configsJson, HttpHarvesterConfig.class);
+        final HttpHarvesterConfig configResult = jsonbContext.unmarshall(configsJson, HttpHarvesterConfig.class);
         assertThat("result entity is not null", configResult, notNullValue());
         assertThat("name", configResult.getUrl(), is("BubbleBuddy!"));
     }
@@ -228,66 +184,47 @@ class HarvesterConfigApiTest {
     void test_getFtpHarvesterConfig() throws JSONBException {
         FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
         assertThat("has entity", response.hasEntity(), is(true));
 
         final String configsJson = (String) response.getEntity();
-        final FtpHarvesterConfig configResult = jsonbContext.unmarshall(
-            configsJson, FtpHarvesterConfig.class);
+        final FtpHarvesterConfig configResult = jsonbContext.unmarshall(configsJson, FtpHarvesterConfig.class);
         assertThat("result entity is not null", configResult, notNullValue());
         assertThat("name", configResult.getHost(), is("Tartar sauce!"));
     }
 
     @Test
     void test_getHttpHarvesterConfig_notFound() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
         Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
     @Test
     void test_getFtpHarvesterConfig_notFound() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
     @Test
-    void test_testHttpHarvesterConfig_notFound() throws JSONBException,
-            InterruptedException, ExecutionException, HarvestException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(HttpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.empty());
+    void test_testHttpHarvesterConfig_notFound() throws JSONBException, InterruptedException, ExecutionException, HarvestException {
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
         Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
     @Test
-    void test_testHttpHarvesterConfig() throws JSONBException, HarvestException,
-            InterruptedException, ExecutionException {
+    void test_testHttpHarvesterConfig() throws JSONBException, HarvestException, InterruptedException, ExecutionException {
         final HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setUrl("BubbleBuddy!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
-                eq(HttpHarvesterConfig.class), anyInt()))
-                .thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
 
-        final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList( new MockFileHarvest("filename", "content", 42)));
+        final Set<FileHarvest> fileHarvests = new HashSet<>(Collections.singletonList(new MockFileHarvest("filename", "content", 42)));
 
-        when(harvesterConfigApi.httpHarvesterBean.listFiles(config))
-            .thenReturn(fileHarvests);
+        when(harvesterConfigApi.httpHarvesterBean.listFiles(config)).thenReturn(fileHarvests);
 
         Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
@@ -295,32 +232,22 @@ class HarvesterConfigApiTest {
     }
 
     @Test
-    void test_testFtpHarvesterConfig_notFound()
-            throws JSONBException, InterruptedException, ExecutionException {
-        when(harvesterConfigApi.harvesterConfigRepository
-            .getHarvesterConfig(eq(FtpHarvesterConfig.class),
-                anyInt()))
-            .thenReturn(Optional.empty());
+    void test_testFtpHarvesterConfig_notFound() throws JSONBException, InterruptedException, ExecutionException {
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
         Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
 
     @Test
-    void test_testFtpHarvesterConfig()
-            throws JSONBException, InterruptedException, ExecutionException, HarvestException {
+    void test_testFtpHarvesterConfig() throws JSONBException, InterruptedException, ExecutionException, HarvestException {
         final FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(
-                eq(FtpHarvesterConfig.class), anyInt()))
-                .thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
 
-        final Set<FileHarvest> fileHarvests = new HashSet<>(
-                Collections.singletonList( new MockFileHarvest ("filename", "content", 42)));
-        final CompletableFuture<Void> future =
-                CompletableFuture.completedFuture(null);
-        when(harvesterConfigApi.ftpHarvesterBean.listFiles( config ))
-                .thenReturn(fileHarvests);
+        final Set<FileHarvest> fileHarvests = new HashSet<>(Collections.singletonList(new MockFileHarvest("filename", "content", 42)));
+        final CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+        when(harvesterConfigApi.ftpHarvesterBean.listFiles(config)).thenReturn(fileHarvests);
 
         final Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));

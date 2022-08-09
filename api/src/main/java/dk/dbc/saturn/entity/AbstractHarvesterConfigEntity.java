@@ -5,6 +5,8 @@
 
 package dk.dbc.saturn.entity;
 
+import dk.dbc.saturn.ProgressTrackerBean;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,6 +15,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import java.util.Date;
 import java.util.Objects;
 
@@ -46,6 +49,9 @@ public abstract class AbstractHarvesterConfigEntity {
     private Boolean enabled;
 
     private Boolean gzip;
+
+    @Transient
+    private ProgressTrackerBean.Progress progress;
 
     public void setId(int id) {
         this.id = id;
@@ -131,6 +137,15 @@ public abstract class AbstractHarvesterConfigEntity {
 
     public void setGzip(Boolean gzip) {
         this.gzip = Objects.requireNonNullElse(gzip, false);
+    }
+
+    public ProgressTrackerBean.Progress getProgress() {
+        return progress;
+    }
+
+    public AbstractHarvesterConfigEntity withProgress(ProgressTrackerBean.Progress progress) {
+        this.progress = progress;
+        return this;
     }
 
     @Override

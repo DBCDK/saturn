@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +28,9 @@ import java.util.stream.Collectors;
 public class FtpSenderBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         FtpSenderBean.class);
+    @Inject
+    ProgressTrackerBean progressTrackerBean;
+
     @Resource(lookup = "java:app/env/ftp/host")
     protected String host;
 
@@ -44,7 +48,12 @@ public class FtpSenderBean {
 
     private static final String APPLICATION_ID = "saturn";
 
+    public FtpSenderBean() {
+    }
 
+    public FtpSenderBean(ProgressTrackerBean progressTrackerBean) {
+        this.progressTrackerBean = progressTrackerBean;
+    }
 
     /**
      * send files to an ftp server
@@ -53,8 +62,7 @@ public class FtpSenderBean {
      * @param transfileTemplate transfile content template
      * @param gzip zip output contents (not transfile)?
      */
-    public void send(Set<FileHarvest> files, String filenamePrefix,
-            String transfileTemplate, Boolean gzip) throws HarvestException    {
+    public void send(Set<FileHarvest> files, String filenamePrefix, String transfileTemplate, Boolean gzip, ProgressTrackerBean.Key progressKey) throws HarvestException    {
         final Stopwatch stopwatch = new Stopwatch();
         try {
             final List<String> filenames = files.stream()
@@ -77,6 +85,7 @@ public class FtpSenderBean {
                             gzip ? new GzipCompressingInputStream(fileHarvest.getContent()) : fileHarvest.getContent(),
                             FtpClient.FileType.BINARY );
                     fileHarvest.close();
+                    progressTrackerBean.get(progressKey, files.size()).inc();
                 }
                 LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfileContent);
                 ftpClient.put(transfileName, new ByteArrayInputStream(
