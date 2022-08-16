@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProgressTrackerBean {
     private final Map<Key, Progress> progressMap = new ConcurrentHashMap<>();
 
-    public Progress get(Key key, int total) {
+    public void init(Key key, int total) {
         InvariantUtil.checkIntLowerBoundOrThrow(total, "total", 1);
-        return progressMap.computeIfAbsent(key, k -> new Progress(total));
+        progressMap.put(key, new Progress(total));
     }
 
     public Progress get(Key key) {

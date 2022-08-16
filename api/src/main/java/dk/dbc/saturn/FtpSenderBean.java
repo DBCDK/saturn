@@ -69,6 +69,7 @@ public class FtpSenderBean {
                     .map( fileHarvest-> fileHarvest.getUploadFilename(filenamePrefix) )
                     .sorted()
                     .collect( Collectors.toList() );
+            progressTrackerBean.init(progressKey, files.size());
             LOGGER.info("Files to upload to ftp: {}", String.join(",", filenames));
             final String transfileContent = TransfileGenerator
                     .generateTransfile(transfileTemplate, filenames, gzip);
@@ -85,7 +86,7 @@ public class FtpSenderBean {
                             gzip ? new GzipCompressingInputStream(fileHarvest.getContent()) : fileHarvest.getContent(),
                             FtpClient.FileType.BINARY );
                     fileHarvest.close();
-                    progressTrackerBean.get(progressKey, files.size()).inc();
+                    progressTrackerBean.get(progressKey).inc();
                 }
                 LOGGER.info("Uploading transfile {} with content: {}", transfileName, transfileContent);
                 ftpClient.put(transfileName, new ByteArrayInputStream(
