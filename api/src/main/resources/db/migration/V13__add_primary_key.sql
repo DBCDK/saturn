@@ -1,0 +1,3 @@
+ALTER TABLE passwords ADD PRIMARY KEY(id);
+
+
