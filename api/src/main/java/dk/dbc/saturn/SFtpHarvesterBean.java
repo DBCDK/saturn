@@ -11,6 +11,7 @@ import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -36,6 +38,10 @@ public class SFtpHarvesterBean {
     @EJB FtpSenderBean ftpSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
+
+    @Inject
+    @ConfigProperty(name = "NON_PROXY_HOSTS", defaultValue = "")
+    Set<String> nonProxiedHosts;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         SFtpHarvesterBean.class);
@@ -72,6 +78,7 @@ public class SFtpHarvesterBean {
                 sFtpHarvesterConfig.getPort(),
                 sFtpHarvesterConfig.getDir(),
                 sFtpHarvesterConfig.getFilesPattern());
+        LOGGER.info("None proxied hosts {}", String.join(", ", nonProxiedHosts != null ? nonProxiedHosts : Set.of()));
         Set<FileHarvest> fileHarvests = new HashSet<>();
 
         try (SFtpClient sftpClient = new SFtpClient(
@@ -82,7 +89,7 @@ public class SFtpHarvesterBean {
                 .withPort(sFtpHarvesterConfig.getPort())
                 .withDir(sFtpHarvesterConfig.getDir())
                 .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyBean.getProxy())) {
+                proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
                 if (filename != null && !filename.isEmpty() && seqnoMatcher.shouldFetch(filename.trim())) {
@@ -120,6 +127,7 @@ public class SFtpHarvesterBean {
         final FileNameMatcher fileNameMatcher = new FileNameMatcher(sFtpHarvesterConfig.getFilesPattern());
         final Stopwatch stopwatch = new Stopwatch();
         Set<FileHarvest> fileHarvests = new HashSet<>();
+        LOGGER.info("None proxied hosts {}",proxyBean.getNonProxyHosts() != null ? String.join(", ", proxyBean.getNonProxyHosts()) : "NONE");
         try (SFtpClient sftpClient = new SFtpClient(new SFTPConfig()
                 .withHost(sFtpHarvesterConfig.getHost())
                 .withUsername(sFtpHarvesterConfig.getUsername())
@@ -127,7 +135,7 @@ public class SFtpHarvesterBean {
                 .withPort(sFtpHarvesterConfig.getPort())
                 .withDir(sFtpHarvesterConfig.getDir())
                 .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyBean.getProxy())) {
+                proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls("*")) {
                 String filename = lsEntry.getFilename();
                 LOGGER.info("Checking filename:{}", filename);

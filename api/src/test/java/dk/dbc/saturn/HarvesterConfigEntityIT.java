@@ -42,7 +42,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         config2.setName("MyName'sNotRick!");
         config2.setSchedule("1 * * * *");
         config2.setUrl("http://nick.com");
-        config2.setLastHarvested(getDate("2018-06-06T20:20:20", "Europe/Copenhagen"));
+        config2.setLastHarvested(getDate("2018-06-06T20:20:20"));
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," + "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config2.setAgency("010100");
         config2.setEnabled(true);

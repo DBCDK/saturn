@@ -4,7 +4,9 @@ import dk.dbc.saturn.PasswordRepository;
 import dk.dbc.saturn.entity.PasswordEntry;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -26,7 +28,9 @@ public class PasswordRepositoryApi {
     private static final String PASSWORDREPO_ADD = "add";
     private static final String PASSWORDREPO_DELETE_PASSWORD = "{host}/{username}/{date}";
     private static final String PASSWORDREPO_GET_PASSWORD = "{host}/{username}/{date}";
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final Base64.Decoder decoder = Base64.getDecoder();
+    private static final Base64.Encoder encoder = Base64.getEncoder();
 
     static {
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/Copenhagen"));
@@ -55,7 +59,7 @@ public class PasswordRepositoryApi {
                 .withUsername(username);
         PasswordEntry passwordEntry = passwordRepository.getPasswordForDate(host, username, sdf.parse(date));
         if (passwordEntry != null) {
-            passwordEntryFrontEnd.setPassword(passwordEntry.getPassword());
+            passwordEntryFrontEnd.setPassword(new String(encoder.encode(passwordEntry.getPassword().getBytes())));
             passwordEntryFrontEnd.setActiveFrom(sdf.format(passwordEntry.getActiveFrom()));
         }
         return Response.ok(passwordEntryFrontEnd).build();
@@ -77,7 +81,7 @@ public class PasswordRepositoryApi {
         PasswordEntry newEntry = new PasswordEntry()
                 .withHost(entry.getHost())
                 .withUsername(entry.getUsername())
-                .withPassword(entry.getPassword())
+                .withPassword(base64Decode(entry.getPassword()).orElse(entry.getPassword()))
                 .withActiveFrom(sdf.parse(entry.getActiveFrom()));
         passwordRepository.save(newEntry);
         return Response.ok().build();
@@ -89,5 +93,13 @@ public class PasswordRepositoryApi {
                 .withUsername(passwordEntry.getUsername())
                 .withPassword(passwordEntry.getPassword())
                 .withActiveFrom(sdf.format(passwordEntry.getActiveFrom()));
+    }
+
+    private Optional<String> base64Decode(String coded) {
+        try {
+            return Optional.of(new String(decoder.decode(coded.getBytes())));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 }
