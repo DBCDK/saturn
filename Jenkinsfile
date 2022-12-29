@@ -22,6 +22,15 @@ pipeline {
 		timestamps()
 	}
 	stages {
+		stage("docker build saturn-passwordstoresync") {
+			steps {
+				script {
+					sh """
+						passwordstore/build
+					"""
+				}
+			}
+		}
 		stage("verify") {
 			steps {
 				sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify pmd:pmd"
@@ -57,15 +66,6 @@ pipeline {
                 }
             }
         }
-		stage("docker build saturn-passwordstoresync") {
-			steps {
-				script {
-					sh """
-						passwordstore/build
-					"""
-				}
-			}
-		}
 		stage("docker push saturn-passwordstoresync") {
 			when {
 				branch "master"
