@@ -7,10 +7,13 @@ import dk.dbc.saturn.entity.PasswordEntry;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,12 +115,15 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         Response response = getHttp(String.format(SFTP_LIST_ENDPOINT));
         return jsonbContext.unmarshall(response.readEntity(String.class), collectionType);
     }
-
     String makeAPasswordList() {
         return Map.of(
                         getOclcDate(yesterday), "some-password:with@various,symbols",
                         getOclcDate(tomorrow), "some-other-ÆEH-password:with@various,symbols",
-                        getOclcDate(getDateFirstOfThisMonth()), "password-for-sftp-user:Å"
+
+                        // Silly small fix, to allow the project to be tested on the second of each month.
+                        getOclcDate(Instant.now().atZone(TimeZone.getTimeZone(TIME_ZONE).toZoneId()).get(ChronoField.DAY_OF_MONTH) != 2
+                                ? getDateFirstOfThisMonth()
+                                : getDateMinusDays(3)), "password-for-sftp-user:Å"
                 )
                 .entrySet()
                 .stream()

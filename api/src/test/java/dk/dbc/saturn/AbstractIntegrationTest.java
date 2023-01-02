@@ -74,7 +74,6 @@ public abstract class AbstractIntegrationTest {
     final static Network network;
     static final GenericContainer sftpServerContainer;
     protected static final String PASSWORDSTORE_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel";
-    protected static final String PASSWORDSTORE_IMAGE1 = "docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel1";
     private static final String SFTPSERVER_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/simplesftpserver:latest";
     static final String SATURN_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel";
     static GenericContainer saturnContainer;
