@@ -10,6 +10,7 @@ def main():
     changer.change_passwords()
     syncer = PasswordSyncer()
     syncer.persist_remote_dates_and_passwords_to_passwordstore()
+    changer.change_passwords()
     if errors():
         logger.error("Errors found: {}".format(get_errormap()))
         exit(1)

@@ -1,3 +1,4 @@
+import base64
 import os
 import json
 from requestswrapper import requests_get, requests_post
@@ -26,15 +27,19 @@ class PasswordChanger:
         for hostname in self.password_change_enabled_sftp_host_names:
             configs = self.get_configs_for_host(hostname, sftp_configs)
             for config in configs:
-                    passEntry = requests_get(self.password_repository_get_date.format(hostname, config["username"],
-                                                                                      to_internal_date_from_python_date(date.today())))
-                    if "activeFrom" in passEntry.keys() and not config["password"] == passEntry["password"]:
+                    url = self.password_repository_get_date.format(hostname, config["username"],
+                                                                   to_internal_date_from_python_date(date.today()))
+                    passEntry = requests_get(url)
+                    decodedPassword = base64.b64decode(passEntry["password"]).decode("utf-8")
+                    if "activeFrom" in passEntry.keys() and not config["password"] == decodedPassword:
                         logger.info("Changedate for harvester '{}' at '{}@{}' is: {}".format(config["name"],
                                                                               passEntry["username"],
                                                                               passEntry["host"],
                                                                               passEntry["activeFrom"]))
-                        config["password"] = passEntry["password"]
+                        logger.info("Changing host/user: {}/{} password".format(
+                                    config["host"], config["username"]))
+                        config["password"] = decodedPassword
                         requests_post("{}/{}".format(self.saturn_rest_endpoint, self.sftp_configs_add_or_modify), config)
-                        logger.info("Config '{}' is now properly pesisted.".format(config["name"]))
+                        logger.info("Config '{}' is now properly persisted.".format(config["name"]))
                     else:
                         logger.info("Unchanged '{}'".format(config["name"]))

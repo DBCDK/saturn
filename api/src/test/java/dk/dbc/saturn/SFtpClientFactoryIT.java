@@ -11,28 +11,23 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 class SFtpClientFactoryIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SFtpClientFactoryIT.class);
 
     @Test
     public void test_simpleTest() throws IOException {
-        try (SFtpClient sFtpClient = new SFtpClient(
-                new SFTPConfig()
-                .withHost(SFTP_ADDRESS)
-                .withUsername(SFTP_USER)
-                .withPassword(SFTP_PASSWORD)
-                .withPort(SFTP_PORT)
-                .withDir("upload")
-                .withFilesPattern("*"), null)) {
+        try (SFtpClient sFtpClient = getSftpClient()) {
             LOGGER.info("host: {}, user: {}, dir:{}", SFTP_ADDRESS, SFTP_USER, SFTP_DIR);
             sFtpClient.putContent("hej.txt", new ByteArrayInputStream("Hej".getBytes()));
-            LOGGER.info("LS:{}", sFtpClient.ls("*"));
             LOGGER.info("pwd:{}", sFtpClient.pwd());
-            LOGGER.info("Filecontent is:{}", readInputStream(sFtpClient.getContent("hej.txt")));
+            String actual = new String(readInputStream(sFtpClient.getContent("hej.txt")));
+            assertThat("Filecontent", actual, is("Hej"));
         }
     }
-
     protected static String readInputStream(InputStream is) throws IOException {
         try (final BufferedReader in = new BufferedReader(
                 new InputStreamReader(is))) {

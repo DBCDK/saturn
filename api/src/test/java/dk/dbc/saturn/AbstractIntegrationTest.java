@@ -6,6 +6,9 @@
 package dk.dbc.saturn;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import dk.dbc.commons.jsonb.JSONBContext;
+import dk.dbc.commons.sftpclient.SFTPConfig;
+import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
@@ -24,6 +27,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,8 +37,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import dk.dbc.httpclient.HttpClient;
+import dk.dbc.httpclient.HttpGet;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
@@ -46,20 +57,35 @@ import static org.mockito.Mockito.when;
 
 
 public abstract class AbstractIntegrationTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            AbstractIntegrationTest.class);
+    protected static final HttpClient httpClient;
     static final EmbeddedPostgres pg = pgStart();
+    static  {
+        Testcontainers.exposeHostPorts(pg.getPort());
+        httpClient = HttpClient.create(HttpClient.newClient());
+    }
     protected static EntityManager entityManager;
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
     final static PasswordRepository passwordRepository =
          new PasswordRepository();
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
-    private static final GenericContainer sftpServerContainer;
-    private static final String SFTPSERVER_IMAGE = "docker.dbc.dk/simplesftpserver:latest";
+    final static Network network;
+    static final GenericContainer sftpServerContainer;
+    protected static final String PASSWORDSTORE_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel";
+    private static final String SFTPSERVER_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/simplesftpserver:latest";
+    static final String SATURN_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel";
+    static GenericContainer saturnContainer;
     static final String SFTP_USER = "sftp";
     static final String SFTP_PASSWORD = "sftp";
     static final String SFTP_DIR = "upload";
     static final String SFTP_ADDRESS;
     static final int SFTP_PORT;
+    static TimeZone TIME_ZONE = TimeZone.getTimeZone("Europe/Copenhagen");
+    static final String SATURN_BASE_URL;
+    static final String PASSWORDREPO_GET_PASSWORD = "api/passwordrepository/%s/%s/%s";
+    protected static final String SFTP_LIST_ENDPOINT = "api/configs/sftp/list";
 
     private static EmbeddedPostgres pgStart() {
         try {
@@ -70,17 +96,20 @@ public abstract class AbstractIntegrationTest {
     }
 
     static {
-        Network network = Network.newNetwork();
+        network = Network.newNetwork();
         sftpServerContainer = new GenericContainer(SFTPSERVER_IMAGE)
+                .withNetworkAliases("sftp")
                 .withNetwork(network)
                 .withExposedPorts(22)
                 .withCommand(String.format("%s:%s:::%s", SFTP_USER, SFTP_PASSWORD, SFTP_DIR))
                 .withStartupTimeout(Duration.ofMinutes(1));
         sftpServerContainer.start();
-        SFTP_ADDRESS = sftpServerContainer.getContainerIpAddress();
+        SFTP_ADDRESS = sftpServerContainer.getHost();
         SFTP_PORT = sftpServerContainer.getMappedPort(22);
+        startSaturnContainer();
+         SATURN_BASE_URL = "http://" + saturnContainer.getHost() + ":" + saturnContainer.getMappedPort(8080);
     }
-
+    protected JSONBContext jsonbContext = new JSONBContext();
 
     @BeforeAll
     public static void setUp() throws URISyntaxException {
@@ -110,11 +139,13 @@ public abstract class AbstractIntegrationTest {
         harvesterConfigRepository.entityManager.createNativeQuery(
             "DELETE FROM ftpharvester").executeUpdate();
         harvesterConfigRepository.entityManager.createNativeQuery(
+                "DELETE FROM sftpharvester").executeUpdate();
+        harvesterConfigRepository.entityManager.createNativeQuery(
                 "DELETE FROM passwords").executeUpdate();
         harvesterConfigRepository.entityManager.getTransaction().commit();
     }
 
-    private static PGSimpleDataSource getDataSource() {
+    static PGSimpleDataSource getDataSource() {
         final PGSimpleDataSource datasource = new PGSimpleDataSource();
         datasource.setURL( pg.getJdbcUrl("postgres", "postgres"));
         datasource.setUser("postgres");
@@ -145,8 +176,7 @@ public abstract class AbstractIntegrationTest {
         config.setName("MyName'sNotRick!");
         config.setSchedule("* * * * *");
         config.setUrl("http://nick.com");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Europe/Copenhagen"));
+        config.setLastHarvested(getDate("2018-06-06T20:20:20"));
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
@@ -165,8 +195,7 @@ public abstract class AbstractIntegrationTest {
         config.setPassword("secretpants");
         config.setDir("rock-bottom");
         config.setFilesPattern("glove-candy.png");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-            "Europe/Copenhagen"));
+        config.setLastHarvested(getDate("2018-06-06T20:20:20"));
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
             "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
@@ -178,14 +207,13 @@ public abstract class AbstractIntegrationTest {
         SFtpHarvesterConfig config = new SFtpHarvesterConfig();
         config.setName("MyName'sNotRick!");
         config.setSchedule("1 * * * *");
-        config.setHost("http://nick.com");
-        config.setPort(5432);
-        config.setUsername("patrick-squarepants");
-        config.setPassword("secretpants");
-        config.setDir("rock-bottom");
-        config.setFilesPattern("glove-candy.png");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20",
-                "Europe/Copenhagen"));
+        config.setHost("sftp");
+        config.setPort(22);
+        config.setUsername(SFTP_USER);
+        config.setPassword(SFTP_PASSWORD);
+        config.setDir("upload");
+        config.setFilesPattern("*");
+        config.setLastHarvested(getDate("2018-06-06T20:20:20"));
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
                 "clatin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
@@ -193,17 +221,58 @@ public abstract class AbstractIntegrationTest {
         return config;
     }
 
-    public static Date getDate(String date, String timezone) throws ParseException {
+    public static Date getDate(String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
+        sdf.setTimeZone(TIME_ZONE);
         return sdf.parse(date);
     }
-
+    public static String  getOclcDate(Date date)  {
+        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
+        sdf.setTimeZone(TIME_ZONE);
+        return sdf.format(date);
+    }
     public static Date getDatePlusDays(int days) {
         return Date.from(Instant.now().plus(days, ChronoUnit.DAYS));
     }
-
     public static Date getDateMinusDays(int days) {
         return Date.from(Instant.now().minus(days, ChronoUnit.DAYS));
+    }
+    public static Date getDateFirstOfThisMonth() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(Date.from(Instant.now()));
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTime();
+    }
+    SFtpClient getSftpClient() {
+        return new SFtpClient(
+                new SFTPConfig()
+                        .withHost(SFTP_ADDRESS)
+                        .withUsername(SFTP_USER)
+                        .withPassword(SFTP_PASSWORD)
+                        .withPort(SFTP_PORT)
+                        .withDir("upload")
+                        .withFilesPattern("*"), null);
+    }
+
+    public Response getHttp(String path) {
+        LOGGER.info("Request: {}/{}", SATURN_BASE_URL, path);
+        return new HttpGet(httpClient).withBaseUrl(SATURN_BASE_URL).withPathElements(path).execute();
+    }
+
+    private static void startSaturnContainer() {
+        saturnContainer = new GenericContainer(SATURN_IMAGE)
+                .withNetworkAliases("saturn")
+                .withNetwork(network)
+                .withExposedPorts(8080)
+                .withEnv("JAVA_MAX_HEAP_SIZE",  "8G")
+                .withEnv("LOG_FORMAT", "text")
+                .withEnv("TZ", "Europe/Copenhagen")
+                .withEnv("DB_URL", String.format("postgres:@host.testcontainers.internal:%d/postgres", getDataSource().getPortNumbers()[0]))
+                .withEnv("PROXY_HOSTNAME","<none>")
+                .withEnv("PROXY_USERNAME", "<none>")
+                .withEnv("PROXY_PASSWORD", "<none>")
+                .waitingFor(Wait.forHttp("/health/ready"))
+                .withStartupTimeout(Duration.ofSeconds(30));
+        saturnContainer.start();
     }
 }
