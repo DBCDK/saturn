@@ -82,7 +82,7 @@ public abstract class AbstractIntegrationTest {
     static final String SFTP_DIR = "upload";
     static final String SFTP_ADDRESS;
     static final int SFTP_PORT;
-    static String TIME_ZONE = "Europe/Copenhagen";
+    static TimeZone TIME_ZONE = TimeZone.getTimeZone("Europe/Copenhagen");
     static final String SATURN_BASE_URL;
     static final String PASSWORDREPO_GET_PASSWORD = "api/passwordrepository/%s/%s/%s";
     protected static final String SFTP_LIST_ENDPOINT = "api/configs/sftp/list";
@@ -223,12 +223,12 @@ public abstract class AbstractIntegrationTest {
 
     public static Date getDate(String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
+        sdf.setTimeZone(TIME_ZONE);
         return sdf.parse(date);
     }
     public static String  getOclcDate(Date date)  {
         SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-        sdf.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
+        sdf.setTimeZone(TIME_ZONE);
         return sdf.format(date);
     }
     public static Date getDatePlusDays(int days) {

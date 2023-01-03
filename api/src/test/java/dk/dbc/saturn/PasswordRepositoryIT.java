@@ -121,7 +121,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                         getOclcDate(tomorrow), "some-other-ÆEH-password:with@various,symbols",
 
                         // Silly small fix, to allow the project to be tested on the second of each month.
-                        getOclcDate(Instant.now().atZone(TimeZone.getTimeZone(TIME_ZONE).toZoneId()).get(ChronoField.DAY_OF_MONTH) != 2
+                        getOclcDate(Instant.now().atZone(TIME_ZONE.toZoneId()).get(ChronoField.DAY_OF_MONTH) != 2
                                 ? getDateFirstOfThisMonth()
                                 : getDateMinusDays(3)), "password-for-sftp-user:Å"
                 )
