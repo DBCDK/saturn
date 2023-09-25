@@ -23,9 +23,9 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private final Integer seqno;
     private final FileHarvest.Status status;
     private final List<CustomHttpHeader> headers;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HttpFileHarvest.class);
+    public static final String RANGE_HEADER = "Range";
 
     public HttpFileHarvest(String filename, Client client, String url,
                            Integer seqno, FileHarvest.Status status,
@@ -49,9 +49,7 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     @JsonIgnore
     public InputStream getContent() throws HarvestException {
-        /*
-        todo: stopwatch timing
-         */
+        LOGGER.info("Headers:{}", headers);
         final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
         if (response.hasEntity()) {
             InputStream is = response.readEntity(InputStream.class);
@@ -59,6 +57,19 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
         }
         else {
             throw new HarvestException(String.format("Unable to read from url %s", url));
+        }
+    }
+
+    public void setResumePoint(long resumePoint) {
+        String range = String.format("bytes=%d-", resumePoint);
+        LOGGER.info("Setting resumepoint at:{}", range);
+        CustomHttpHeader customHttpHeader = headers.stream().filter(header -> RANGE_HEADER.equals(header.getKey()))
+                .findFirst()
+                .orElse(null);
+        if (customHttpHeader == null) {
+            headers.add(new CustomHttpHeader().withKey(RANGE_HEADER).withValue(range));
+        } else {
+            customHttpHeader.setValue(range);
         }
     }
 

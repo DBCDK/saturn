@@ -9,4 +9,8 @@ public class HarvestException extends Exception {
     public HarvestException(String msg) {
         super(msg);
     }
+
+    public HarvestException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

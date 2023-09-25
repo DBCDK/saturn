@@ -1,5 +1,6 @@
 package dk.dbc.saturn;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.mockftpserver.fake.FakeFtpServer;
@@ -15,15 +16,33 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 public abstract class AbstractFtpBeanTest {
     static final String USERNAME = "FtpClientTest";
     static final String PASSWORD = "FtpClientTestPass";
     static final String HOME_DIR = "/home/ftp";
     static final String PUT_DIR = "put";
-
     static FakeFtpServer fakeFtpServer;
+    protected static final int LARGE_NUMBER = 20000;
+    protected static final byte[] LARGE_BLOB;
+    protected static WireMockServer wireMockServer;
+    protected static String wireMockHost;
+
+    static {
+        wireMockServer = new WireMockServer(options().dynamicPort()
+                .dynamicHttpsPort());
+        wireMockServer.start();
+        wireMockHost = "http://localhost:" + wireMockServer.port();
+        configureFor("localhost", wireMockServer.port());
+        LARGE_BLOB = createLargeBlob();
+    }
 
     @BeforeAll
     static void setUp() {
@@ -36,7 +55,6 @@ public abstract class AbstractFtpBeanTest {
         fileSystem.add(new DirectoryEntry(HOME_DIR));
         fileSystem.add(new DirectoryEntry(String.join("/", HOME_DIR, PUT_DIR)));
         fakeFtpServer.setFileSystem(fileSystem);
-
         fakeFtpServer.start();
     }
 
@@ -78,5 +96,13 @@ public abstract class AbstractFtpBeanTest {
         final FileSystem fileSystem = fakeFtpServer.getFileSystem();
         fileSystem.add(new DirectoryEntry(dirpath));
         return dirpath;
+    }
+
+    protected static byte[] createLargeBlob() {
+        return IntStream.range(0, LARGE_NUMBER).mapToObj(i -> String.format("%d", i)).collect(Collectors.joining(",")).getBytes();
+    }
+
+    protected static byte[] getPartOfBlob(int start) {
+        return Arrays.copyOfRange(LARGE_BLOB, start, LARGE_BLOB.length);
     }
 }

@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static dk.dbc.saturn.HttpFileHarvest.RANGE_HEADER;
+
 @LocalBean
 @Stateless
 public class HTTPHarvesterBean {
@@ -52,7 +54,6 @@ public class HTTPHarvesterBean {
                     || response.getStatus() == 502)
             .withDelay(Duration.ofSeconds(10))
             .withMaxRetries(6);
-
     static Response getResponse(Client client, String url) throws HarvestException {
         return getResponse(client, url, null);
     }
@@ -69,7 +70,7 @@ public class HTTPHarvesterBean {
                 headers.forEach(header -> httpGet.withHeader(header.getKey(), header.getValue()));
             }
             final Response response = httpGet.execute();
-            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            if (!List.of(Response.Status.OK.getStatusCode(), Response.Status.PARTIAL_CONTENT.getStatusCode()).contains(response.getStatus())) {
                 throw new HarvestException(String.format(
                         "got status \"%s\" when trying url \"%s\"",
                         response.getStatus(), url));
@@ -105,12 +106,13 @@ public class HTTPHarvesterBean {
         return new HttpListFilesHandler(proxyBean, RETRY_POLICY, config.getHttpHeaders());
     }
 
-    private void doHarvest(HttpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
+    protected void doHarvest(HttpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
+        boolean allowResume = config.getHttpHeaders() != null && config.getHttpHeaders().stream().anyMatch(customHttpHeader -> RANGE_HEADER.equals(customHttpHeader.getKey()));
         LOGGER.info("Harvesting url {}", config.getUrl());
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey);
+            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey, allowResume);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)

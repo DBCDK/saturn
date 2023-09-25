@@ -25,7 +25,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> inputStreams = getFileHarvests("krusty", "sponge", "bob");
         final String transfile = "b=transfile";
         final String transfileName = "krusty.saturn.trans";
-        ftpSenderBean.send(inputStreams, "krusty", transfile, false, new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0));
+        ftpSenderBean.send(inputStreams, "krusty", transfile, false, new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0), false);
 
         FtpClient ftpClient = getFtpClient();
 
@@ -43,7 +43,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
         Set<FileHarvest> inputStreams = getFileHarvests("krusty", "sponge", "bob");
         final String transfile = "b=transfile";
         final String transfileName = "krusty.saturn.trans";
-        ftpSenderBean.send(inputStreams, "krusty", transfile, true, new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0));
+        ftpSenderBean.send(inputStreams, "krusty", transfile, true, new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0), false);
 
         FtpClient ftpClient = getFtpClient();
 
