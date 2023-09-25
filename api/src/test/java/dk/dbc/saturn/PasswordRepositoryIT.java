@@ -26,6 +26,7 @@ import org.testcontainers.images.builder.Transferable;
 
 import javax.ws.rs.core.Response;
 
+import static dk.dbc.saturn.TestUtils.TIME_ZONE;
 import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;

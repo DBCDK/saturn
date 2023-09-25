@@ -13,10 +13,9 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static dk.dbc.saturn.AbstractIntegrationTest.getHttpHarvesterConfig;
+import static dk.dbc.saturn.TestUtils.getHttpHarvesterConfig;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -30,7 +29,7 @@ class ScheduledHarvesterBeanTest {
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
 
     @Test
-    void test_harvest() throws HarvestException, InterruptedException, ExecutionException, ParseException {
+    void test_harvest() throws HarvestException, ParseException {
         final HttpHarvesterConfig config = getHttpHarvesterConfig();
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(new MockFileHarvest("spongebob", "spongebob", 3));

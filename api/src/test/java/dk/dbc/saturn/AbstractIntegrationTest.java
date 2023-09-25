@@ -46,6 +46,8 @@ import dk.dbc.httpclient.HttpClient;
 import dk.dbc.httpclient.HttpGet;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import static dk.dbc.saturn.TestUtils.TIME_ZONE;
+import static dk.dbc.saturn.TestUtils.getDate;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_PASSWORD;
 import static org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_URL;
@@ -80,7 +82,6 @@ public abstract class AbstractIntegrationTest {
     static final String SFTP_DIR = "upload";
     static final String SFTP_ADDRESS;
     static final int SFTP_PORT;
-    static TimeZone TIME_ZONE = TimeZone.getTimeZone("Europe/Copenhagen");
     static final String SATURN_BASE_URL;
     static final String PASSWORDREPO_GET_PASSWORD = "api/passwordrepository/%s/%s/%s";
     protected static final String SFTP_LIST_ENDPOINT = "api/configs/sftp/list";
@@ -153,21 +154,6 @@ public abstract class AbstractIntegrationTest {
         migrator.migrate();
     }
 
-    public static HttpHarvesterConfig getHttpHarvesterConfig() throws ParseException {
-        HttpHarvesterConfig config = new HttpHarvesterConfig();
-        config.setName("MyName'sNotRick!");
-        config.setSchedule("* * * * *");
-        config.setUrl("http://nick.com");
-        config.setLastHarvested(getDate("2018-06-06T20:20:20"));
-        config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," +
-            "clatin-1,o=littsiden,m=kildepost@dbc.dk");
-        config.setAgency("010100");
-        config.setId(1);
-        config.setEnabled(true);
-//        config.setHttpHeaders(List.of(new CustomHttpHeader().withKey("Range").withValue("bytes=0-")));
-        return config;
-    }
-
     FtpHarvesterConfig getFtpHarvesterConfig() throws ParseException {
         FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setName("MyName'sNotRick!");
@@ -202,12 +188,6 @@ public abstract class AbstractIntegrationTest {
         config.setAgency("010100");
         config.setEnabled(true);
         return config;
-    }
-
-    public static Date getDate(String date) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        sdf.setTimeZone(TIME_ZONE);
-        return sdf.parse(date);
     }
     public static String  getOclcDate(Date date)  {
         SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");

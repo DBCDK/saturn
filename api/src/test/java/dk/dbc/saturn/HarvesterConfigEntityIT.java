@@ -20,6 +20,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import static dk.dbc.saturn.TestUtils.getDate;
+import static dk.dbc.saturn.TestUtils.getHttpHarvesterConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
