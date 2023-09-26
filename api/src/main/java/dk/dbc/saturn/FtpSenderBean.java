@@ -67,7 +67,7 @@ public class FtpSenderBean {
      * @param allowResume allow a previous failed transfer to be resumed from where it was left.
      */
     public void send(Set<FileHarvest> files, String filenamePrefix, String transfileTemplate, Boolean gzip,
-                     ProgressTrackerBean.Key progressKey, boolean allowResume) throws HarvestException    {
+                     ProgressTrackerBean.Key progressKey, boolean allowResume) throws HarvestException {
         final Stopwatch stopwatch = new Stopwatch();
         try {
             final List<String> filenames = files.stream()
@@ -110,12 +110,13 @@ public class FtpSenderBean {
         String targetFilename = gzip ? filename + ".gz" : filename;
         while (!finished && retries < MAX_RETRIES) {
             try {
-                if (retries > 0 && allowResume) {
+                if (retries > 0 && allowResume && fileHarvest.isResumable()) {
                     fileHarvest.setResumePoint(getExistingFileSize(ftpClient, targetFilename));
                     ftpClient.append(
                             targetFilename,
                             gzip ? new GzipCompressingInputStream(fileHarvest.getContent()) : fileHarvest.getContent(),
                             FtpClient.FileType.BINARY);
+                    finished = true;
                 } else {
                     ftpClient.put(
                             targetFilename,
@@ -129,6 +130,9 @@ public class FtpSenderBean {
                 ftpClient.connect().cd(dir);
                 retries = retries + 1;
             }
+        }
+        if (!finished) {
+            throw new HarvestException(String.format("Unable to finish harvest. Max retries (%d) reached.", MAX_RETRIES));
         }
     }
 

@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.requestMatching;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -39,6 +40,7 @@ public class FtpSenderFailSafeTest extends AbstractFtpBeanTest{
         makeStubs(wireMockServer);
     }
 
+
     @Test
     public void resumeOfLargeDownloadTest() throws HarvestException, IOException {
         HttpHarvesterConfig config = getHttpHarvesterConfig();
@@ -54,6 +56,24 @@ public class FtpSenderFailSafeTest extends AbstractFtpBeanTest{
         httpHarvesterBean.ftpSenderBean.upload(false, ftpTestClient, fileHarvests.stream().findFirst().orElse(null),
                 "test-upload-with-errors", true);
         assertThat("Same bytes", readInputStream(ftpTestClient.get("test-upload-with-errors")), is(new String(LARGE_BLOB)));
+    }
+
+    @Test
+    public void noResumeAvailable() throws HarvestException {
+        HttpHarvesterConfig config = getHttpHarvesterConfig();
+        config.setHttpHeaders(List.of());
+        HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
+
+        FTPTestClient ftpTestClient = (FTPTestClient) new FTPTestClient()
+                .withHost("localhost")
+                .withPort(fakeFtpServer.getServerControlPort())
+                .withPassword(PASSWORD)
+                .withUsername(USERNAME);
+        ftpTestClient.setFakeFtpUploadError(true);
+        Set<FileHarvest> fileHarvests = httpHarvesterBean.listFiles(config);
+        assertThrows(HarvestException.class, () ->
+                httpHarvesterBean.ftpSenderBean.upload(false, ftpTestClient, fileHarvests.stream().findFirst().orElse(null),
+                        "test-upload-with-errors", true));
     }
 
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
@@ -90,5 +110,15 @@ public class FtpSenderFailSafeTest extends AbstractFtpBeanTest{
                         .withHeader("Content-Disposition", "filename=\"some-data-here.bin\"")
                         .withBody(getPartOfBlob(progress))
                 )));
+        wireMockServer.stubFor(requestMatching(request ->
+                MatchResult.of(
+                        request.getUrl().contains(URL_PATH) &&
+                                request.getHeader("Range") == null
+                ))
+                .willReturn(aResponse()
+                        .withStatus(Response.Status.OK.getStatusCode())
+                        .withHeader("Content-Disposition", "filename=\"some-data-here.bin\"")
+                        .withBody(getPartOfBlob(0))
+                ));
     }
 }

@@ -26,6 +26,7 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HttpFileHarvest.class);
     public static final String RANGE_HEADER = "Range";
+    private boolean resumable = false;
 
     public HttpFileHarvest(String filename, Client client, String url,
                            Integer seqno, FileHarvest.Status status,
@@ -51,6 +52,7 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     public InputStream getContent() throws HarvestException {
         LOGGER.info("Headers:{}", headers);
         final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
+        resumable = response.getStatus() == Response.Status.PARTIAL_CONTENT.getStatusCode();
         if (response.hasEntity()) {
             InputStream is = response.readEntity(InputStream.class);
             return is;
@@ -80,6 +82,11 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     @Override
     public Status getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean isResumable() {
+        return resumable;
     }
 
     public String getUrl() {
