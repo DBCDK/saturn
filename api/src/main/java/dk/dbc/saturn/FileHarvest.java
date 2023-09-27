@@ -19,5 +19,11 @@ public interface FileHarvest {
      Integer getSeqno();
      Status getStatus();
      InputStream getContent() throws HarvestException;
+     default void setResumePoint(long resumePoint) throws HarvestException {
+          throw new HarvestException("Resume point not available for this harvester");
+     }
+     default boolean isResumable() {
+          return false;
+     }
      void close();
 }
