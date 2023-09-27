@@ -8,7 +8,7 @@ package dk.dbc.saturn.api;
 import dk.dbc.saturn.RunScheduleFactory;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

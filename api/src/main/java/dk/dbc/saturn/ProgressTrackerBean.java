@@ -3,7 +3,7 @@ package dk.dbc.saturn;
 import dk.dbc.invariant.InvariantUtil;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Objects;

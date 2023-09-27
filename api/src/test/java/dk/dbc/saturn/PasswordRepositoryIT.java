@@ -24,7 +24,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.Transferable;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import static dk.dbc.saturn.TestUtils.TIME_ZONE;
 import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
