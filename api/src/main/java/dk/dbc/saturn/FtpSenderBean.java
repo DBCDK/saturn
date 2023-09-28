@@ -9,14 +9,14 @@ import dk.dbc.ftp.FtpClient;
 import dk.dbc.ftp.FtpClientException;
 import dk.dbc.saturn.gzip.GzipCompressingInputStream;
 import dk.dbc.util.Stopwatch;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.apache.commons.net.ftp.FTPFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Resource;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -32,19 +32,24 @@ public class FtpSenderBean {
     @Inject
     ProgressTrackerBean progressTrackerBean;
 
-    @Resource(lookup = "java:app/env/ftp/host")
+    @Inject
+    @ConfigProperty(name = "FTP_HOST", defaultValue = "NONE")
     protected String host;
 
-    @Resource(lookup = "java:app/env/ftp/port")
+    @Inject
+    @ConfigProperty(name = "FTP_PORT", defaultValue = "NONE")
     protected String port;
 
-    @Resource(lookup = "java:app/env/ftp/username")
+    @Inject
+    @ConfigProperty(name = "FTP_USERNAME", defaultValue = "NONE")
     protected String username;
 
-    @Resource(lookup = "java:app/env/ftp/password")
+    @Inject
+    @ConfigProperty(name = "FTP_PASSWORD", defaultValue = "NONE")
     protected String password;
 
-    @Resource(lookup = "java:app/env/ftp/dir")
+    @Inject
+    @ConfigProperty(name = "FTP_DIR", defaultValue = "NONE")
     protected String dir;
 
     private static final String APPLICATION_ID = "saturn";

@@ -1,14 +1,14 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.Singleton;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
