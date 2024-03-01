@@ -96,7 +96,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
 
         PasswordEntryFrontEnd passwordEntryFrontEnd = getPasswordFromApi("sftp", "sftp", sdf.format(Date.from(Instant.now())));
         assertThat("Found an updated password", passwordEntryFrontEnd.getPassword(),
-                                is("c29tZS1wYXNzd29yZDp3aXRoQHZhcmlvdXMsc3ltYm9scw=="));
+                                is("cGFzc3dvcmQtZm9yLXNmdHAtdXNlcjrDhQ=="));
 
         // Now new password should be in effect at config: host=sftp, user=sftp
         List<SFtpHarvesterConfig> sFtpHarvesterConfigs = getSftpHarvesterConfigs();
