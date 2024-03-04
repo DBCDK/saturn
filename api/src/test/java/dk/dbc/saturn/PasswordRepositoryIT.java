@@ -96,7 +96,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
 
         PasswordEntryFrontEnd passwordEntryFrontEnd = getPasswordFromApi("sftp", "sftp", sdf.format(Date.from(Instant.now())));
         assertThat("Found an updated password", passwordEntryFrontEnd.getPassword(),
-                                is("cGFzc3dvcmQtZm9yLXNmdHAtdXNlcjrDhQ=="));
+                                is("c29tZS1wYXNzd29yZDp3aXRoQHZhcmlvdXMsc3ltYm9scw=="));
 
         // Now new password should be in effect at config: host=sftp, user=sftp
         List<SFtpHarvesterConfig> sFtpHarvesterConfigs = getSftpHarvesterConfigs();
@@ -122,9 +122,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                         getOclcDate(tomorrow), "some-other-ÆEH-password:with@various,symbols",
 
                         // Silly small fix, to allow the project to be tested on the second of each month.
-                        getOclcDate(Instant.now().atZone(TIME_ZONE.toZoneId()).get(ChronoField.DAY_OF_MONTH) != 2
-                                ? getDateFirstOfThisMonth()
-                                : getDateMinusDays(3)), "password-for-sftp-user:Å"
+                        getOclcDate(getDateMinusDays(3)), "password-for-sftp-user:Å"
                 )
                 .entrySet()
                 .stream()
