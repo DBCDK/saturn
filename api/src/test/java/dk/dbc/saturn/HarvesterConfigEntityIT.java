@@ -9,8 +9,7 @@ import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +25,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterConfigEntityIT.class);
 
     @Test
-    void test_httpHarvesterEntities() throws ParseException {
+    public void test_httpHarvesterEntities() throws ParseException {
         final HttpHarvesterConfig config1 = new HttpHarvesterConfig();
         config1.setName("Patar");
         config1.setSchedule("0 13 20 * *");
@@ -63,7 +65,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_ftpHarvesterEntities() {
+    public void test_ftpHarvesterEntities() {
         final FtpHarvesterConfig config1 = new FtpHarvesterConfig();
         config1.setName("Patar");
         config1.setSchedule("0 13 20 * *");
@@ -105,7 +107,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_harvesterConfigStartLimitHttp() {
+    public void test_harvesterConfigStartLimitHttp() {
         String[] names = {"spongebob", "patrick", "squidward", "larry", "gary"};
         for (String name : names) {
             HttpHarvesterConfig config = new HttpHarvesterConfig();
@@ -127,7 +129,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_harvesterConfigStartLimitFtp() {
+    public void test_harvesterConfigStartLimitFtp() {
         String[] names = {"spongebob", "patrick", "squidward", "larry", "gary"};
         for (String name : names) {
             FtpHarvesterConfig config = new FtpHarvesterConfig();
@@ -154,7 +156,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_add_httpHarvesterConfig() {
+    public void test_add_httpHarvesterConfig() {
         String[] names = {"spongebob", "patrick", "squidward", "larry", "gary"};
         for (String name : names) {
             HttpHarvesterConfig httpHarvesterConfig = new HttpHarvesterConfig();
@@ -191,15 +193,15 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         assertThat("second header pair", configs.get(0).getHttpHeaders(), hasItem(new CustomHttpHeader().withKey("myKey1").withValue("myValue2")));
         for (HttpHarvesterConfig harvesterConfig : configs) {
             if (harvesterConfig.getName().startsWith("s")) {
-                Assertions.assertTrue(harvesterConfig.getGzip(), harvesterConfig.getName() + " is gzipped");
+                assertTrue(harvesterConfig.getGzip());
             } else {
-                Assertions.assertFalse(harvesterConfig.getGzip(), harvesterConfig.getName() + " is NOT gzipped");
+                assertFalse(harvesterConfig.getGzip());
             }
         }
     }
 
     @Test
-    void test_add_ftpHarvesterConfig() {
+    public void test_add_ftpHarvesterConfig() {
         String[] names = {"spongebob", "patrick", "squidward", "larry", "gary"};
         for (String name : names) {
             FtpHarvesterConfig ftpHarvesterConfig = new FtpHarvesterConfig();
@@ -228,7 +230,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_add_updateHttpHarvesterConfig() {
+    public void test_add_updateHttpHarvesterConfig() {
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setName("plankton");
         config.setUrl("chumbucket.ru");
@@ -268,7 +270,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_delete_httpHarvesterConfig() throws ParseException {
+    public void test_delete_httpHarvesterConfig() throws ParseException {
         HttpHarvesterConfig config = getHttpHarvesterConfig();
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -285,7 +287,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_delete_ftpHarvesterConfig() throws ParseException {
+    public void test_delete_ftpHarvesterConfig() throws ParseException {
         FtpHarvesterConfig config = getFtpHarvesterConfig();
         harvesterConfigRepository.entityManager.persist(config);
         harvesterConfigRepository.entityManager.getTransaction().commit();
@@ -302,7 +304,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_getHarvesterConfigType() throws ParseException {
+    public void test_getHarvesterConfigType() throws ParseException {
         FtpHarvesterConfig ftpHarvesterConfig = getFtpHarvesterConfig();
         HttpHarvesterConfig httpHarvesterConfig = getHttpHarvesterConfig();
         SFtpHarvesterConfig sFtpHarvesterConfig = getSFtpHarvesterConfig();

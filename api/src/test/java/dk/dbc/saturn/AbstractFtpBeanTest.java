@@ -1,8 +1,8 @@
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
 import org.mockftpserver.fake.filesystem.DirectoryEntry;
@@ -44,8 +44,8 @@ public abstract class AbstractFtpBeanTest {
         LARGE_BLOB = createLargeBlob();
     }
 
-    @BeforeAll
-    static void setUp() {
+    @BeforeClass
+    public static void setUp() {
         fakeFtpServer = new FakeFtpServer();
         fakeFtpServer.setServerControlPort(0);  // use any free port
         fakeFtpServer.addUserAccount(new UserAccount(USERNAME,
@@ -59,8 +59,8 @@ public abstract class AbstractFtpBeanTest {
     }
 
 
-    @AfterAll
-    static void tearDown() {
+    @AfterClass
+    public static void tearDown() {
         fakeFtpServer.stop();
     }
 

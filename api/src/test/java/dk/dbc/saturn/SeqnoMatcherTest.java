@@ -6,15 +6,15 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class SeqnoMatcherTest {
+public class SeqnoMatcherTest {
     @Test
-    void noSeqnoExpression() {
+    public void noSeqnoExpression() {
         final HttpHarvesterConfig config = newHarvesterConfig();
         config.setSeqnoExtract(null);
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(config);
@@ -23,7 +23,7 @@ class SeqnoMatcherTest {
     }
 
     @Test
-    void invalidSeqnoExpression() {
+    public void invalidSeqnoExpression() {
         final HttpHarvesterConfig config = newHarvesterConfig();
         config.setSeqnoExtract("a-b");
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(config);
@@ -32,21 +32,21 @@ class SeqnoMatcherTest {
     }
 
     @Test
-    void seqnoExpressionOutOfBounds() {
+    public void seqnoExpressionOutOfBounds() {
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(newHarvesterConfig());
         assertThat(seqnoMatcher.shouldFetch("file"), is(false));
         assertThat(seqnoMatcher.getSeqno(), is(nullValue()));
     }
 
     @Test
-    void seqnoExpressionExtractsNonNumeric() {
+    public void seqnoExpressionExtractsNonNumeric() {
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(newHarvesterConfig());
         assertThat(seqnoMatcher.shouldFetch("filename"), is(false));
         assertThat(seqnoMatcher.getSeqno(), is(nullValue()));
     }
 
     @Test
-    void seqnoMatcher() {
+    public void seqnoMatcher() {
         final HttpHarvesterConfig config = newHarvesterConfig();
         final SeqnoMatcher seqnoMatcher = new SeqnoMatcher(config);
         assertThat(seqnoMatcher.shouldFetch("file1234"), is(true));

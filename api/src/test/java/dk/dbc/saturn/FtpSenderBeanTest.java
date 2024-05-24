@@ -7,7 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.ftp.FtpClient;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -16,11 +16,11 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class FtpSenderBeanTest extends AbstractFtpBeanTest {
+public class FtpSenderBeanTest extends AbstractFtpBeanTest {
     ProgressTrackerBean progressTracker = new ProgressTrackerBean();
 
     @Test
-    void send() throws IOException, HarvestException {
+    public void send() throws IOException, HarvestException {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
         Set<FileHarvest> inputStreams = getFileHarvests("krusty", "sponge", "bob");
         final String transfile = "b=transfile";
@@ -38,7 +38,7 @@ class FtpSenderBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    void send_zipped() throws IOException, HarvestException {
+    public void send_zipped() throws IOException, HarvestException {
         FtpSenderBean ftpSenderBean = getFtpSenderBean();
         Set<FileHarvest> inputStreams = getFileHarvests("krusty", "sponge", "bob");
         final String transfile = "b=transfile";

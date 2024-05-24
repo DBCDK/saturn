@@ -1,13 +1,13 @@
 package dk.dbc.saturn;
 
-import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
-class SFtpClientFactoryIT extends AbstractIntegrationTest {
+public class SFtpClientFactoryIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SFtpClientFactoryIT.class);
 
     @Test

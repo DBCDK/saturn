@@ -1,17 +1,12 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockserver.integration.ClientAndProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +28,13 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class LitteratursidenHttpListFilesHandlerTest {
+public class LitteratursidenHttpListFilesHandlerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LitteratursidenHttpListFilesHandlerTest.class);
     private static WireMockServer wireMockServer;
     private static ClientAndProxy mockProxy;
     private static String wireMockHost;
 
-    @BeforeAll
+    @BeforeClass
     public static void setUp() throws IOException {
         wireMockServer = new WireMockServer(options().dynamicPort().dynamicHttpsPort());
         wireMockServer.start();
@@ -55,14 +50,14 @@ class LitteratursidenHttpListFilesHandlerTest {
         mockProxy = ClientAndProxy.startClientAndProxy(proxyPort);
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDown() {
         wireMockServer.stop();
         mockProxy.stop();
     }
 
     @Test
-    void listFiles() throws HarvestException {
+    public void listFiles() throws HarvestException {
         wireMockServer.stubFor(get(urlEqualTo("/rest-output-dbc/24h?page=0"))
                 .willReturn(aResponse()
                         .withStatus(200)

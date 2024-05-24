@@ -6,7 +6,7 @@
 package dk.dbc.saturn;
 
 import org.apache.commons.net.ftp.FTPFile;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,7 +38,7 @@ public class FileNameMatcherTest {
     }
 
     @Test
-    void test_matches_emptyPattern() {
+    public void test_matches_emptyPattern() {
         FileNameMatcher fileNameMatcher = new FileNameMatcher();
         assertThat("empty constructor", fileNameMatcher.matches("sponge.bob"));
 

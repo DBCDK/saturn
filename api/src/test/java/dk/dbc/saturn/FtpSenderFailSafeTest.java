@@ -7,8 +7,8 @@ import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockserver.integration.ClientAndProxy;
 
 import jakarta.ws.rs.core.Response;
@@ -21,7 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.requestMatching;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -31,7 +31,7 @@ public class FtpSenderFailSafeTest extends AbstractFtpBeanTest{
     private static ClientAndProxy mockProxy;
     private static final String URL_PATH = "/largeslowdownload/data/some-data-here.bin";
 
-    @BeforeAll
+    @BeforeClass
     public static void setup() throws IOException {
         final ServerSocket socket = new ServerSocket(0);
         final int proxyPort = socket.getLocalPort();
