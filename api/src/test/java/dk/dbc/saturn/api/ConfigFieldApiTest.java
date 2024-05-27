@@ -6,30 +6,30 @@
 package dk.dbc.saturn.api;
 
 import dk.dbc.saturn.RunScheduleFactory;
-import org.junit.jupiter.api.Test;
 
 import jakarta.ws.rs.core.Response;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class ConfigFieldApiTest {
+public class ConfigFieldApiTest {
     private final ConfigFieldApi configFieldApi = getConfigFieldApi();
 
     @Test
-    void test_validateCron() {
+    public void test_validateCron() {
         final Response response = configFieldApi.validateCron("* * * * *");
         assertThat("status", response.getStatus(), is(200));
     }
 
     @Test
-    void test_validateCron_badRequest() {
+    public void test_validateCron_badRequest() {
         final Response response = configFieldApi.validateCron("invalid");
         assertThat("status", response.getStatus(), is(400));
     }
 
     @Test
-    void test_describeCron() {
+    public void test_describeCron() {
         final Response response = configFieldApi.describeCron("* * * * *");
         assertThat("status", response.getStatus(), is(200));
         assertThat("has entity", response.hasEntity(), is(true));
@@ -37,7 +37,7 @@ class ConfigFieldApiTest {
     }
 
     @Test
-    void test_describeCron_invalidCronExpression() {
+    public void test_describeCron_invalidCronExpression() {
         final Response response = configFieldApi.describeCron("invalid");
         assertThat("status", response.getStatus(), is(400));
         assertThat("has entity", response.hasEntity(), is(false));

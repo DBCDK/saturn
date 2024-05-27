@@ -9,7 +9,7 @@ import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -67,7 +67,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
+    public void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
         final String putFile1 = " 12v24.txt";
         try (final SFtpClient sftpClient = new SFtpClient(sftpConfig, null)) {
             sftpClient.putContent(putFile1, toInputStream("Barnacle Boy!"));

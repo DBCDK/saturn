@@ -1,8 +1,3 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt
- */
-
 package dk.dbc.saturn;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -10,9 +5,9 @@ import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import net.jodah.failsafe.RetryPolicy;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockserver.integration.ClientAndProxy;
 
 import java.io.BufferedReader;
@@ -30,7 +25,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
 public class HTTPHarvesterBeanTest {
 
@@ -51,7 +46,7 @@ public class HTTPHarvesterBeanTest {
             new HttpFileHarvest("squarepants%3Fpage%3D0", null, null, null,
                     FileHarvest.Status.AWAITING_DOWNLOAD, null);
 
-    @BeforeAll
+    @BeforeClass
     public static void setUp() throws IOException {
         wireMockServer = new WireMockServer(options().dynamicPort()
                 .dynamicHttpsPort());
@@ -68,7 +63,7 @@ public class HTTPHarvesterBeanTest {
         mockProxy = ClientAndProxy.startClientAndProxy(proxyPort);
     }
 
-    @AfterAll
+    @AfterClass
     public static void tearDown() {
         wireMockServer.stop();
         mockProxy.stop();
@@ -237,7 +232,7 @@ public class HTTPHarvesterBeanTest {
             httpHarvesterBean.listFiles(
                     getHttpHarvesterConfig(wireMockHost + "/spongebob/squarepants", null));
             fail("expected harvestexception");
-        } catch (HarvestException e) {
+        } catch (HarvestException ignored) {
         }
     }
 
@@ -255,7 +250,7 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
-    void test_harvest_urlFromPattern() throws HarvestException, IOException {
+    public void test_harvest_urlFromPattern() throws HarvestException, IOException {
         final String targetUrl = String.format(
                 "%s/viaf/data/viaf-20180701-clusters-marc21.iso.gz", wireMockHost);
         final String html = "<html><body>" +
@@ -296,7 +291,7 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
-    void test_harvest_proxy() throws HarvestException, IOException {
+    public void test_harvest_proxy() throws HarvestException, IOException {
         wireMockServer.stubFor(get(urlEqualTo("/spongebob/squarepants"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -323,7 +318,7 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
-    void test_findInContent() throws HarvestException {
+    public void test_findInContent() throws HarvestException {
         final String html = "<html><body>" +
                 "<a href=\"http://viaf.org/viaf/data/viaf-20180701-clusters-" +
                 "marc21.xml.gz\" resource=\"http://viaf.org/viaf/data/viaf-" +
@@ -347,7 +342,7 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
-    void test_findInContent_noMatches() {
+    public void test_findInContent_noMatches() {
         final String html = "<html><body><blah/></body></html>";
         wireMockServer.stubFor(get(urlEqualTo("/nothing")).willReturn(
                 aResponse().withStatus(200).withBody(html)));
@@ -364,7 +359,7 @@ public class HTTPHarvesterBeanTest {
     }
 
     @Test
-    void test_findInContent_emptyResponse() {
+    public void test_findInContent_emptyResponse() {
         wireMockServer.stubFor(get(urlEqualTo("/empty")).willReturn(
                 aResponse().withStatus(200)));
         final HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();

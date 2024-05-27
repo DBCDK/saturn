@@ -7,7 +7,7 @@ package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.util.Collections;
@@ -23,13 +23,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ScheduledHarvesterBeanTest {
+public class ScheduledHarvesterBeanTest {
     private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
     private static final RunningTasks runningTasks = new RunningTasks();
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
 
     @Test
-    void test_harvest() throws HarvestException, ParseException {
+    public void test_harvest() throws HarvestException, ParseException {
         final HttpHarvesterConfig config = getHttpHarvesterConfig();
 
         final Set<FileHarvest> fileHarvests = Collections.singleton(new MockFileHarvest("spongebob", "spongebob", 3));

@@ -7,17 +7,14 @@ import dk.dbc.saturn.entity.PasswordEntry;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalField;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -26,7 +23,6 @@ import org.testcontainers.images.builder.Transferable;
 
 import jakarta.ws.rs.core.Response;
 
-import static dk.dbc.saturn.TestUtils.TIME_ZONE;
 import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -44,8 +40,8 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
     final Date later = getDatePlusDays(41);
     final Date today = new Date();
 
-    @BeforeEach
-    void populate_db() {
+    @Before
+    public void populate_db() {
         List<PasswordEntry> entries = Arrays.asList(
                 getPasswordEntry(1, 1, 1, tomorrow),
                 getPasswordEntry(1, 1, 2, yesterday),
@@ -60,18 +56,18 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         for (PasswordEntry entry : entries) {
             passwordRepository.save(entry);
         }
-        passwordRepository.entityManager.flush();
+//        passwordRepository.entityManager.flush();
         passwordRepository.entityManager.getTransaction().commit();
     }
 
     @Test
-    void test_list_passwords() {
+    public void test_list_passwords() {
         List<PasswordEntry> actualList = passwordRepository.list("host-1", "user-1", 5);
         assertThat("Length of returned list", actualList.size(), is(5));
     }
 
     @Test
-    void test_that_returned_current_password_is_the_one_valid_from_yesterday() {
+    public void test_that_returned_current_password_is_the_one_valid_from_yesterday() {
         PasswordEntry expected = getPasswordEntry(1, 1, 2, yesterday);
         PasswordEntry actual = passwordRepository.getPasswordForDate("host-1", "user-1", today);
         expected.setId(actual.getId());
@@ -79,7 +75,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_that_a_password_entry_can_be_removed() {
+    public void test_that_a_password_entry_can_be_removed() {
         PasswordEntry oldEntry = passwordRepository.getPasswordForDate("host-1", "user-2", earlier);
         passwordRepository.delete(oldEntry.getId());
         assertThat("No password entry can be found for dates more than 62 days old",
@@ -87,7 +83,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void test_that_a_new_password_with_valid_from_date_can_be_added() throws ParseException, InterruptedException, JSONBException {
+    public void test_that_a_new_password_with_valid_from_date_can_be_added() throws ParseException, InterruptedException, JSONBException {
         persistASFtpConfig();
         makeAPasswordListFileAndUpload();
 
@@ -160,7 +156,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
     }
 
 
-    private PasswordEntry getPasswordEntry(int hostnr, int usrnr, int passwdnr, Date date) {
+    private static PasswordEntry getPasswordEntry(int hostnr, int usrnr, int passwdnr, Date date) {
         PasswordEntry entry = new PasswordEntry();
         entry.setHost(hostnr > 0?String.format("host-%d", hostnr): "sftp");
         entry.setUsername(usrnr>0 ?String.format("user-%d", usrnr): SFTP_USER);

@@ -8,7 +8,7 @@ package dk.dbc.saturn;
 import dk.dbc.ftp.FtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public class FtpHarvesterBeanTest extends AbstractFtpBeanTest {
     }
 
     @Test
-    void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
+    public void test_harvest_seqnoFilenameLeadingSpace() throws IOException, HarvestException {
         final String putFile1 = " 12v24.txt";
         final FtpClient ftpClient = FtpClientFactory.createFtpClient(
                 "localhost",

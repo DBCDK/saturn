@@ -16,9 +16,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -34,6 +31,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -98,7 +98,7 @@ public abstract class AbstractIntegrationTest {
     }
     protected JSONBContext jsonbContext = new JSONBContext();
 
-    @BeforeAll
+    @BeforeClass
     public static void setUp() throws URISyntaxException {
         final DataSource dataSource = saturnDBContainer.datasource();
         migrateDatabase(dataSource);
@@ -110,13 +110,13 @@ public abstract class AbstractIntegrationTest {
         when(mockedUriBuilder.build()).thenReturn(new URI("location"));
     }
 
-    @BeforeEach
-    void beginTransaction() {
+    @Before
+    public void beginTransaction() {
         harvesterConfigRepository.entityManager.getTransaction().begin();
     }
 
-    @AfterEach
-    void resetDatabase() {
+    @After
+    public void resetDatabase() {
         if(harvesterConfigRepository.entityManager.getTransaction().isActive()) {
             harvesterConfigRepository.entityManager.getTransaction().commit();
         }

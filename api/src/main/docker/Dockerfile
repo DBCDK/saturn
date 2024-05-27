@@ -1,4 +1,4 @@
-FROM docker-dbc.artifacts.dbccloud.dk/payara6-micro:old-202409
+FROM docker-dbc.artifacts.dbccloud.dk/payara6-micro:latest
 
 USER gfish
 
