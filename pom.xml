@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>dk.dbc</groupId>
     <artifactId>saturn</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0</version>
@@ -24,6 +24,8 @@
         <node.version>v11.15.0</node.version>
         <frontend.maven.plugin.version>1.6</frontend.maven.plugin.version>
         <microprofile.version>4.1</microprofile.version>
+        <sonar.projectKey>saturn</sonar.projectKey>
+        <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
     </properties>
 
     <dependencyManagement>

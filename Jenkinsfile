@@ -31,27 +31,39 @@ pipeline {
 				}
 			}
 		}
-		stage("verify") {
+		stage("build") {
 			steps {
-				sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify pmd:pmd"
-				junit "**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/TEST-*.xml"
+				withSonarQubeEnv(installationName: 'sonarqube.dbc.dk') {
+					script {
+						def sonarOptions = "-Dsonar.branch.name=$BRANCH_NAME"
+						if (env.BRANCH_NAME != 'main') {
+							sonarOptions += " -Dsonar.newCode.referenceBranch=master"
+						}
+
+						def status = sh returnStatus: true, script: """
+                            rm -rf $WORKSPACE/.repo/dk/dbc
+                        """
+
+						for (def goal : [ 'clean', 'verify', "${sonarOptions} sonar:sonar" ]) {
+							status += sh returnStatus: true, script: """
+                                mvn -B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress ${goal}
+                            """
+						}
+
+						junit testResults: '**/target/*-reports/*.xml'
+
+						if (status != 0) {
+							error("build failed")
+						}
+					}
+				}
 			}
 		}
-		stage("warnings") {
+		stage("quality gate") {
 			steps {
-				warnings consoleParsers: [
-					[parserName: "Java Compiler (javac)"],
-					[parserName: "JavaDoc Tool"]],
-					unstableTotalAll: "0",
-					failedTotalAll: "0"
-			}
-		}
-		stage("pmd") {
-			steps {
-				step([$class: 'hudson.plugins.pmd.PmdPublisher',
-					  pattern: '**/target/pmd.xml',
-					  unstableTotalAll: "0",
-					  failedTotalAll: "0"])
+				timeout(time: 1, unit: 'HOURS') {
+					waitForQualityGate abortPipeline: true
+				}
 			}
 		}
 		stage("docker push") {
