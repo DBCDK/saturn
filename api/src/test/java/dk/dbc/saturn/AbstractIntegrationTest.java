@@ -9,28 +9,13 @@ import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.commons.testcontainers.postgres.DBCPostgreSQLContainer;
+import dk.dbc.httpclient.HttpClient;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import javax.sql.DataSource;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,9 +23,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import dk.dbc.httpclient.HttpClient;
-import dk.dbc.httpclient.HttpGet;
-import org.testcontainers.containers.wait.strategy.Wait;
+
+import javax.sql.DataSource;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static dk.dbc.saturn.TestUtils.TIME_ZONE;
 import static dk.dbc.saturn.TestUtils.getDate;
@@ -64,21 +59,18 @@ public abstract class AbstractIntegrationTest {
     protected static EntityManager entityManager;
     final static HarvesterConfigRepository harvesterConfigRepository =
         new HarvesterConfigRepository();
-    final static PasswordRepository passwordRepository =
-         new PasswordRepository();
+    final static PasswordRepository passwordRepository = new PasswordRepository();
     final static UriBuilder mockedUriBuilder = mock(UriBuilder.class);
     final static Network network;
     static final GenericContainer sftpServerContainer;
     protected static final String PASSWORDSTORE_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel";
     private static final String SFTPSERVER_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/simplesftpserver:latest";
     static final String SATURN_IMAGE = "docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel";
-    static GenericContainer saturnContainer;
     static final String SFTP_USER = "sftp";
     static final String SFTP_PASSWORD = "sftp";
     static final String SFTP_DIR = "upload";
     static final String SFTP_ADDRESS;
     static final int SFTP_PORT;
-    static final String SATURN_BASE_URL;
     static final String PASSWORDREPO_GET_PASSWORD = "api/passwordrepository/%s/%s/%s";
     protected static final String SFTP_LIST_ENDPOINT = "api/configs/sftp/list";
 
@@ -93,8 +85,6 @@ public abstract class AbstractIntegrationTest {
         sftpServerContainer.start();
         SFTP_ADDRESS = sftpServerContainer.getHost();
         SFTP_PORT = sftpServerContainer.getMappedPort(22);
-        startSaturnContainer();
-         SATURN_BASE_URL = "http://" + saturnContainer.getHost() + ":" + saturnContainer.getMappedPort(8080);
     }
     protected JSONBContext jsonbContext = new JSONBContext();
 
@@ -211,28 +201,6 @@ public abstract class AbstractIntegrationTest {
                         .withPort(SFTP_PORT)
                         .withDir("upload")
                         .withFilesPattern("*"), null);
-    }
-
-    public Response getHttp(String path) {
-        LOGGER.info("Request: {}/{}", SATURN_BASE_URL, path);
-        return new HttpGet(httpClient).withBaseUrl(SATURN_BASE_URL).withPathElements(path).execute();
-    }
-
-    private static void startSaturnContainer() {
-        saturnContainer = new GenericContainer(SATURN_IMAGE)
-                .withNetworkAliases("saturn")
-                .withNetwork(network)
-                .withExposedPorts(8080)
-                .withEnv("JAVA_MAX_HEAP_SIZE",  "8G")
-                .withEnv("LOG_FORMAT", "text")
-                .withEnv("TZ", "Europe/Copenhagen")
-                .withEnv("DB_URL", saturnDBContainer.getPayaraDockerJdbcUrl())
-                .withEnv("PROXY_HOSTNAME","<none>")
-                .withEnv("PROXY_USERNAME", "<none>")
-                .withEnv("PROXY_PASSWORD", "<none>")
-                .waitingFor(Wait.forHttp("/health/ready"))
-                .withStartupTimeout(Duration.ofSeconds(30));
-        saturnContainer.start();
     }
 
     private static DBCPostgreSQLContainer makeDBContainer() {

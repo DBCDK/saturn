@@ -16,9 +16,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
@@ -30,8 +27,6 @@ public abstract class AbstractFtpBeanTest {
     static final String HOME_DIR = "/home/ftp";
     static final String PUT_DIR = "put";
     static FakeFtpServer fakeFtpServer;
-    protected static final int LARGE_NUMBER = 20000;
-    protected static final byte[] LARGE_BLOB;
     protected static WireMockServer wireMockServer;
     protected static String wireMockHost;
 
@@ -41,7 +36,6 @@ public abstract class AbstractFtpBeanTest {
         wireMockServer.start();
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
-        LARGE_BLOB = createLargeBlob();
     }
 
     @BeforeClass
@@ -96,13 +90,5 @@ public abstract class AbstractFtpBeanTest {
         final FileSystem fileSystem = fakeFtpServer.getFileSystem();
         fileSystem.add(new DirectoryEntry(dirpath));
         return dirpath;
-    }
-
-    protected static byte[] createLargeBlob() {
-        return IntStream.range(0, LARGE_NUMBER).mapToObj(i -> String.format("%d", i)).collect(Collectors.joining(",")).getBytes();
-    }
-
-    protected static byte[] getPartOfBlob(int start) {
-        return Arrays.copyOfRange(LARGE_BLOB, start, LARGE_BLOB.length);
     }
 }
