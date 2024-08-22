@@ -8,10 +8,7 @@ package dk.dbc.saturn;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-
+import dk.dbc.saturn.job.JobSenderBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.DependsOn;
 import jakarta.ejb.EJB;
@@ -19,6 +16,10 @@ import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,8 @@ public class ScheduledHarvesterBean {
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB SFtpHarvesterBean sftpHarvesterBean;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
-    @EJB FtpSenderBean ftpSenderBean;
+    @EJB
+    JobSenderBean jobSenderBean;
     @EJB RunningTasks runningTasks;
 
     @PostConstruct

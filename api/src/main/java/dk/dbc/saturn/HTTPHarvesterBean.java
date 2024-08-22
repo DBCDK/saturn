@@ -5,15 +5,12 @@
 
 package dk.dbc.saturn;
 
-import dk.dbc.httpclient.FailSafeHttpClient;
+import dk.dbc.httpclient.HttpClient;
 import dk.dbc.httpclient.HttpGet;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
-import net.jodah.failsafe.RetryPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import dk.dbc.saturn.job.JobSenderBean;
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
@@ -23,7 +20,12 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
+import net.jodah.failsafe.RetryPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -40,7 +42,8 @@ import static dk.dbc.saturn.HttpFileHarvest.RANGE_HEADER;
 public class HTTPHarvesterBean {
     @EJB
     ProxyBean proxyBean;
-    @EJB FtpSenderBean ftpSenderBean;
+    @EJB
+    JobSenderBean jobSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
 
@@ -54,6 +57,7 @@ public class HTTPHarvesterBean {
                     || response.getStatus() == 502)
             .withDelay(Duration.ofSeconds(10))
             .withMaxRetries(6);
+
     static Response getResponse(Client client, String url) throws HarvestException {
         return getResponse(client, url, null);
     }
@@ -63,8 +67,7 @@ public class HTTPHarvesterBean {
             // Jersey client breaks if '{' or '}' are included in URLs in their decoded form
             url = url.replaceAll("\\{", "%7B");
             url = url.replaceAll("\\}", "%7D");
-            final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, RETRY_POLICY);
-            HttpGet httpGet = new HttpGet(failSafeHttpClient)
+            HttpGet httpGet = new HttpGet(HttpClient.create(ClientBuilder.newClient()))
                     .withBaseUrl(url);
             if (headers != null) {
                 headers.forEach(header -> httpGet.withHeader(header.getKey(), header.getValue()));
@@ -112,7 +115,7 @@ public class HTTPHarvesterBean {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey, allowResume);
+            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), progressKey);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)

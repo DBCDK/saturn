@@ -6,6 +6,7 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import dk.dbc.saturn.job.JobSenderBean;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ScheduledHarvesterBeanTest {
-    private static final FtpSenderBean ftpSenderBean = mock(FtpSenderBean.class);
+    private static final JobSenderBean JOB_SENDER_BEAN = mock(JobSenderBean.class);
     private static final RunningTasks runningTasks = new RunningTasks();
     private static final HTTPHarvesterBean httpHarvesterBean = mock(HTTPHarvesterBean.class);
 
@@ -63,7 +64,7 @@ public class ScheduledHarvesterBeanTest {
         final RunScheduleFactory runScheduleFactory = new RunScheduleFactory("Europe/Copenhagen");
         final ScheduledHarvesterBean scheduledHarvesterBean = new ScheduledHarvesterBean();
         scheduledHarvesterBean.runScheduleFactory = runScheduleFactory;
-        scheduledHarvesterBean.ftpSenderBean = ftpSenderBean;
+        scheduledHarvesterBean.jobSenderBean = JOB_SENDER_BEAN;
         scheduledHarvesterBean.harvesterConfigRepository = mock(HarvesterConfigRepository.class);
         scheduledHarvesterBean.httpHarvesterBean = httpHarvesterBean;
         scheduledHarvesterBean.runningTasks = runningTasks;
