@@ -37,12 +37,12 @@ public class ByteCountingFailInputStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if (count >= failAt) {
-            throw new IOException("Failed at: " + failAt);
-        }
         int r = is.read(b, off, len);
         if (r > 0) {
             count += r;
+        }
+        if (count >= failAt) {
+            throw new IOException("Failed at:"+failAt);
         }
         return r;
     }

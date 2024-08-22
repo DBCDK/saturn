@@ -2,20 +2,8 @@ package dk.dbc.saturn;
 
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.commons.jsonb.JSONBException;
-import dk.dbc.commons.testcontainers.service.DBCServiceContainer;
 import dk.dbc.saturn.api.PasswordEntryFrontEnd;
 import dk.dbc.saturn.entity.PasswordEntry;
-import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import jakarta.ws.rs.core.Response;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
-
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +12,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.images.builder.Transferable;
+
+import jakarta.ws.rs.core.Response;
 
 import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
 import static org.hamcrest.CoreMatchers.is;
@@ -31,8 +29,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PasswordRepositoryIT extends AbstractIntegrationTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PasswordRepositoryIT.class);
-    private final DBCServiceContainer saturnService = makeSaturnContainer();
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            PasswordRepositoryIT.class);
 
     final Date tomorrow = getDatePlusDays(1);
     final Date yesterday = getDateMinusDays(1);
@@ -102,14 +100,12 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 "sftp".equals(c.getHost()) &&
                 "sftp".equals(c.getUsername())).findFirst().orElseThrow();
         assertThat("Found updated password", sfc.getPassword(), is("some-password:with@various,symbols"));
+        saturnContainer.stop();
     }
-
     private PasswordEntryFrontEnd getPasswordFromApi(String host, String user, String date) throws JSONBException {
-        try(Response response = getHttp(String.format(PASSWORDREPO_GET_PASSWORD, host, user, date))) {
-            return jsonbContext.unmarshall(response.readEntity(String.class), PasswordEntryFrontEnd.class);
-        }
+        Response response = getHttp(String.format(PASSWORDREPO_GET_PASSWORD, host, user, date));
+        return jsonbContext.unmarshall(response.readEntity(String.class), PasswordEntryFrontEnd.class);
     }
-
     private List<SFtpHarvesterConfig> getSftpHarvesterConfigs() throws JSONBException {
         final CollectionType collectionType = jsonbContext.getTypeFactory()
                 .constructCollectionType(List.class, SFtpHarvesterConfig.class);
@@ -129,11 +125,9 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 .map(theDate -> String.format("%-13s", theDate.getKey()) + "-   " + theDate.getValue())
                 .collect(Collectors.joining("\n"));
     }
-
     void makeAPasswordListFileAndUpload() {
         sftpServerContainer.copyFileToContainer(Transferable.of(makeAPasswordList()), String.format("/home/%s/%s", SFTP_USER, SFTP_USER));
     }
-
     void persistASFtpConfig() throws ParseException {
         SFtpHarvesterConfig sFtpHarvesterConfig = getSFtpHarvesterConfig();
         passwordRepository.entityManager.getTransaction().begin();
@@ -141,7 +135,6 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         passwordRepository.entityManager.flush();
         passwordRepository.entityManager.getTransaction().commit();
     }
-
     void runPasswordFetchBatchJob() {
         LOGGER.info("Running passwordJob");
 
@@ -172,28 +165,4 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         return entry;
     }
 
-    public Response getHttp(String path) {
-        LOGGER.info("Request: {}/{}", saturnService.getServiceBaseUrl(), path);
-        return saturnService.httpGet().withPathElements(path).execute();
-    }
-
-    private DBCServiceContainer makeSaturnContainer() {
-        DBCServiceContainer container = new DBCServiceContainer(SATURN_IMAGE)
-                .withNetworkAliases("saturn")
-                .withNetwork(network)
-                .withExposedPorts(8080)
-                .withEnv("JAVA_MAX_HEAP_SIZE",  "1G")
-                .withEnv("LOG_FORMAT", "text")
-                .withEnv("TZ", "Europe/Copenhagen")
-                .withEnv("DB_URL", saturnDBContainer.getPayaraDockerJdbcUrl())
-                .withEnv("PROXY_HOSTNAME","<none>")
-                .withEnv("PROXY_USERNAME", "<none>")
-                .withEnv("PROXY_PASSWORD", "<none>")
-                .withEnv("FILESTORE_URL", "http://localhost:8080/no")
-                .withEnv("JOBSTORE_URL", "http://localhost:8080/no")
-                .waitingFor(Wait.forHttp("/health/ready"))
-                .withStartupTimeout(Duration.ofSeconds(30));
-        container.start();
-        return container;
-    }
 }
