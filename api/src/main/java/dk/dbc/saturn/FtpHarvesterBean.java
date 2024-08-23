@@ -8,10 +8,8 @@ package dk.dbc.saturn;
 import dk.dbc.ftp.FtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
+import dk.dbc.saturn.job.JobSenderBean;
 import dk.dbc.util.Stopwatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
@@ -19,6 +17,9 @@ import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Comparator;
@@ -34,7 +35,8 @@ import java.util.concurrent.TimeUnit;
 public class FtpHarvesterBean {
     @EJB
     ProxyBean proxyBean;
-    @EJB FtpSenderBean ftpSenderBean;
+    @EJB
+    JobSenderBean jobSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
 
@@ -46,7 +48,7 @@ public class FtpHarvesterBean {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles( config );
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey, false);
+            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), progressKey);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)

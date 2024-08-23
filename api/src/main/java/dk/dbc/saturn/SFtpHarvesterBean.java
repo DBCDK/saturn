@@ -10,11 +10,8 @@ import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import dk.dbc.saturn.job.JobSenderBean;
 import dk.dbc.util.Stopwatch;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.LocalBean;
@@ -22,6 +19,10 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -35,7 +36,8 @@ import java.util.concurrent.TimeUnit;
 public class SFtpHarvesterBean {
     @EJB
     ProxyBean proxyBean;
-    @EJB FtpSenderBean ftpSenderBean;
+    @EJB
+    JobSenderBean jobSenderBean;
     @EJB RunningTasks runningTasks;
     @EJB HarvesterConfigRepository harvesterConfigRepository;
 
@@ -51,7 +53,7 @@ public class SFtpHarvesterBean {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
             Set<FileHarvest> fileHarvests = listFiles(config);
-            ftpSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getGzip(), progressKey, false);
+            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), progressKey);
             config.setLastHarvested(Date.from(Instant.now()));
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)
