@@ -1,15 +1,12 @@
 package dk.dbc.saturn;
 
 import dk.dbc.commons.sftpclient.SFtpClient;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,24 +17,12 @@ public class SFtpClientFactoryIT extends AbstractIntegrationTest {
 
     @Test
     public void test_simpleTest() throws IOException {
-        try (SFtpClient sFtpClient = getSftpClient()) {
-            LOGGER.info("host: {}, user: {}, dir:{}", SFTP_ADDRESS, SFTP_USER, SFTP_DIR);
+        try(SFtpClient sFtpClient = SFTP_CONTAINER.createClient()) {
+            LOGGER.info("host: {}, user: {}, dir:{}", SFTP_CONTAINER.getHost(), SFTP_CONTAINER.user, SFTP_CONTAINER.dir);
             sFtpClient.putContent("hej.txt", new ByteArrayInputStream("Hej".getBytes()));
             LOGGER.info("pwd:{}", sFtpClient.pwd());
-            String actual = new String(readInputStream(sFtpClient.getContent("hej.txt")));
+            String actual = new String(sFtpClient.getContent("hej.txt").readAllBytes());
             assertThat("Filecontent", actual, is("Hej"));
         }
     }
-    protected static String readInputStream(InputStream is) throws IOException {
-        try (final BufferedReader in = new BufferedReader(
-                new InputStreamReader(is))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            return sb.toString().trim();
-        }
-    }
-
 }

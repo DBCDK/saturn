@@ -4,15 +4,8 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.saturn.api.PasswordEntryFrontEnd;
 import dk.dbc.saturn.entity.PasswordEntry;
-import java.text.ParseException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
+import jakarta.ws.rs.core.Response;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -21,7 +14,14 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
 import org.testcontainers.images.builder.Transferable;
 
-import jakarta.ws.rs.core.Response;
+import java.text.ParseException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
 import static org.hamcrest.CoreMatchers.is;
@@ -29,8 +29,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PasswordRepositoryIT extends AbstractIntegrationTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            PasswordRepositoryIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PasswordRepositoryIT.class);
 
     final Date tomorrow = getDatePlusDays(1);
     final Date yesterday = getDateMinusDays(1);
@@ -54,36 +53,35 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 getPasswordEntry(0, 0, 0, dayBeforeYesterday)
                 );
         for (PasswordEntry entry : entries) {
-            passwordRepository.save(entry);
+            PASSWORD_REPOSITORY.save(entry);
         }
-//        passwordRepository.entityManager.flush();
-        passwordRepository.entityManager.getTransaction().commit();
+        PASSWORD_REPOSITORY.entityManager.getTransaction().commit();
     }
 
     @Test
     public void test_list_passwords() {
-        List<PasswordEntry> actualList = passwordRepository.list("host-1", "user-1", 5);
+        List<PasswordEntry> actualList = PASSWORD_REPOSITORY.list("host-1", "user-1", 5);
         assertThat("Length of returned list", actualList.size(), is(5));
     }
 
     @Test
     public void test_that_returned_current_password_is_the_one_valid_from_yesterday() {
         PasswordEntry expected = getPasswordEntry(1, 1, 2, yesterday);
-        PasswordEntry actual = passwordRepository.getPasswordForDate("host-1", "user-1", today);
+        PasswordEntry actual = PASSWORD_REPOSITORY.getPasswordForDate("host-1", "user-1", today);
         expected.setId(actual.getId());
         assertThat("Current password-entry is the one with date yesterday", actual, is(expected));
     }
 
     @Test
     public void test_that_a_password_entry_can_be_removed() {
-        PasswordEntry oldEntry = passwordRepository.getPasswordForDate("host-1", "user-2", earlier);
-        passwordRepository.delete(oldEntry.getId());
+        PasswordEntry oldEntry = PASSWORD_REPOSITORY.getPasswordForDate("host-1", "user-2", earlier);
+        PASSWORD_REPOSITORY.delete(oldEntry.getId());
         assertThat("No password entry can be found for dates more than 62 days old",
-                passwordRepository.getPasswordForDate("host-1", "user-1", earlier), nullValue());
+                PASSWORD_REPOSITORY.getPasswordForDate("host-1", "user-1", earlier), nullValue());
     }
 
-    @Test
-    public void test_that_a_new_password_with_valid_from_date_can_be_added() throws ParseException, InterruptedException, JSONBException {
+    @Test// @Ignore("Can't connect to saturn service for some reason")
+    public void test_that_a_new_password_with_valid_from_date_can_be_added() throws ParseException, JSONBException {
         persistASFtpConfig();
         makeAPasswordListFileAndUpload();
 
@@ -100,18 +98,20 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 "sftp".equals(c.getHost()) &&
                 "sftp".equals(c.getUsername())).findFirst().orElseThrow();
         assertThat("Found updated password", sfc.getPassword(), is("some-password:with@various,symbols"));
-        saturnContainer.stop();
+        SATURN_CONTAINER.stop();
     }
+
     private PasswordEntryFrontEnd getPasswordFromApi(String host, String user, String date) throws JSONBException {
-        Response response = getHttp(String.format(PASSWORDREPO_GET_PASSWORD, host, user, date));
-        return jsonbContext.unmarshall(response.readEntity(String.class), PasswordEntryFrontEnd.class);
+        Response response = SATURN_CONTAINER.httpGet().withPathElements("api/passwordrepository", host, user, date).execute();
+        return JSONB_CONTEXT.unmarshall(response.readEntity(String.class), PasswordEntryFrontEnd.class);
     }
+
     private List<SFtpHarvesterConfig> getSftpHarvesterConfigs() throws JSONBException {
-        final CollectionType collectionType = jsonbContext.getTypeFactory()
-                .constructCollectionType(List.class, SFtpHarvesterConfig.class);
-        Response response = getHttp(String.format(SFTP_LIST_ENDPOINT));
-        return jsonbContext.unmarshall(response.readEntity(String.class), collectionType);
+        final CollectionType collectionType = JSONB_CONTEXT.getTypeFactory().constructCollectionType(List.class, SFtpHarvesterConfig.class);
+        Response response = SATURN_CONTAINER.httpGet().withPathElements(SFTP_LIST_ENDPOINT).execute();
+        return JSONB_CONTEXT.unmarshall(response.readEntity(String.class), collectionType);
     }
+
     String makeAPasswordList() {
         return Map.of(
                         getOclcDate(yesterday), "some-password:with@various,symbols",
@@ -125,28 +125,31 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 .map(theDate -> String.format("%-13s", theDate.getKey()) + "-   " + theDate.getValue())
                 .collect(Collectors.joining("\n"));
     }
+
     void makeAPasswordListFileAndUpload() {
-        sftpServerContainer.copyFileToContainer(Transferable.of(makeAPasswordList()), String.format("/home/%s/%s", SFTP_USER, SFTP_USER));
+        String user = SFTP_CONTAINER.user;
+        SFTP_CONTAINER.copyFileToContainer(Transferable.of(makeAPasswordList()), String.format("/home/%s/%s", user, user));
     }
+
     void persistASFtpConfig() throws ParseException {
         SFtpHarvesterConfig sFtpHarvesterConfig = getSFtpHarvesterConfig();
-        passwordRepository.entityManager.getTransaction().begin();
-        passwordRepository.entityManager.persist(sFtpHarvesterConfig);
-        passwordRepository.entityManager.flush();
-        passwordRepository.entityManager.getTransaction().commit();
+        PASSWORD_REPOSITORY.entityManager.getTransaction().begin();
+        PASSWORD_REPOSITORY.entityManager.persist(sFtpHarvesterConfig);
+        PASSWORD_REPOSITORY.entityManager.flush();
+        PASSWORD_REPOSITORY.entityManager.getTransaction().commit();
     }
+
     void runPasswordFetchBatchJob() {
         LOGGER.info("Running passwordJob");
 
-        try (GenericContainer passwordBatchContainer = new GenericContainer<>(PASSWORDSTORE_IMAGE)) {
+        try (GenericContainer<?> passwordBatchContainer = new GenericContainer<>(PASSWORDSTORE_IMAGE)) {
             passwordBatchContainer.withCommand("sh", "-c", "sleep 2 && src/python/main/main.py")
                     .withNetwork(network)
                     .withNetworkAliases("passwordChanger")
                     .withEnv("PASSWORD_CHANGE_ENABLED_SFTP_HOSTS", String.format("[\"%s\"]", "sftp"))
-                    .withEnv("SATURN_REST_ENDPOINT", "http://saturn:8080/api")
+                    .withEnv("SATURN_REST_ENDPOINT", SATURN_CONTAINER.getServiceBaseUrl() + "/api")
                     .withEnv("PROXY_PORT", "-1")
-                    .withStartupCheckStrategy(
-                            new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(20)));
+                    .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(Duration.ofSeconds(20)));
             passwordBatchContainer.start();
             String logs = passwordBatchContainer.getLogs();
             LOGGER.info("LOGS:" + logs);
@@ -155,12 +158,11 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         }
     }
 
-
     private static PasswordEntry getPasswordEntry(int hostnr, int usrnr, int passwdnr, Date date) {
         PasswordEntry entry = new PasswordEntry();
         entry.setHost(hostnr > 0?String.format("host-%d", hostnr): "sftp");
-        entry.setUsername(usrnr>0 ?String.format("user-%d", usrnr): SFTP_USER);
-        entry.setPassword(passwdnr>0?String.format("password-%d", passwdnr):SFTP_PASSWORD);
+        entry.setUsername(usrnr>0 ?String.format("user-%d", usrnr): SFTP_CONTAINER.user);
+        entry.setPassword(passwdnr>0?String.format("password-%d", passwdnr): SFTP_CONTAINER.password);
         entry.setActiveFrom(date);
         return entry;
     }

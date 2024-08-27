@@ -27,6 +27,7 @@ import jakarta.persistence.Table;
         query = SFtpHarvesterConfig.GET_HARVESTER_CONFIG_COUNT_BY_ID_QUERY
     )
 })
+
 public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     public static final String GET_HARVESTER_CONFIGS_NAME =
         "SFtpHarvesterConfig.getHarvesterConfigs";
@@ -132,7 +133,6 @@ public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
                 "host='" + host + '\'' +
                 ", port=" + port +
                 ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
                 ", dir='" + dir + '\'' +
                 ", filesPattern='" + filesPattern + '\'' +
                 '}';

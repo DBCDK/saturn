@@ -10,9 +10,7 @@ import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import dk.dbc.saturn.job.JobSenderBean;
 import dk.dbc.util.Stopwatch;
-import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
@@ -23,51 +21,20 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @LocalBean
 @Stateless
-public class SFtpHarvesterBean {
+public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SFtpHarvesterBean.class);
     @EJB
     ProxyBean proxyBean;
-    @EJB
-    JobSenderBean jobSenderBean;
-    @EJB RunningTasks runningTasks;
-    @EJB HarvesterConfigRepository harvesterConfigRepository;
-
     @Inject
     @ConfigProperty(name = "NON_PROXY_HOSTS", defaultValue = "")
     Set<String> nonProxiedHosts;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        SFtpHarvesterBean.class);
-
-    @Asynchronous
-    public void harvest(SFtpHarvesterConfig config, ProgressTrackerBean.Key progressKey) throws HarvestException {
-        try (HarvesterMDC mdc = new HarvesterMDC(config)) {
-            LOGGER.info("Starting harvest of {}", config.getName());
-            Set<FileHarvest> fileHarvests = listFiles(config);
-            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), progressKey);
-            config.setLastHarvested(Date.from(Instant.now()));
-            config.setSeqno(fileHarvests.stream()
-                    .map(FileHarvest::getSeqno)
-                    .filter(Objects::nonNull)
-                    .max(Comparator.comparing(Integer::valueOf))
-                    .orElse(0));
-            fileHarvests.forEach(FileHarvest::close);
-
-            harvesterConfigRepository.save(SFtpHarvesterConfig.class, config);
-            LOGGER.info("Ended harvest of {}", config.getName() );
-        } finally {
-            runningTasks.remove(config);
-        }
-    }
 
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

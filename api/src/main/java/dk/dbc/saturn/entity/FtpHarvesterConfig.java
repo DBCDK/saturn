@@ -125,4 +125,15 @@ public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
         result = 31 * result + filesPattern.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "FtpHarvesterConfig{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", username='" + username + '\'' +
+                ", dir='" + dir + '\'' +
+                ", filesPattern='" + filesPattern + '\'' +
+                "} " + super.toString();
+    }
 }
