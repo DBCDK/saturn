@@ -44,7 +44,7 @@ pipeline {
                             rm -rf $WORKSPACE/.repo/dk/dbc
                         """
 
-						for (def goal : [ 'clean', 'verify', "${sonarOptions} sonar:sonar" ]) {
+						for (def goal : [ 'clean', "-Dtag=${BRANCH_NAME}-${BUILD_NUMBER} verify", "${sonarOptions} sonar:sonar" ]) {
 							status += sh returnStatus: true, script: """
                                 mvn -B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress ${goal}
                             """
