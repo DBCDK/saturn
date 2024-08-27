@@ -17,28 +17,27 @@ import org.testcontainers.images.builder.Transferable;
 
 import java.text.ParseException;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static dk.dbc.saturn.api.PasswordRepositoryApi.sdf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class PasswordRepositoryIT extends AbstractIntegrationTest {
+public class PasswordRepositoryIT extends AbstractIntegrationTest implements DateTimeUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordRepositoryIT.class);
 
-    final Date tomorrow = getDatePlusDays(1);
-    final Date yesterday = getDateMinusDays(1);
-    final Date dayBeforeYesterday = getDateMinusDays(2);
-    final Date earlier = getDateMinusDays(62);
-    final Date muchEarlier = getDateMinusDays(90);
-    final Date later = getDatePlusDays(41);
-    final Date today = new Date();
+    final OffsetDateTime tomorrow = getDatePlusDays(1);
+    final OffsetDateTime yesterday = getDateMinusDays(1);
+    final OffsetDateTime dayBeforeYesterday = getDateMinusDays(2);
+    final OffsetDateTime earlier = getDateMinusDays(62);
+    final OffsetDateTime muchEarlier = getDateMinusDays(90);
+    final OffsetDateTime later = getDatePlusDays(41);
+    final OffsetDateTime today = OffsetDateTime.now();
 
     @Before
     public void populate_db() {
@@ -89,7 +88,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         // Renew registered passwords by fetching list from the sftp host.
         runPasswordFetchBatchJob();
 
-        PasswordEntryFrontEnd passwordEntryFrontEnd = getPasswordFromApi("sftp", "sftp", sdf.format(Date.from(Instant.now())));
+        PasswordEntryFrontEnd passwordEntryFrontEnd = getPasswordFromApi("sftp", "sftp", ZonedDateTime.now().format(LOCAL_DATE_TIME_FORMATTER));
         assertThat("Found an updated password", passwordEntryFrontEnd.getPassword(),
                                 is("c29tZS1wYXNzd29yZDp3aXRoQHZhcmlvdXMsc3ltYm9scw=="));
 
@@ -159,7 +158,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
         }
     }
 
-    private static PasswordEntry getPasswordEntry(int hostnr, int usrnr, int passwdnr, Date date) {
+    private static PasswordEntry getPasswordEntry(int hostnr, int usrnr, int passwdnr, OffsetDateTime date) {
         PasswordEntry entry = new PasswordEntry();
         entry.setHost(hostnr > 0?String.format("host-%d", hostnr): "sftp");
         entry.setUsername(usrnr>0 ?String.format("user-%d", usrnr): SFTP_CONTAINER.user);

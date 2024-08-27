@@ -26,14 +26,11 @@ import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import static dk.dbc.saturn.TestUtils.TIME_ZONE;
 import static dk.dbc.saturn.TestUtils.getDate;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -134,18 +131,16 @@ public abstract class AbstractIntegrationTest {
         return config;
     }
 
-    public static String  getOclcDate(Date date)  {
-        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy");
-        sdf.setTimeZone(TIME_ZONE);
-        return sdf.format(date);
+    public static String getOclcDate(OffsetDateTime date)  {
+        return DateTimeFormatter.ofPattern("M/d/yyyy").format(date);
     }
 
-    public static Date getDatePlusDays(int days) {
-        return Date.from(Instant.now().plus(days, ChronoUnit.DAYS));
+    public static OffsetDateTime getDatePlusDays(int days) {
+        return OffsetDateTime.now().plusDays(days);
     }
 
-    public static Date getDateMinusDays(int days) {
-        return Date.from(Instant.now().minus(days, ChronoUnit.DAYS));
+    public static OffsetDateTime getDateMinusDays(int days) {
+        return OffsetDateTime.now().minusDays(days);
     }
 
     public static DBCServiceContainer makeSaturnContainer(Network network, String filestore) {
