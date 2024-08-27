@@ -20,14 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 
 @Stateless
-//@ManagedExecutorDefinition(
-//        name = "java:module/concurrent/HarvestExecutor",
-//        context = "java:module/concurrent/HarvestContext",
-//        hungTaskThreshold = 12 * 60 * 60 * 1000,
-//        maxAsync = 5)
-//@ContextServiceDefinition(
-//        name = "java:module/concurrent/HarvestContext",
-//        propagated = { APPLICATION })
 public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Harvester.class);
     @EJB
@@ -39,10 +31,7 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     @Resource
     private SessionContext context;
 
-//    @Resource(lookup = "java:module/concurrent/HarvestExecutor")
-//    private ManagedExecutorService executor;
-
-    public Harvester() {
+    protected Harvester() {
     }
 
     public Harvester(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, RunningTasks runningTasks, SessionContext context) {
@@ -68,7 +57,7 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
                 }
             });
         } catch (HarvestException e) {
-            LOGGER.error("Error while harvesting ", config, e);
+            LOGGER.error("Error while harvesting: {}", config, e);
         }
     }
 

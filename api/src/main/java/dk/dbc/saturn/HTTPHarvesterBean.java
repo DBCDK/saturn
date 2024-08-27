@@ -22,8 +22,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.RetryPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
@@ -32,7 +30,6 @@ import java.util.Set;
 @LocalBean
 @Stateless
 public class HTTPHarvesterBean extends Harvester<HttpHarvesterConfig> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPHarvesterBean.class);
     @EJB
     ProxyBean proxyBean;
 
