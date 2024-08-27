@@ -34,7 +34,7 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     protected Harvester() {
     }
 
-    public Harvester(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, RunningTasks runningTasks, SessionContext context) {
+    protected Harvester(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, RunningTasks runningTasks, SessionContext context) {
         this.harvesterConfigRepository = harvesterConfigRepository;
         this.jobSenderBean = jobSenderBean;
         this.runningTasks = runningTasks;
