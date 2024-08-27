@@ -1,14 +1,8 @@
 package dk.dbc.saturn.api;
 
+import dk.dbc.saturn.DateTimeUtil;
 import dk.dbc.saturn.PasswordRepository;
 import dk.dbc.saturn.entity.PasswordEntry;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ws.rs.Consumes;
@@ -21,20 +15,21 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.text.ParseException;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Stateless
 @Path("passwordrepository")
-public class PasswordRepositoryApi {
+public class PasswordRepositoryApi implements DateTimeUtil {
     private static final String PASSWORDREPO_LIST = "list/{host}/{username}";
     private static final String PASSWORDREPO_ADD = "add";
     private static final String PASSWORDREPO_DELETE_PASSWORD = "{host}/{username}/{date}";
     private static final String PASSWORDREPO_GET_PASSWORD = "{host}/{username}/{date}";
-    public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private static final Base64.Decoder decoder = Base64.getDecoder();
     private static final Base64.Encoder encoder = Base64.getEncoder();
-
-    static {
-        sdf.setTimeZone(TimeZone.getTimeZone("Europe/Copenhagen"));
-    }
 
     @EJB
     PasswordRepository passwordRepository;
@@ -57,10 +52,10 @@ public class PasswordRepositoryApi {
         PasswordEntryFrontEnd passwordEntryFrontEnd = new PasswordEntryFrontEnd()
                 .withHost(host)
                 .withUsername(username);
-        PasswordEntry passwordEntry = passwordRepository.getPasswordForDate(host, username, sdf.parse(date));
+        PasswordEntry passwordEntry = passwordRepository.getPasswordForDate(host, username, parseLocalDateTime(date));
         if (passwordEntry != null) {
             passwordEntryFrontEnd.setPassword(new String(encoder.encode(passwordEntry.getPassword().getBytes())));
-            passwordEntryFrontEnd.setActiveFrom(sdf.format(passwordEntry.getActiveFrom()));
+            passwordEntryFrontEnd.setActiveFrom(passwordEntry.getActiveFrom().format(LOCAL_DATE_TIME_FORMATTER));
         }
         return Response.ok(passwordEntryFrontEnd).build();
     }
@@ -77,12 +72,12 @@ public class PasswordRepositoryApi {
     @POST
     @Path(PASSWORDREPO_ADD)
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response addEntry(PasswordEntryFrontEnd entry) throws ParseException {
+    public Response addEntry(PasswordEntryFrontEnd entry) {
         PasswordEntry newEntry = new PasswordEntry()
                 .withHost(entry.getHost())
                 .withUsername(entry.getUsername())
                 .withPassword(base64Decode(entry.getPassword()).orElse(entry.getPassword()))
-                .withActiveFrom(sdf.parse(entry.getActiveFrom()));
+                .withActiveFrom(parseLocalDateTime(entry.getActiveFrom()));
         passwordRepository.save(newEntry);
         return Response.ok().build();
     }
@@ -92,7 +87,7 @@ public class PasswordRepositoryApi {
                 .withHost(passwordEntry.getHost())
                 .withUsername(passwordEntry.getUsername())
                 .withPassword(passwordEntry.getPassword())
-                .withActiveFrom(sdf.format(passwordEntry.getActiveFrom()));
+                .withActiveFrom(passwordEntry.getActiveFrom().format(LOCAL_DATE_TIME_FORMATTER));
     }
 
     private Optional<String> base64Decode(String coded) {

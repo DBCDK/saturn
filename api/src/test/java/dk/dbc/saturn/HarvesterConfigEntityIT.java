@@ -25,7 +25,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -51,13 +50,13 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         config2.setAgency("010100");
         config2.setEnabled(true);
 
-        harvesterConfigRepository.entityManager.persist(config1);
-        harvesterConfigRepository.entityManager.flush();
-        harvesterConfigRepository.entityManager.persist(config2);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config1);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.flush();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config2);
 
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        final List<HttpHarvesterConfig> entities = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        final List<HttpHarvesterConfig> entities = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
 
         assertThat("results", entities.size(), is(2));
         assertThat("1st result", entities.get(0), is(config2));
@@ -93,13 +92,13 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         config2.setAgency("010100");
         config2.setEnabled(true);
 
-        harvesterConfigRepository.entityManager.persist(config1);
-        harvesterConfigRepository.entityManager.flush();
-        harvesterConfigRepository.entityManager.persist(config2);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config1);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.flush();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config2);
 
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        final List<FtpHarvesterConfig> entities = harvesterConfigRepository.list(FtpHarvesterConfig.class, 0, 0);
+        final List<FtpHarvesterConfig> entities = HARVESTER_CONFIG_REPOSITORY.list(FtpHarvesterConfig.class, 0, 0);
 
         assertThat("results", entities.size(), is(2));
         assertThat("1st result", entities.get(0), is(config2));
@@ -117,12 +116,12 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             config.setTransfile(name);
             config.setAgency("010100");
             config.setEnabled(true);
-            harvesterConfigRepository.entityManager.persist(config);
-            harvesterConfigRepository.entityManager.flush();
+            HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config);
+            HARVESTER_CONFIG_REPOSITORY.entityManager.flush();
         }
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> configs = harvesterConfigRepository.list(HttpHarvesterConfig.class, 4, 2);
+        List<HttpHarvesterConfig> configs = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 4, 2);
 
         assertThat("limit results", configs.size(), is(2));
         assertThat("first result id", configs.get(0).getUrl(), is("gary"));
@@ -144,12 +143,12 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             config.setFilesPattern(name);
             config.setAgency("010100");
             config.setEnabled(true);
-            harvesterConfigRepository.entityManager.persist(config);
-            harvesterConfigRepository.entityManager.flush();
+            HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config);
+            HARVESTER_CONFIG_REPOSITORY.entityManager.flush();
         }
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<FtpHarvesterConfig> configs = harvesterConfigRepository.list(FtpHarvesterConfig.class, 0, 3);
+        List<FtpHarvesterConfig> configs = HARVESTER_CONFIG_REPOSITORY.list(FtpHarvesterConfig.class, 0, 3);
 
         assertThat("limit results", configs.size(), is(3));
         assertThat("first result id", configs.get(2).getHost(), is("squidward"));
@@ -165,7 +164,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             httpHarvesterConfig.setSchedule(name);
             httpHarvesterConfig.setTransfile(name);
             httpHarvesterConfig.setAgency("010100");
-            harvesterConfigRepository.add(HttpHarvesterConfig.class, httpHarvesterConfig, mockedUriBuilder);
+            HARVESTER_CONFIG_REPOSITORY.add(HttpHarvesterConfig.class, httpHarvesterConfig, MOCKED_URI_BUILDER);
             httpHarvesterConfig.setUrlPattern("http://" + name);
             httpHarvesterConfig.setEnabled(true);
             httpHarvesterConfig.setGzip(name.startsWith("s"));
@@ -177,9 +176,9 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             ));
         }
 
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> configs = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        List<HttpHarvesterConfig> configs = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
 
         assertThat("list size", configs.size(), is(5));
         assertThat("entity 1 url", configs.get(0).getUrl(), is("gary"));
@@ -216,12 +215,12 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
             ftpHarvesterConfig.setTransfile(name);
             ftpHarvesterConfig.setAgency("010100");
             ftpHarvesterConfig.setEnabled(true);
-            harvesterConfigRepository.add(FtpHarvesterConfig.class, ftpHarvesterConfig, mockedUriBuilder);
+            HARVESTER_CONFIG_REPOSITORY.add(FtpHarvesterConfig.class, ftpHarvesterConfig, MOCKED_URI_BUILDER);
         }
 
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<FtpHarvesterConfig> configs = harvesterConfigRepository.list(FtpHarvesterConfig.class, 0, 0);
+        List<FtpHarvesterConfig> configs = HARVESTER_CONFIG_REPOSITORY.list(FtpHarvesterConfig.class, 0, 0);
 
         assertThat("list size", configs.size(), is(5));
         assertThat("entity 1 host", configs.get(0).getHost(), is("gary"));
@@ -238,14 +237,14 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         config.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," + "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config.setAgency("010100");
         config.setEnabled(true);
-        harvesterConfigRepository.add(HttpHarvesterConfig.class, config, mockedUriBuilder);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.add(HttpHarvesterConfig.class, config, MOCKED_URI_BUILDER);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> preliminaryList = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        List<HttpHarvesterConfig> preliminaryList = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
         assertThat(preliminaryList.size(), is(1));
         final int entityId = preliminaryList.get(0).getId();
 
-        harvesterConfigRepository.entityManager.getTransaction().begin();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().begin();
         HttpHarvesterConfig config2 = new HttpHarvesterConfig();
         // same name and id:
         config2.setId(entityId);
@@ -255,10 +254,10 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         config2.setTransfile("b=databroendpr3,f=$DATAFIL,t=abmxml," + "c=latin-1,o=littsiden,m=kildepost@dbc.dk");
         config2.setAgency("010100");
         config2.setEnabled(true);
-        harvesterConfigRepository.add(HttpHarvesterConfig.class, config2, mockedUriBuilder);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.add(HttpHarvesterConfig.class, config2, MOCKED_URI_BUILDER);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> configs = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        List<HttpHarvesterConfig> configs = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
         assertThat("results size", configs.size(), is(1));
 
         HttpHarvesterConfig resultConfig = configs.get(0);
@@ -272,34 +271,34 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
     @Test
     public void test_delete_httpHarvesterConfig() throws ParseException {
         HttpHarvesterConfig config = getHttpHarvesterConfig();
-        harvesterConfigRepository.entityManager.persist(config);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<HttpHarvesterConfig> listBeforeDelete = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        List<HttpHarvesterConfig> listBeforeDelete = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
         assertThat("list size before delete", listBeforeDelete.size(), is(1));
         int id = listBeforeDelete.get(0).getId();
 
-        harvesterConfigRepository.entityManager.getTransaction().begin();
-        harvesterConfigRepository.delete(HttpHarvesterConfig.class, id);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
-        List<HttpHarvesterConfig> listAfterDelete = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().begin();
+        HARVESTER_CONFIG_REPOSITORY.delete(HttpHarvesterConfig.class, id);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
+        List<HttpHarvesterConfig> listAfterDelete = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
         assertThat("list size after delete", listAfterDelete.size(), is(0));
     }
 
     @Test
     public void test_delete_ftpHarvesterConfig() throws ParseException {
         FtpHarvesterConfig config = getFtpHarvesterConfig();
-        harvesterConfigRepository.entityManager.persist(config);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(config);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
 
-        List<FtpHarvesterConfig> listBeforeDelete = harvesterConfigRepository.list(FtpHarvesterConfig.class, 0, 0);
+        List<FtpHarvesterConfig> listBeforeDelete = HARVESTER_CONFIG_REPOSITORY.list(FtpHarvesterConfig.class, 0, 0);
         assertThat("list size before delete", listBeforeDelete.size(), is(1));
         int id = listBeforeDelete.get(0).getId();
 
-        harvesterConfigRepository.entityManager.getTransaction().begin();
-        harvesterConfigRepository.delete(FtpHarvesterConfig.class, id);
-        harvesterConfigRepository.entityManager.getTransaction().commit();
-        List<HttpHarvesterConfig> listAfterDelete = harvesterConfigRepository.list(HttpHarvesterConfig.class, 0, 0);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().begin();
+        HARVESTER_CONFIG_REPOSITORY.delete(FtpHarvesterConfig.class, id);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.getTransaction().commit();
+        List<HttpHarvesterConfig> listAfterDelete = HARVESTER_CONFIG_REPOSITORY.list(HttpHarvesterConfig.class, 0, 0);
         assertThat("list size after delete", listAfterDelete.size(), is(0));
     }
 
@@ -309,14 +308,14 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         HttpHarvesterConfig httpHarvesterConfig = getHttpHarvesterConfig();
         SFtpHarvesterConfig sFtpHarvesterConfig = getSFtpHarvesterConfig();
 
-        harvesterConfigRepository.entityManager.persist(ftpHarvesterConfig);
-        harvesterConfigRepository.entityManager.persist(httpHarvesterConfig);
-        harvesterConfigRepository.entityManager.persist(sFtpHarvesterConfig);
-        harvesterConfigRepository.entityManager.flush();
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(ftpHarvesterConfig);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(httpHarvesterConfig);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.persist(sFtpHarvesterConfig);
+        HARVESTER_CONFIG_REPOSITORY.entityManager.flush();
 
-        Optional ftpConfigOptional = harvesterConfigRepository.getHarvesterConfigType(ftpHarvesterConfig.getId());
-        Optional httpConfigOptional = harvesterConfigRepository.getHarvesterConfigType(httpHarvesterConfig.getId());
-        Optional sFtpConfigOptional = harvesterConfigRepository.getHarvesterConfigType(sFtpHarvesterConfig.getId());
+        Optional ftpConfigOptional = HARVESTER_CONFIG_REPOSITORY.getHarvesterConfigType(ftpHarvesterConfig.getId());
+        Optional httpConfigOptional = HARVESTER_CONFIG_REPOSITORY.getHarvesterConfigType(httpHarvesterConfig.getId());
+        Optional sFtpConfigOptional = HARVESTER_CONFIG_REPOSITORY.getHarvesterConfigType(sFtpHarvesterConfig.getId());
 
         assertThat("ftpharvesterconfig is present", ftpConfigOptional.isPresent(), is(true));
         assertThat("sftpharvesterconfig is present", sFtpConfigOptional.isPresent(), is(true));
@@ -325,7 +324,7 @@ public class HarvesterConfigEntityIT extends AbstractIntegrationTest {
         assertThat("httpharvesterconfig type", httpConfigOptional.get(), is(equalTo(HttpHarvesterConfig.class)));
         assertThat("sftpharvesterconfig type", sFtpConfigOptional.get(), is(equalTo(SFtpHarvesterConfig.class)));
 
-        assertThat("some large id value not present", harvesterConfigRepository.getHarvesterConfigType(Integer.MAX_VALUE).isPresent(), is(false));
+        assertThat("some large id value not present", HARVESTER_CONFIG_REPOSITORY.getHarvesterConfigType(Integer.MAX_VALUE).isPresent(), is(false));
 
     }
 }

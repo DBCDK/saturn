@@ -9,7 +9,6 @@ import java.util.Objects;
 public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
     private String filename;
     private final Integer seqno;
-    private String dir;
     private String content;
 
     public MockFileHarvest(String filename, String content, int seqno) {

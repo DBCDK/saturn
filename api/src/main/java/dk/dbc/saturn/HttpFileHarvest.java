@@ -7,11 +7,11 @@ package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dk.dbc.saturn.entity.CustomHttpHeader;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
@@ -125,9 +125,8 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     public String toString() {
         return "HttpFileHarvest{" +
                 "filename='" + filename + '\'' +
-                ", url='" + url + '\'' +
                 ", seqno=" + seqno +
-                ", headers=" + headers +
+                ", status=" + status +
                 '}';
     }
 

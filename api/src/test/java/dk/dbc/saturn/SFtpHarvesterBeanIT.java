@@ -11,11 +11,10 @@ import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,11 +28,11 @@ import static org.hamcrest.core.Is.is;
 
 public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     private static final SFTPConfig sftpConfig = new SFTPConfig()
-            .withHost(SFTP_ADDRESS)
-            .withUsername(SFTP_USER)
-            .withPassword(SFTP_PASSWORD)
-            .withPort(SFTP_PORT)
-            .withDir("upload")
+            .withHost(SFTP_CONTAINER.getHost())
+            .withUsername(SFTP_CONTAINER.user)
+            .withPassword(SFTP_CONTAINER.password)
+            .withPort(SFTP_CONTAINER.getPort())
+            .withDir(SFTP_CONTAINER.dir)
             .withFilesPattern("*");
 
 
@@ -49,8 +48,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
 
         SFtpHarvesterBean sFtpHarvesterBean = getSFtpHarvesterBean();
 
-        SFtpHarvesterConfig config = getSFtpHarvesterConfig(
-                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_DIR, SFTP_PORT, "*");
+        SFtpHarvesterConfig config = getSFtpHarvesterConfig(SFTP_CONTAINER, "*");
         Set<FileHarvest> fileHarvests = sFtpHarvesterBean.listFiles( config );
         assertThat("result size", fileHarvests.size(), greaterThanOrEqualTo(2));
         final Map<String, String> contentMap = new HashMap<>(2);
@@ -74,8 +72,7 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         }
 
         SFtpHarvesterBean sFtpHarvesterBean = getSFtpHarvesterBean();
-        final SFtpHarvesterConfig config = getSFtpHarvesterConfig(
-                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, SFTP_DIR, SFTP_PORT, "*.txt");
+        final SFtpHarvesterConfig config = getSFtpHarvesterConfig(SFTP_CONTAINER, "*.txt");
         config.setSeqnoExtract("1-2,4-5");
         Set<FileHarvest> fileHarvests = sFtpHarvesterBean.listFiles( config );
 
@@ -104,9 +101,8 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         }
 
         final SFtpHarvesterBean sFtpHarvesterBean = getSFtpHarvesterBean();
-        final String ftpDir = String.join("/", SFTP_DIR, listAllFiles);
-        final SFtpHarvesterConfig config = getSFtpHarvesterConfig(
-                SFTP_ADDRESS, SFTP_USER, SFTP_PASSWORD, ftpDir, SFTP_PORT, "*.txt");
+        final String ftpDir = String.join("/", SFTP_CONTAINER.dir, listAllFiles);
+        final SFtpHarvesterConfig config = getSFtpHarvesterConfig(SFTP_CONTAINER, ftpDir, "*.txt");
         config.setSeqnoExtract("5");
         config.setSeqno(2);
 
@@ -114,13 +110,9 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
 
         assertThat("result size", fileHarvests.size(), is(3));
         final Set<FileHarvest> expectedFileHarvests = new HashSet<>();
-        expectedFileHarvests.add(new SFtpFileHarvest(
-                ftpDir, putFile1, null, null, FileHarvest.Status.SKIPPED_BY_FILENAME));
-        expectedFileHarvests.add(new SFtpFileHarvest(
-                ftpDir, putFile2, null, null, FileHarvest.Status.SKIPPED_BY_SEQNO));
-        expectedFileHarvests.add(new SFtpFileHarvest(
-                ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD));
-
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile1, null, null, FileHarvest.Status.SKIPPED_BY_FILENAME));
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile2, null, null, FileHarvest.Status.SKIPPED_BY_SEQNO));
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD));
 
         assertThat(fileHarvests, is(expectedFileHarvests));
         removeFilesAndDir(listAllFiles, Arrays.asList(putFile1, putFile2, putFile3));
@@ -132,15 +124,17 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
         return sFtpHarvesterBean;
     }
 
-    private static SFtpHarvesterConfig getSFtpHarvesterConfig( String host, String username,
-                                                             String password, String dir,
-                                                             int port, String filesPattern ){
+    private static SFtpHarvesterConfig getSFtpHarvesterConfig(SFtpContainer sftpContainer, String filesPattern ){
+        return getSFtpHarvesterConfig(sftpContainer, sftpContainer.dir, filesPattern);
+    }
+
+    private static SFtpHarvesterConfig getSFtpHarvesterConfig(SFtpContainer sftpContainer, String dir, String filesPattern ){
         SFtpHarvesterConfig config = new SFtpHarvesterConfig();
-        config.setHost(host);
-        config.setUsername(username);
-        config.setPassword(password);
+        config.setHost(sftpContainer.getHost());
+        config.setUsername(sftpContainer.user);
+        config.setPassword(sftpContainer.password);
         config.setDir(dir);
-        config.setPort(port);
+        config.setPort(sftpContainer.getPort());
         config.setFilesPattern(filesPattern);
         return config;
     }
@@ -165,14 +159,6 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
     }
 
     protected static String readInputStream(InputStream is) throws IOException {
-        try (final BufferedReader in = new BufferedReader(
-                new InputStreamReader(is))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            return sb.toString().trim();
-        }
+        return new String(is.readAllBytes(), StandardCharsets.UTF_8);
     }
 }

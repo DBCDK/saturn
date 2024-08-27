@@ -1,14 +1,15 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.PasswordEntry;
-import java.util.Date;
-import java.util.List;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 @Stateless
 public class PasswordRepository {
@@ -51,7 +52,7 @@ public class PasswordRepository {
      * @param username to connect with
      * @return the password that is active for this date. Or null, if none found.
      */
-    public PasswordEntry getPasswordForDate(String host, String username, Date date) {
+    public PasswordEntry getPasswordForDate(String host, String username, OffsetDateTime date) {
         TypedQuery<PasswordEntry> query =
                 entityManager.createNamedQuery(PasswordEntry.GET_PASSWORD_FOR_DATE_NAME, PasswordEntry.class);
         query.setParameter("host", host);
