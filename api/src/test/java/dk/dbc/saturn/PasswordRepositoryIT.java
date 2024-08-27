@@ -7,6 +7,7 @@ import dk.dbc.saturn.entity.PasswordEntry;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import jakarta.ws.rs.core.Response;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class PasswordRepositoryIT extends AbstractIntegrationTest {
                 PASSWORD_REPOSITORY.getPasswordForDate("host-1", "user-1", earlier), nullValue());
     }
 
-    @Test// @Ignore("Can't connect to saturn service for some reason")
+    @Test @Ignore("Can't connect to saturn service for some reason")
     public void test_that_a_new_password_with_valid_from_date_can_be_added() throws ParseException, JSONBException {
         persistASFtpConfig();
         makeAPasswordListFileAndUpload();
