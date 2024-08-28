@@ -1,6 +1,5 @@
 package dk.dbc.saturn.api;
 
-import dk.dbc.saturn.DateTimeUtil;
 import dk.dbc.saturn.PasswordRepository;
 import dk.dbc.saturn.entity.PasswordEntry;
 import jakarta.ejb.EJB;
@@ -21,9 +20,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static dk.dbc.saturn.DateTimeUtil.LOCAL_DATE_TIME_FORMATTER;
+import static dk.dbc.saturn.DateTimeUtil.parseLocalDateTime;
+
 @Stateless
 @Path("passwordrepository")
-public class PasswordRepositoryApi implements DateTimeUtil {
+public class PasswordRepositoryApi {
     private static final String PASSWORDREPO_LIST = "list/{host}/{username}";
     private static final String PASSWORDREPO_ADD = "add";
     private static final String PASSWORDREPO_DELETE_PASSWORD = "{host}/{username}/{date}";

@@ -24,11 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static dk.dbc.saturn.DateTimeUtil.LOCAL_DATE_TIME_FORMATTER;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class PasswordRepositoryIT extends AbstractIntegrationTest implements DateTimeUtil {
+public class PasswordRepositoryIT extends AbstractIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordRepositoryIT.class);
 
     final OffsetDateTime tomorrow = getDatePlusDays(1);
