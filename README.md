@@ -13,11 +13,8 @@ Harvested files will be uploaded alongside generated .trans files to a preconfig
 **Environment variables**
 
 * DB_URL database URL (USER:PASSWORD@HOST:PORT/DBNAME) of the underlying saturn database.
-* FTP_DIR destination dir for harvested files and .trans files
-* FTP_HOST hostname (or IP) of FTP server used for uploading of harvested files and .trans files
-* FTP_PORT FTP server port
-* FTP_USERNAME username used for FTP server login
-* FTP_PASSWORD password used for FTP server login
+* JOBSTORE_URL url for the DataIO Jobstore service
+* FILESTORE_URL url for the DataIO Fileservice service
 * PROXY_HOSTNAME hostname (or IP) of SOCKS proxy to allow harvesting through an inner proxy
 * PROXY_PORT SOCKS proxy port
 * PROXY_USERNAME username used for SOCKS proxy login
