@@ -9,16 +9,16 @@ import dk.dbc.invariant.InvariantUtil;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
-import net.jodah.failsafe.RetryPolicy;
-import org.apache.commons.text.StringSubstitutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonReader;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.Response;
+import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -77,7 +77,7 @@ public class LitteratursidenHttpListFilesHandler extends HttpListFilesHandler {
                 final Response response = HTTPHarvesterBean.getResponse(client, url);
                 if (getNumberOfRecordsInResponse(response, url) > 0) {
                     fileHarvests.add(new HttpFileHarvest(String.format("%s.page%d", formattedDateTime, nextPageNo),
-                            client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, null));
+                            client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, null, response.getLength()));
                     nextPageNo++;       // continue testing next page number
                 } else {
                     nextPageNo = -1;    // no more pages need to be tested

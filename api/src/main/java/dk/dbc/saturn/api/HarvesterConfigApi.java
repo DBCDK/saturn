@@ -18,12 +18,8 @@ import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -36,15 +32,16 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 
 @Stateless
 @Path("configs")
@@ -72,7 +69,7 @@ public class HarvesterConfigApi {
     @EJB FtpHarvesterBean ftpHarvesterBean;
     @EJB SFtpHarvesterBean sFtpHarvesterBean;
     @EJB HTTPHarvesterBean httpHarvesterBean;
-    @Inject ProgressTrackerBean progressTrackerBean;
+    @EJB ProgressTrackerBean progressTrackerBean;
 
     /**
      * list http harvester configs
@@ -134,8 +131,7 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addHttpHarvesterConfig(@Context UriInfo uriInfo,
             String harvesterConfigString) {
-        return addHarvesterConfig(HttpHarvesterConfig.class,
-            harvesterConfigString, uriInfo);
+        return addHarvesterConfig(HttpHarvesterConfig.class, harvesterConfigString, uriInfo);
     }
 
     /**
@@ -150,8 +146,7 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addFtpHarvesterConfig(@Context UriInfo uriInfo,
             String harvesterConfigString) {
-        return addHarvesterConfig(FtpHarvesterConfig.class,
-            harvesterConfigString, uriInfo);
+        return addHarvesterConfig(FtpHarvesterConfig.class, harvesterConfigString, uriInfo);
     }
 
     /**
@@ -166,8 +161,7 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addSFtpHarvesterConfig(@Context UriInfo uriInfo,
                                           String harvesterConfigString) {
-        return addHarvesterConfig(SFtpHarvesterConfig.class,
-                harvesterConfigString, uriInfo);
+        return addHarvesterConfig(SFtpHarvesterConfig.class, harvesterConfigString, uriInfo);
     }
 
     /**
@@ -182,13 +176,9 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHttpHarvesterConfig(@PathParam("id") int id)
             throws JSONBException {
-        Optional<HttpHarvesterConfig> config = harvesterConfigRepository
-            .getHarvesterConfig(HttpHarvesterConfig.class, id);
-        if(config.isPresent()) {
-            return Response.ok(jsonbContext.marshall(config.get())).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+        HttpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(HttpHarvesterConfig.class, id);
+        if(config != null) return Response.ok(jsonbContext.marshall(config)).build();
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     /**
@@ -200,26 +190,18 @@ public class HarvesterConfigApi {
     @GET
     @Path(HTTP_TEST_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response testHttpHarvesterConfig(@PathParam("id") int id)
-            throws JSONBException, HarvestException,
-                   ExecutionException, InterruptedException {
-        final Optional<HttpHarvesterConfig> config = harvesterConfigRepository
-                .getHarvesterConfig(HttpHarvesterConfig.class, id);
-        if (config.isPresent()) {
-            // sort files using TreeSet
-            final Set<FileHarvest> fileHarvests = new TreeSet<>(
-                    httpHarvesterBean.listFiles(config.get()));
-            fileHarvests.forEach(fileHarvest -> {
-                try {
-                    fileHarvest.getContent().close();
-                } catch (IOException | HarvestException e) {
-                    LOGGER.warn("Unable to close content stream for {}<{}>",
-                            config.get().getName(), fileHarvest.getFilename());
-                }
-            });
-            return Response.ok(jsonbContext.marshall(fileHarvests)).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+    public Response testHttpHarvesterConfig(@PathParam("id") int id) throws JSONBException, HarvestException {
+        HttpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(HttpHarvesterConfig.class, id);
+        // sort files using TreeSet
+        final Set<FileHarvest> fileHarvests = new TreeSet<>(httpHarvesterBean.listFiles(config));
+        fileHarvests.forEach(fileHarvest -> {
+            try {
+                fileHarvest.getContent().close();
+            } catch (IOException | HarvestException e) {
+                LOGGER.warn("Unable to close content stream for {}<{}>", config.getName(), fileHarvest.getFilename());
+            }
+        });
+        return Response.ok(jsonbContext.marshall(fileHarvests)).build();
     }
 
     /**
@@ -232,15 +214,9 @@ public class HarvesterConfigApi {
     @GET
     @Path(SFTP_GET_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSFtpHarvesterConfig(@PathParam("id") int id)
-            throws JSONBException {
-        Optional<SFtpHarvesterConfig> config = harvesterConfigRepository
-            .getHarvesterConfig(SFtpHarvesterConfig.class, id);
-        if(config.isPresent()) {
-            return Response.ok(jsonbContext.marshall(config.get())).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+    public Response getSFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
+        SFtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(SFtpHarvesterConfig.class, id);
+        return Response.ok(jsonbContext.marshall(config)).build();
     }
 
     /**
@@ -253,15 +229,9 @@ public class HarvesterConfigApi {
     @GET
     @Path(FTP_GET_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFtpHarvesterConfig(@PathParam("id") int id)
-            throws JSONBException {
-        Optional<FtpHarvesterConfig> config = harvesterConfigRepository
-                .getHarvesterConfig(FtpHarvesterConfig.class, id);
-        if(config.isPresent()) {
-            return Response.ok(jsonbContext.marshall(config.get())).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+    public Response getFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
+        FtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(FtpHarvesterConfig.class, id);
+        return Response.ok(jsonbContext.marshall(config)).build();
     }
 
     /**
@@ -274,15 +244,11 @@ public class HarvesterConfigApi {
     @Path(FTP_TEST_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
     public Response testFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
-        final Optional<FtpHarvesterConfig> config = harvesterConfigRepository
-                .getHarvesterConfig(FtpHarvesterConfig.class, id);
-        if (config.isPresent()) {
-            // sort files in reverse
-            SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
-            sortedSet.addAll(ftpHarvesterBean.listAllFiles(config.get()));
-            return Response.ok(jsonbContext.marshall(sortedSet)).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        FtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(FtpHarvesterConfig.class, id);
+        // sort files in reverse
+        SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
+        sortedSet.addAll(ftpHarvesterBean.listAllFiles(config));
+        return Response.ok(jsonbContext.marshall(sortedSet)).build();
     }
 
     /**
@@ -295,15 +261,11 @@ public class HarvesterConfigApi {
     @Path(SFTP_TEST_SINGLE_CONFIG_ENDPOINT)
     @Produces(MediaType.APPLICATION_JSON)
     public Response testSFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
-        final Optional<SFtpHarvesterConfig> config = harvesterConfigRepository
-                .getHarvesterConfig(SFtpHarvesterConfig.class, id);
-        if (config.isPresent()) {
-            // sort files in reverse
-            SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
-            sortedSet.addAll(sFtpHarvesterBean.listAllFiles(config.get()));
-            return Response.ok(jsonbContext.marshall(sortedSet)).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).build();
+        SFtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(SFtpHarvesterConfig.class, id);
+        // sort files in reverse
+        SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
+        sortedSet.addAll(sFtpHarvesterBean.listAllFiles(config));
+        return Response.ok(jsonbContext.marshall(sortedSet)).build();
     }
 
     @DELETE
@@ -327,17 +289,13 @@ public class HarvesterConfigApi {
         return Response.noContent().build();
     }
 
-    private <T extends AbstractHarvesterConfigEntity> Response
-            addHarvesterConfig(Class<T> type, String harvesterConfigString,
-            UriInfo uriInfo) {
+    private <T extends AbstractHarvesterConfigEntity> Response addHarvesterConfig(Class<T> type, String harvesterConfigString, UriInfo uriInfo) {
         try {
-            T harvesterConfig = jsonbContext.unmarshall(
-                harvesterConfigString, type);
-            URI uri = harvesterConfigRepository.add(type, harvesterConfig,
-                uriInfo.getAbsolutePathBuilder());
+            T harvesterConfig = jsonbContext.unmarshall(harvesterConfigString, type);
+            URI uri = harvesterConfigRepository.add(type, harvesterConfig, uriInfo.getAbsolutePathBuilder());
             return Response.created(uri).build();
         } catch (JSONBException e) {
-            LOGGER.error("Error:{}", e.getMessage());
+            LOGGER.error("Error while unmarshalling: {}", harvesterConfigString, e);
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity(e.toString())
                 .build();
@@ -346,7 +304,7 @@ public class HarvesterConfigApi {
 
     private void setProgress(AbstractHarvesterConfigEntity harvesterConfig) {
         if(progressTrackerBean != null) {
-            ProgressTrackerBean.Progress progress = progressTrackerBean.get(new ProgressTrackerBean.Key(harvesterConfig.getClass(), harvesterConfig.getId()));
+            ProgressTrackerBean.Progress progress = progressTrackerBean.get(harvesterConfig.getId());
             harvesterConfig.withProgress(progress);
         }
     }

@@ -3,7 +3,7 @@
 case "$1" in
     docker)
         echo "### building saturn docker ###"
-        docker build -f target/docker/Dockerfile --pull --no-cache . -t docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel || exit 1
+        docker build --platform=linux/amd64 -f target/docker/Dockerfile --pull --no-cache . -t docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel || exit 1
         if [[ ! -z "$BUILD_NUMBER" ]]; then
             docker tag docker-metascrum.artifacts.dbccloud.dk/saturn-service:devel docker-metascrum.artifacts.dbccloud.dk/saturn-service:${BRANCH_NAME}-${BUILD_NUMBER}
         fi

@@ -5,9 +5,8 @@
 
 package dk.dbc.saturn.api;
 
-import dk.dbc.saturn.RunScheduleFactory;
+import dk.dbc.saturn.RunScheduleBean;
 import dk.dbc.util.RunSchedule;
-
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -22,7 +21,8 @@ public class ConfigFieldApi {
     private static final String VALIDATE_CRON_ENDPOINT = "cron/validate";
     private static final String DESCRIBE_CRON_ENDPOINT = "cron/describe";
 
-    @Inject RunScheduleFactory runScheduleFactory;
+    @Inject
+    RunScheduleBean runScheduleBean;
 
     /**
      * validate a cron expression
@@ -35,7 +35,7 @@ public class ConfigFieldApi {
     @Produces(MediaType.TEXT_PLAIN)
     public Response validateCron(String cronExpression) {
         try {
-            runScheduleFactory.newRunScheduleFrom(cronExpression);
+            runScheduleBean.newRunScheduleFrom(cronExpression);
             return Response.ok("OK").build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -52,7 +52,7 @@ public class ConfigFieldApi {
     @Produces(MediaType.TEXT_PLAIN)
     public Response describeCron(String cronExpression) {
         try {
-            final RunSchedule runSchedule = runScheduleFactory
+            final RunSchedule runSchedule = runScheduleBean
                     .newRunScheduleFrom(cronExpression);
             return Response.ok(runSchedule.toDisplayString()).build();
         } catch (IllegalArgumentException e) {

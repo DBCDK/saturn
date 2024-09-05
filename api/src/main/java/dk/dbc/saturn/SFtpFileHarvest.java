@@ -1,11 +1,12 @@
 package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.io.InputStream;
-import java.util.Objects;
+import dk.dbc.commons.sftpclient.SFtpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dk.dbc.commons.sftpclient.SFtpClient;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SFtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -15,18 +16,31 @@ public class SFtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private final SFtpClient sftpClient;
     private final String dir;
     private final Status status;
+    private final Number size;
+    private final AtomicReference<ByteCountingInputStream> countingInputStream = new AtomicReference<>();
 
-    public SFtpFileHarvest(String dir, String filename, Integer seqno, SFtpClient sftpClient, Status status) {
+    public SFtpFileHarvest(String dir, String filename, Integer seqno, SFtpClient sftpClient, Status status, Number size) {
         this.filename = filename;
         this.seqno = seqno;
         this.sftpClient = sftpClient;
         this.dir = dir;
         this.status = status;
+        this.size = size;
     }
 
     @Override
     public String getFilename() {
         return filename;
+    }
+
+    @Override
+    public Number getSize() {
+        return size;
+    }
+
+    @Override
+    public Number getBytesTransferred() {
+        return countingInputStream.get() == null ? null : countingInputStream.get().getBytesRead();
     }
 
     @Override
@@ -36,9 +50,11 @@ public class SFtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     @Override
     @JsonIgnore
-    public InputStream getContent() {
+    public ByteCountingInputStream getContent() {
         LOGGER.info("Trying to get: {}", filename);
-        return sftpClient.getContent(filename);
+        ByteCountingInputStream stream = new ByteCountingInputStream(sftpClient.getContent(filename));
+        countingInputStream.set(stream);
+        return stream;
     }
 
     @Override

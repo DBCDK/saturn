@@ -9,7 +9,6 @@ import dk.dbc.invariant.InvariantUtil;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
-
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -18,6 +17,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.ws.rs.core.UriBuilder;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -62,11 +62,10 @@ public class HarvesterConfigRepository {
      * @param type type of harvester config
      * @param id id of harvester config
      * @param <T> type parameter
-     * @return optional harvester config, none if no config with the given
+     * @return harvester config, none if no config with the given
      * id is found
      */
-    public <T extends AbstractHarvesterConfigEntity> Optional<T> getHarvesterConfig(
-            Class<T> type, int id) {
+    public <T extends AbstractHarvesterConfigEntity> T getHarvesterConfig(Class<T> type, int id) {
         InvariantUtil.checkNotNullOrThrow(type, "type");
         String queryName;
         if(type == FtpHarvesterConfig.class) {
@@ -82,10 +81,7 @@ public class HarvesterConfigRepository {
         TypedQuery<T> query = entityManager.createNamedQuery(queryName, type);
         query.setParameter("id", id);
         query.setMaxResults(1);
-        if(query.getResultList().isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(query.getSingleResult());
+        return query.getSingleResult();
     }
 
     /**

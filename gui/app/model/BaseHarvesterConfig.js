@@ -62,7 +62,7 @@ class BaseHarvesterConfig {
         config.agency = json.agency;
         config.enabled = json.enabled;
         config.lastHarvested = json.lastHarvested;
-        config.progress = json.progress ? json.progress.percentage : "";
+        config.progress = json.progress ? json.progress.message : "";
         config.running = json.progress ? json.progress.running : false;
         return config;
     }

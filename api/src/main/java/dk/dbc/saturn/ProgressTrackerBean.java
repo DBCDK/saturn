@@ -1,77 +1,81 @@
 package dk.dbc.saturn;
 
-import dk.dbc.invariant.InvariantUtil;
-import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
-
 import jakarta.ejb.Singleton;
+import org.apache.commons.io.FileUtils;
+
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Singleton
 public class ProgressTrackerBean {
-    private final Map<Key, Progress> progressMap = new ConcurrentHashMap<>();
+    private static final Map<Integer, Progress> progressMap = new ConcurrentHashMap<>();
 
-    public void init(Key key, int total) {
-        InvariantUtil.checkIntLowerBoundOrThrow(total, "total", 1);
-        progressMap.put(key, new Progress(total));
+    public Progress add(Integer configId) {
+        Progress progress = new Progress();
+        progressMap.put(configId, progress);
+        return progress;
     }
 
-    public Progress get(Key key) {
-        return progressMap.get(key);
+    public Progress get(Integer configId) {
+        return progressMap.get(configId);
     }
 
     public static class Progress {
-        private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("#.0");
-        private final AtomicInteger current = new AtomicInteger();
-        private final AtomicInteger total;
-        public Progress(int total) {
-            this.total = new AtomicInteger(total);
+        private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("0.0");
+        private final AtomicInteger currentFiles = new AtomicInteger(0);
+        private final AtomicLong totalBytes = new AtomicLong(0);
+        private Set<FileHarvest> harvests;
+        private String message = null;
+
+        public Progress() {
+        }
+
+        public void init(Set<FileHarvest> harvests) {
+            this.harvests = harvests;
+        }
+
+        public Progress setMessage(String message) {
+            this.message = message;
+            return this;
         }
 
         public int inc() {
-            return current.incrementAndGet();
+            return currentFiles.incrementAndGet();
         }
 
-        public int getCurrent() {
-            return current.get();
+        public int getCurrentFiles() {
+            return currentFiles.get();
         }
 
-        public int getTotal() {
-            return total.get();
+        public int getTotalFiles() {
+            return harvests == null ? 0 : harvests.size();
         }
 
-        public String getPercentage() {
-            return PERCENTAGE_FORMAT.format(100d * current.get() / total.get()) + "%";
+        public void setTotalBytes(long totalBytes) {
+            this.totalBytes.set(totalBytes);
+        }
+
+        public Long getBytesTransferred() {
+            if(harvests == null) return null;
+            return harvests.stream().map(FileHarvest::getBytesTransferred).filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+        }
+
+        public String getMessage() {
+            if(message != null) return message;
+            if(getTotalFiles() == 0) return "listing";
+            Long bytesTransferred = getBytesTransferred();
+            String transferred = FileUtils.byteCountToDisplaySize(bytesTransferred);
+            if(totalBytes.get() != 0) return transferred + " " + PERCENTAGE_FORMAT.format(100d * bytesTransferred / totalBytes.get()) + "%";
+            return transferred + " " + PERCENTAGE_FORMAT.format(100d * getCurrentFiles() / getTotalFiles()) + "%";
         }
 
         public boolean isRunning() {
-            return current.get() < total.get();
-        }
-    }
-
-    public static class Key {
-        private final Class<? extends AbstractHarvesterConfigEntity> harvesterType;
-        private final int id;
-
-        public Key(Class<? extends AbstractHarvesterConfigEntity> harvesterType, int id) {
-            this.harvesterType = harvesterType;
-            this.id = id;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Key that = (Key) o;
-            return id == that.id && harvesterType.equals(that.harvesterType);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(harvesterType, id);
+            return harvests != null && currentFiles.get() < harvests.size();
         }
     }
 }

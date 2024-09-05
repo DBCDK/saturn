@@ -13,7 +13,6 @@ import dk.dbc.dataio.filestore.service.connector.FileStoreServiceConnector;
 import dk.dbc.dataio.filestore.service.connector.FileStoreServiceConnectorException;
 import dk.dbc.dataio.jobstore.types.JobInfoSnapshot;
 import dk.dbc.dataio.jobstore.types.JobInputStream;
-import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.job.JobSenderBean;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,10 +45,11 @@ public class JobSenderBeanTest {
         when(jobstore.addJob(any(JobInputStream.class))).thenReturn(jobInfoSnapshot);
         Set<FileHarvest> inputStreams = getFileHarvests("sponge", "bob");
         final String transfile = "transfile";
-        jobSenderBean.send(inputStreams, transfile, "b=ticklerepo,c=utf8,t=iso,o=viaf,m=any@dbc.dk", new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0));
+        progressTracker.add(0);
+        jobSenderBean.send(inputStreams, transfile, "b=ticklerepo,c=utf8,t=iso,o=viaf,m=any@dbc.dk",  0);
         verify(jobstore, times(2)).addJob(captor.capture());
 
-        int current = progressTracker.get(new ProgressTrackerBean.Key(FtpHarvesterConfig.class, 0)).getCurrent();
+        int current = progressTracker.get(0).getCurrentFiles();
         Set<String> dataFiles = captor.getAllValues().stream().map(JobInputStream::getJobSpecification).map(JobSpecification::getAncestry).map(JobSpecification.Ancestry::getDatafile).collect(Collectors.toSet());
         captor.getAllValues().stream().map(JobInputStream::getJobSpecification).forEach(js -> {
             assertThat("Correct format", js.getFormat(), is("viaf"));

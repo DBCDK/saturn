@@ -129,7 +129,8 @@ public class FtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     @Override
     public String toString() {
         return "FtpHarvesterConfig{" +
-                "host='" + host + '\'' +
+                "id='" + getId() +"'" +
+                ", host='" + host + '\'' +
                 ", port=" + port +
                 ", username='" + username + '\'' +
                 ", dir='" + dir + '\'' +

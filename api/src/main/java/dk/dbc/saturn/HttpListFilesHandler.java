@@ -11,18 +11,20 @@ import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.CustomHttpHeader;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -70,18 +72,9 @@ public class HttpListFilesHandler {
             final Client client = getHttpClient(new URL(url));
             final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
             if (response.hasEntity()) {
-                final Optional<String> filename = getFilenameFromResponse(response);
-                final Set<FileHarvest> fileHarvests = new HashSet<>();
-                final FileHarvest fileHarvest;
-                if (filename.isPresent()) {
-                    fileHarvest = new HttpFileHarvest(
-                            filename.get(), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers);
-                } else {
-                    fileHarvest = new HttpFileHarvest(
-                            getFilenameFromURL(url), client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers);
-                }
-                fileHarvests.add(fileHarvest);
-                return fileHarvests;
+                String filename = getFilenameFromResponse(response).orElse(getFilenameFromURL(url));
+                FileHarvest fileHarvest = new HttpFileHarvest(filename, client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers, response.getLength());
+                return Set.of(fileHarvest);
             } else {
                 throw new HarvestException(String.format(
                         "no entity found on response for url \"%s\"", url));
@@ -126,7 +119,7 @@ public class HttpListFilesHandler {
     }
 
     Client getHttpClient(URL url) throws HarvestException {
-        final ClientConfig clientConfig = new ClientConfig();
+        final ClientConfig clientConfig = new ClientConfig().property(ClientProperties.CONNECT_TIMEOUT, Duration.ofMinutes(1).toMillis()).property(ClientProperties.READ_TIMEOUT, Duration.ofHours(1).toMillis());
         if (proxyHandler.useProxy(url.getHost())) {
             clientConfig.connectorProvider(proxyHandler.getHttpUrlConnectorProvider());
             LOGGER.info("Using proxy: {}:{}", proxyHandler.getProxyHostname(), proxyHandler.getProxyPort());
