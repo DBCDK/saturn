@@ -158,7 +158,7 @@ public abstract class AbstractIntegrationTest {
                 .withEnv("PROXY_USERNAME", "<none>")
                 .withEnv("PROXY_PASSWORD", "<none>")
                 .waitingFor(Wait.forHttp("/health/ready"))
-                .withStartupTimeout(Duration.ofSeconds(60));
+                .withStartupTimeout(Duration.ofMinutes(2));
         container.start();
         return container;
     }
