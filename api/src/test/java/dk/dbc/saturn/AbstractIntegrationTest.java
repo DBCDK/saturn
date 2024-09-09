@@ -153,11 +153,12 @@ public abstract class AbstractIntegrationTest {
                 .withEnv("TZ", "Europe/Copenhagen")
                 .withEnv("DB_URL", SATURN_DB_CONTAINER.getPayaraDockerJdbcUrl())
                 .withEnv("FILESTORE_URL", filestore)
+                .withEnv("JOBSTORE_URL", "htt://localhost")
                 .withEnv("PROXY_HOSTNAME","<none>")
                 .withEnv("PROXY_USERNAME", "<none>")
                 .withEnv("PROXY_PASSWORD", "<none>")
                 .waitingFor(Wait.forHttp("/health/ready"))
-                .withStartupTimeout(Duration.ofSeconds(30));
+                .withStartupTimeout(Duration.ofSeconds(60));
         container.start();
         return container;
     }

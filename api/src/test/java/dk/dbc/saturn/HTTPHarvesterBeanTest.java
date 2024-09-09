@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static dk.dbc.saturn.FileHarvest.Status.AWAITING_DOWNLOAD;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -34,17 +35,10 @@ public class HTTPHarvesterBeanTest {
     private static ClientAndProxy mockProxy;
 
     private final FileHarvest squarepantsFileHarvest =
-            new HttpFileHarvest("squarepants.jpg", null, null, null,
-                    FileHarvest.Status.AWAITING_DOWNLOAD, null);
-    private final FileHarvest productsFileHarvest =
-            new HttpFileHarvest("products-http.xml", null, null, null,
-                    FileHarvest.Status.AWAITING_DOWNLOAD, null);
-    private final FileHarvest squarepantsNoHeaderFileHarvest =
-            new HttpFileHarvest("squarepants", null, null, null,
-                    FileHarvest.Status.AWAITING_DOWNLOAD, null);
-    private final FileHarvest squarepantsWithQueryStringFileHarvest =
-            new HttpFileHarvest("squarepants%3Fpage%3D0", null, null, null,
-                    FileHarvest.Status.AWAITING_DOWNLOAD, null);
+            new HttpFileHarvest("squarepants.jpg", null, null, null, AWAITING_DOWNLOAD, null, 1);
+    private final FileHarvest productsFileHarvest = new HttpFileHarvest("products-http.xml", null, null, null, AWAITING_DOWNLOAD, null, 1);
+    private final FileHarvest squarepantsNoHeaderFileHarvest = new HttpFileHarvest("squarepants", null, null, null, AWAITING_DOWNLOAD, null, 1);
+    private final FileHarvest squarepantsWithQueryStringFileHarvest = new HttpFileHarvest("squarepants%3Fpage%3D0", null, null, null, AWAITING_DOWNLOAD, null, 1);
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -251,8 +245,7 @@ public class HTTPHarvesterBeanTest {
 
     @Test
     public void test_harvest_urlFromPattern() throws HarvestException, IOException {
-        final String targetUrl = String.format(
-                "%s/viaf/data/viaf-20180701-clusters-marc21.iso.gz", wireMockHost);
+        final String targetUrl = String.format("%s/viaf/data/viaf-20180701-clusters-marc21.iso.gz", wireMockHost);
         final String html = "<html><body>" +
                 "<a href=\"http://viaf.org/viaf/data/viaf-20180701-clusters-" +
                 "marc21.xml.gz\" resource=\"http://viaf.org/viaf/data/viaf-" +
@@ -263,25 +256,16 @@ public class HTTPHarvesterBeanTest {
                 "/viaf/data/viaf-20180701-clusters-marc21.iso.gz\" " +
                 String.format("rel=\"nofollow\">%s</a>", targetUrl) +
                 "</body></html>";
-        wireMockServer.stubFor(get(urlEqualTo("/patternpants")).willReturn(
-                aResponse().withStatus(200).withBody(html)));
-        wireMockServer.stubFor(get(urlEqualTo(
-                "/viaf/data/viaf-20180701-clusters-marc21.iso.gz")).willReturn(
-                aResponse().withStatus(200).withBody("viaf-data")));
+        wireMockServer.stubFor(get(urlEqualTo("/patternpants")).willReturn(aResponse().withStatus(200).withBody(html)));
+        wireMockServer.stubFor(get(urlEqualTo("/viaf/data/viaf-20180701-clusters-marc21.iso.gz")).willReturn(aResponse().withStatus(200).withBody("viaf-data")));
         HTTPHarvesterBean httpHarvesterBean = getHTTPHarvesterBean();
-        final Set<FileHarvest> results = httpHarvesterBean.listFiles(
-                getHttpHarvesterConfig(wireMockHost + "/patternpants",
-                        String.format("%s/viaf*iso.gz", wireMockHost)));
+        final Set<FileHarvest> results = httpHarvesterBean.listFiles(getHttpHarvesterConfig(wireMockHost + "/patternpants", String.format("%s/viaf*iso.gz", wireMockHost)));
         assertThat("results size", results.size(), is(1));
-        final FileHarvest viafHarvest = new HttpFileHarvest(
-                "viaf-20180701-clusters-marc21.iso.gz", null, targetUrl, null,
-                FileHarvest.Status.AWAITING_DOWNLOAD, null);
-        assertThat("contains viaf harvest", results.contains(viafHarvest),
-                is(true));
+        final FileHarvest viafHarvest = new HttpFileHarvest("viaf-20180701-clusters-marc21.iso.gz", null, targetUrl, null, AWAITING_DOWNLOAD, null, 1);
+        assertThat("contains viaf harvest", results.contains(viafHarvest), is(true));
 
         final FileHarvest fileHarvest = results.iterator().next();
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                fileHarvest.getContent()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(fileHarvest.getContent()));
         StringBuilder sb = new StringBuilder();
         String line;
         while ((line = in.readLine()) != null) {

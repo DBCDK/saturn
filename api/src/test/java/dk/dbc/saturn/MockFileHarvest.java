@@ -3,7 +3,6 @@ package dk.dbc.saturn;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Objects;
 
 public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
@@ -23,6 +22,16 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
     }
 
     @Override
+    public Number getSize() {
+        return 1;
+    }
+
+    @Override
+    public Number getBytesTransferred() {
+        return 1;
+    }
+
+    @Override
     public String getUploadFilename(String prefix) {
         return String.format("%s.%s", prefix, filename);
     }
@@ -39,8 +48,8 @@ public class MockFileHarvest implements FileHarvest, Comparable<FileHarvest> {
 
     @Override
     @JsonIgnore
-    public InputStream getContent() {
-        return new ByteArrayInputStream(content.toString().getBytes());
+    public ByteCountingInputStream getContent() {
+        return new ByteCountingInputStream(new ByteArrayInputStream(content.toString().getBytes()));
     }
 
 

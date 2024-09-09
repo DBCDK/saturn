@@ -3,8 +3,8 @@ package dk.dbc.saturn;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dk.dbc.ftp.FtpClient;
 
-import java.io.InputStream;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private String filename;
@@ -12,18 +12,32 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private FtpClient ftpClient;
     private String dir;
     private final FileHarvest.Status status;
+    private final Number size;
+    private final AtomicReference<ByteCountingInputStream> countingInputStream = new AtomicReference<>();
 
-    public FtpFileHarvest(String dir, String filename, Integer seqno, FtpClient ftpClient, FileHarvest.Status status) {
+    public FtpFileHarvest(String dir, String filename, Integer seqno, FtpClient ftpClient, FileHarvest.Status status, Number size) {
         this.filename = filename;
         this.seqno = seqno;
         this.ftpClient = ftpClient;
         this.dir = dir;
         this.status = status;
+        this.size = size;
     }
 
     @Override
     public String getFilename() {
         return filename;
+    }
+
+    @Override
+    public Number getSize() {
+        return size;
+    }
+
+    @Override
+    public Number getBytesTransferred() {
+        ByteCountingInputStream stream = countingInputStream.get();
+        return stream == null ? null : stream.getBytesRead();
     }
 
     @Override
@@ -33,11 +47,13 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     @Override
     @JsonIgnore
-    public InputStream getContent() {
+    public ByteCountingInputStream getContent() {
         if (!dir.isEmpty()){
             ftpClient.cd(dir);
         }
-        return ftpClient.get(filename, FtpClient.FileType.BINARY);
+        ByteCountingInputStream stream = new ByteCountingInputStream(ftpClient.get(filename, FtpClient.FileType.BINARY));
+        countingInputStream.set(stream);
+        return stream;
     }
 
     @Override

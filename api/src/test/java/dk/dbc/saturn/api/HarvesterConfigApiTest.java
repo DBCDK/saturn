@@ -16,21 +16,20 @@ import dk.dbc.saturn.HarvesterConfigRepository;
 import dk.dbc.saturn.MockFileHarvest;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -169,7 +168,7 @@ public class HarvesterConfigApiTest {
     public void test_getHttpHarvesterConfig() throws JSONBException {
         HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setUrl("BubbleBuddy!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(config);
         Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
         assertThat("has entity", response.hasEntity(), is(true));
@@ -184,7 +183,7 @@ public class HarvesterConfigApiTest {
     public void test_getFtpHarvesterConfig() throws JSONBException {
         FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(config);
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(200));
         assertThat("has entity", response.hasEntity(), is(true));
@@ -197,21 +196,21 @@ public class HarvesterConfigApiTest {
 
     @Test
     public void test_getHttpHarvesterConfig_notFound() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(null);
         Response response = harvesterConfigApi.getHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
     @Test
     public void test_getFtpHarvesterConfig_notFound() throws JSONBException {
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(null);
         Response response = harvesterConfigApi.getFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
 
     @Test
     public void test_testHttpHarvesterConfig_notFound() throws JSONBException, InterruptedException, ExecutionException, HarvestException {
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(null);
         Response response = harvesterConfigApi.testHttpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
@@ -220,7 +219,7 @@ public class HarvesterConfigApiTest {
     public void test_testHttpHarvesterConfig() throws JSONBException, HarvestException, InterruptedException, ExecutionException {
         final HttpHarvesterConfig config = new HttpHarvesterConfig();
         config.setUrl("BubbleBuddy!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(HttpHarvesterConfig.class), anyInt())).thenReturn(config);
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(Collections.singletonList(new MockFileHarvest("filename", "content", 42)));
 
@@ -233,7 +232,7 @@ public class HarvesterConfigApiTest {
 
     @Test
     public void test_testFtpHarvesterConfig_notFound() throws JSONBException, InterruptedException, ExecutionException {
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.empty());
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(null);
         Response response = harvesterConfigApi.testFtpHarvesterConfig(1);
         assertThat("status", response.getStatus(), is(404));
     }
@@ -243,7 +242,7 @@ public class HarvesterConfigApiTest {
     public void test_testFtpHarvesterConfig() throws JSONBException, InterruptedException, ExecutionException, HarvestException {
         final FtpHarvesterConfig config = new FtpHarvesterConfig();
         config.setHost("Tartar sauce!");
-        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(Optional.of(config));
+        when(harvesterConfigApi.harvesterConfigRepository.getHarvesterConfig(eq(FtpHarvesterConfig.class), anyInt())).thenReturn(config);
 
         final Set<FileHarvest> fileHarvests = new HashSet<>(Collections.singletonList(new MockFileHarvest("filename", "content", 42)));
         final CompletableFuture<Void> future = CompletableFuture.completedFuture(null);

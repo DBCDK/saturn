@@ -6,15 +6,13 @@
 package dk.dbc.saturn.job;
 
 import dk.dbc.dataio.commons.types.JobSpecification;
-import dk.dbc.dataio.commons.utils.jobstore.JobStoreServiceConnectorException;
 import dk.dbc.dataio.commons.utils.jobstore.ejb.JobStoreServiceConnectorBean;
 import dk.dbc.dataio.commons.utils.jobstore.transfile.JobSpecificationFactory;
 import dk.dbc.dataio.filestore.service.connector.FileStoreServiceConnector;
-import dk.dbc.dataio.filestore.service.connector.FileStoreServiceConnectorException;
 import dk.dbc.dataio.jobstore.types.JobInfoSnapshot;
 import dk.dbc.dataio.jobstore.types.JobInputStream;
-import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpClient;
+import dk.dbc.saturn.ByteCountingInputStream;
 import dk.dbc.saturn.FileHarvest;
 import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.ProgressTrackerBean;
@@ -22,18 +20,25 @@ import dk.dbc.util.Stopwatch;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.client.Client;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Stateless
 public class JobSenderBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSenderBean.class);
+    private static final int MAX_HTTP_CONNECTIONS = 100;
     private final RetryPolicy<?> retryPolicy;
     @Inject
     private ProgressTrackerBean progressTrackerBean;
@@ -54,8 +60,16 @@ public class JobSenderBean {
 
     public JobSenderBean() {
         retryPolicy = new RetryPolicy<>().withMaxRetries(5).withDelay(Duration.ofMinutes(1)).handle(Exception.class);
-        ClientConfig config = new ClientConfig().register(new JacksonFeature());
-        FailSafeHttpClient client = FailSafeHttpClient.create(HttpClient.newClient(config), new RetryPolicy<Response>().withMaxRetries(0));
+        PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+        poolingHttpClientConnectionManager.setMaxTotal(MAX_HTTP_CONNECTIONS);
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(MAX_HTTP_CONNECTIONS);
+        ClientConfig config = new ClientConfig()
+                .register(new JacksonFeature())
+                .property(ClientProperties.READ_TIMEOUT, Duration.ofHours(1).toMillis())
+                .property(ClientProperties.CHUNKED_ENCODING_SIZE, 8 * 1024)
+                .property(ApacheClientProperties.CONNECTION_MANAGER, poolingHttpClientConnectionManager)
+                .connectorProvider(new ApacheConnectorProvider());
+        Client client = HttpClient.newClient(config);
         fileStore = new FileStoreServiceConnector(client, System.getenv("FILESTORE_URL"));
     }
 
@@ -63,7 +77,7 @@ public class JobSenderBean {
         this.progressTrackerBean = progressTrackerBean;
         this.fileStore = fileStore;
         this.jobStore = jobStore;
-        this.retryPolicy = new RetryPolicy<>().withMaxRetries(retries).withDelay(Duration.ofMillis(1)).handle(Exception.class);
+        retryPolicy = new RetryPolicy<>().withMaxRetries(retries).withDelay(Duration.ofMillis(1)).handle(Exception.class);
     }
 
     /**
@@ -71,18 +85,17 @@ public class JobSenderBean {
      * @param files map of filenames and corresponding input streams
      * @param filenamePrefix prefix for data files and transfile
      * @param transfileTemplate transfile content template
-     * @param progressKey file x out of y
      */
-    public void send(Set<FileHarvest> files, String filenamePrefix, String transfileTemplate,
-                     ProgressTrackerBean.Key progressKey) throws HarvestException {
+    public void send(Set<FileHarvest> files, String filenamePrefix, String transfileTemplate, Integer configId) throws HarvestException {
         final Stopwatch stopwatch = new Stopwatch();
         try {
-            progressTrackerBean.init(progressKey, files.size());
-
             String transfileName = String.format("%s.%s.trans", filenamePrefix, APPLICATION_ID);
+            ProgressTrackerBean.Progress progress = progressTrackerBean.get(configId);
+            long totalBytes = files.stream().map(FileHarvest::getSize).filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+            progress.setTotalBytes(totalBytes);
             for (FileHarvest fileHarvest : files) {
                 createJob(transfileName, fileHarvest, transfileTemplate);
-                progressTrackerBean.get(progressKey).inc();
+                progress.inc();
             }
         } finally {
             LOGGER.info("send took {} ms", stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
@@ -99,25 +112,34 @@ public class JobSenderBean {
             JobInfoSnapshot job = jobStore.getConnector().addJob(new JobInputStream(specification, true, 0));
             LOGGER.info("Added job {} to job store", job.getJobId());
             return job.getJobId();
-        } catch (FileStoreServiceConnectorException | JobStoreServiceConnectorException | RuntimeException e) {
+        } catch (Exception e) {
             throw new HarvestException("Failed to create job for harvest " + fileHarvest, e);
         }
     }
 
-    public String sendToFileStore(FileHarvest fileHarvest) {
+    public String sendToFileStore(FileHarvest fileHarvest) throws Exception {
         AtomicReference<String> ref = new AtomicReference<>();
         Failsafe.with(retryPolicy).run(() -> {
-            ref.set(fileStore.addFile(fileHarvest.getContent()));
+            try(InputStream is = fileHarvest.getContent()) {
+                LOGGER.info("Sending file {} to filestore with size {}", fileHarvest.getFilename(), FileUtils.byteCountToDisplaySize(fileHarvest.getSize()));
+                ref.set(fileStore.addFile(is));
+            }
         });
         return ref.get();
     }
 
-    public String sendToFileStoreResume(FileHarvest fileHarvest) throws FileStoreServiceConnectorException {
+    public String sendToFileStoreResume(FileHarvest fileHarvest) throws Exception {
         String fileStoreId = fileStore.addFile(new ByteArrayInputStream(new byte[0]));
         Failsafe.with(retryPolicy).run(() -> {
             long size = fileStore.getByteSize(fileStoreId);
+            LOGGER.info("Sending resumable file {} to filestore resume at {}", size, fileHarvest.getFilename());
             fileHarvest.setResumePoint(size);
-            fileStore.appendStream(fileStoreId, fileHarvest.getContent());
+            try(ByteCountingInputStream content = fileHarvest.getContent().setCount(size)) {
+                fileStore.appendStream(fileStoreId, content);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to send file {}", fileHarvest.getFilename(), e);
+                throw e;
+            }
         });
         return fileStoreId;
     }

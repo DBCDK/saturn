@@ -13,13 +13,11 @@ import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import dk.dbc.saturn.job.JobSenderBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.LocalBean;
-import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.RetryPolicy;
 
@@ -45,8 +43,8 @@ public class HTTPHarvesterBean extends Harvester<HttpHarvesterConfig> {
     public HTTPHarvesterBean() {
     }
 
-    public HTTPHarvesterBean(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, RunningTasks runningTasks, SessionContext context, ProxyBean proxyBean) {
-        super(harvesterConfigRepository, jobSenderBean, runningTasks, context);
+    public HTTPHarvesterBean(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, ProgressTrackerBean progressTrackerBean, ProxyBean proxyBean, RunningTasks runningTasks) {
+        super(harvesterConfigRepository, jobSenderBean, progressTrackerBean, runningTasks);
         this.proxyBean = proxyBean;
     }
 
@@ -59,7 +57,7 @@ public class HTTPHarvesterBean extends Harvester<HttpHarvesterConfig> {
             // Jersey client breaks if '{' or '}' are included in URLs in their decoded form
             url = url.replaceAll("\\{", "%7B");
             url = url.replaceAll("\\}", "%7D");
-            HttpGet httpGet = new HttpGet(HttpClient.create(ClientBuilder.newClient()))
+            HttpGet httpGet = new HttpGet(HttpClient.create(client))
                     .withBaseUrl(url);
             if (headers != null) {
                 headers.forEach(header -> httpGet.withHeader(header.getKey(), header.getValue()));

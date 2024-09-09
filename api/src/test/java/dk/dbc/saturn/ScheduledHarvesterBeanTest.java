@@ -37,14 +37,9 @@ public class ScheduledHarvesterBeanTest {
     }
 
     private ScheduledHarvesterBean makeScheduledHarvesterBean(Set<FileHarvest> fileHarvests) throws HarvestException {
-        HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean(harvesterConfigRepository, JOB_SENDER_BEAN, runningTasks, null, mock(ProxyBean.class)) {
+        HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean(harvesterConfigRepository, JOB_SENDER_BEAN, new ProgressTrackerBean(), mock(ProxyBean.class), new RunningTasks()) {
             @Override
-            protected Harvester<HttpHarvesterConfig> self() {
-                return this;
-            }
-
-            @Override
-            public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
+            public Set<FileHarvest> listFiles(HttpHarvesterConfig config) {
                 return fileHarvests;
             }
         };

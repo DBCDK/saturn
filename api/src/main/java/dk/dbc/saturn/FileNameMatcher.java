@@ -8,6 +8,8 @@ package dk.dbc.saturn;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPFileFilter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,7 @@ import java.util.regex.Pattern;
  */
 public class FileNameMatcher implements FTPFileFilter {
     private final Pattern pattern;
+    private final Map<String, Long> fileSizes = new HashMap<>();
 
     /**
      * a filename matcher which evalutes every input as a match
@@ -44,6 +47,10 @@ public class FileNameMatcher implements FTPFileFilter {
         return pattern;
     }
 
+    public Long getFileSize(String fileName) {
+        return fileSizes.get(fileName);
+    }
+
     private String globPatternToRegex(String globPattern) {
         return globPattern
             .replace(".", "\\.")
@@ -68,6 +75,8 @@ public class FileNameMatcher implements FTPFileFilter {
      */
     @Override
     public boolean accept(FTPFile ftpFile) {
-        return matches(ftpFile.getName());
+        boolean b = matches(ftpFile.getName());
+        if(b) fileSizes.put(ftpFile.getName(), ftpFile.getSize());
+        return b;
     }
 }

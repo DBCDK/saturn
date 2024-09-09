@@ -5,8 +5,7 @@
 
 package dk.dbc.saturn.api;
 
-import dk.dbc.saturn.RunScheduleFactory;
-
+import dk.dbc.saturn.RunScheduleBean;
 import jakarta.ws.rs.core.Response;
 import org.junit.Test;
 
@@ -44,9 +43,9 @@ public class ConfigFieldApiTest {
     }
 
     private ConfigFieldApi getConfigFieldApi() {
-        final RunScheduleFactory runScheduleFactory = new RunScheduleFactory("Europe/Copenhagen");
+        final RunScheduleBean runScheduleBean = new RunScheduleBean("Europe/Copenhagen");
         final ConfigFieldApi configFieldApi = new ConfigFieldApi();
-        configFieldApi.runScheduleFactory = runScheduleFactory;
+        configFieldApi.runScheduleBean = runScheduleBean;
         return configFieldApi;
     }
 }

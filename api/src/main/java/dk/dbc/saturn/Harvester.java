@@ -1,18 +1,16 @@
 package dk.dbc.saturn;
 
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
-import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.job.JobSenderBean;
-import jakarta.annotation.Resource;
-import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
-import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -22,68 +20,74 @@ import java.util.Set;
 @Stateless
 public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Harvester.class);
+    private Tag TAG_OK = new Tag("status", "success");
+    private Tag TAG_FAIL = new Tag("status", "failed");
     @EJB
     private HarvesterConfigRepository harvesterConfigRepository;
     @EJB
     private JobSenderBean jobSenderBean;
     @EJB
+    private ProgressTrackerBean trackerBean;
+    @Inject
+    private RunScheduleBean runScheduleBean;
+    @Inject
+    private MetricRegistry metricRegistry;
+    @Inject
     private RunningTasks runningTasks;
-    @Resource
-    private SessionContext context;
+
 
     protected Harvester() {
     }
 
-    protected Harvester(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, RunningTasks runningTasks, SessionContext context) {
+    protected Harvester(HarvesterConfigRepository harvesterConfigRepository, JobSenderBean jobSenderBean, ProgressTrackerBean trackerBean, RunningTasks runningTasks) {
         this.harvesterConfigRepository = harvesterConfigRepository;
         this.jobSenderBean = jobSenderBean;
+        this.trackerBean = trackerBean;
         this.runningTasks = runningTasks;
-        this.context = context;
     }
 
-    @Asynchronous
-    public void doHarvest(T config) {
-        runHarvest(config);
-    }
-
-    private void runHarvest(T config) {
-        try {
-            runningTasks.run(config, () -> {
-                Set<FileHarvest> fileHarvests = self().listFiles(config);
+    public void runHarvest(Class<T> clazz, int configId) {
+        runningTasks.run(configId, c -> {
+            ProgressTrackerBean.Progress progress = null;
+            try {
+                T config = harvesterConfigRepository.getHarvesterConfig(clazz, configId);
+                if (runScheduleBean.shouldSkip(config)) return;
+                progress = trackerBean.add(config.getId());
+                LOGGER.info("Starting harvesting task: " + config);
+                Instant start = Instant.now();
+                Set<FileHarvest> fileHarvests = listFiles(config);
                 if (!fileHarvests.isEmpty()) {
-                    ProgressTrackerBean.Key progressKey = new ProgressTrackerBean.Key(FtpHarvesterConfig.class, config.getId());
-                    harvest(config, progressKey);
-                    LOGGER.info("Done scheduling {}", config.getName());
+                    progress.init(fileHarvests);
+                    harvest(config, fileHarvests);
+                    LOGGER.info("Done harvesting {}", config.getName());
+                    progress.setMessage("done in " + Duration.between(start, Instant.now()).toSeconds() + "s");
+                    metricRegistry.counter("harvests", TAG_OK, new Tag("id", Integer.toString(configId))).inc();
+                } else {
+                    LOGGER.info("No files to harvest for {}", config.getName());
+                    progress.setMessage("no files");
                 }
-            });
-        } catch (HarvestException e) {
-            LOGGER.error("Error while harvesting: {}", config, e);
-        }
+                config.setLastHarvested(Date.from(Instant.now()));
+            } catch (HarvestException | RuntimeException e) {
+                metricRegistry.counter("harvests", TAG_FAIL, new Tag("id", Integer.toString(configId))).inc();
+                if(progress != null)  progress.setMessage("failed");
+                LOGGER.error("Error while harvesting: {}", configId, e);
+            }
+        });
     }
 
-    public void harvest(T config, ProgressTrackerBean.Key progressKey) throws HarvestException {
+    public void harvest(T config, Set<FileHarvest> fileHarvests) throws HarvestException {
         try (HarvesterMDC mdc = new HarvesterMDC(config)) {
             LOGGER.info("Starting harvest of {}", config.getName());
-            Set<FileHarvest> fileHarvests = listFiles( config );
-            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), progressKey);
-            config.setLastHarvested(Date.from(Instant.now()));
+            jobSenderBean.send(fileHarvests, config.getAgency(), config.getTransfile(), config.getId());
             config.setSeqno(fileHarvests.stream()
                     .map(FileHarvest::getSeqno)
                     .filter(Objects::nonNull)
                     .max(Comparator.comparing(Integer::valueOf))
                     .orElse(0));
             fileHarvests.forEach(FileHarvest::close);
-            harvesterConfigRepository.save((Class<T>)config.getClass(), config);
-            LOGGER.info("Ended harvest of {}", config.getName());
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public abstract Set<FileHarvest> listFiles(T config) throws HarvestException;
-
-    protected Harvester<T> self() {
-        //noinspection unchecked
-        return context.getBusinessObject(getClass());
-    }
 }
 

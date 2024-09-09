@@ -7,14 +7,15 @@ package dk.dbc.saturn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dk.dbc.saturn.entity.CustomHttpHeader;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private final String filename;
@@ -26,21 +27,34 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HttpFileHarvest.class);
     public static final String RANGE_HEADER = "Range";
+    public final Number size;
     private boolean resumable = false;
+    private final AtomicReference<ByteCountingInputStream> countingStream = new AtomicReference<>();
 
     public HttpFileHarvest(String filename, Client client, String url,
                            Integer seqno, FileHarvest.Status status,
-                           List<CustomHttpHeader> headers) {
+                           List<CustomHttpHeader> headers, Integer size) {
         this.filename = filename;
         this.client = client;
         this.url = url;
         this.seqno = seqno;
         this.status = status;
         this.headers = headers;
+        this.size = size;
     }
 
     public String getFilename() {
         return filename;
+    }
+
+    @Override
+    public Number getSize() {
+        return size;
+    }
+
+    @Override
+    public Number getBytesTransferred() {
+        return countingStream.get() == null ? null : countingStream.get().getBytesRead();
     }
 
     @Override
@@ -49,13 +63,14 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     }
 
     @JsonIgnore
-    public InputStream getContent() throws HarvestException {
+    public ByteCountingInputStream getContent() throws HarvestException {
         LOGGER.info("Headers:{}", headers);
-        final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
+        Response response = HTTPHarvesterBean.getResponse(client, url, headers);
         resumable = response.getStatus() == Response.Status.PARTIAL_CONTENT.getStatusCode();
         if (response.hasEntity()) {
-            InputStream is = response.readEntity(InputStream.class);
-            return is;
+            ByteCountingInputStream stream = new ByteCountingInputStream(response.readEntity(InputStream.class));
+            countingStream.set(stream);
+            return stream;
         }
         else {
             throw new HarvestException(String.format("Unable to read from url %s", url));

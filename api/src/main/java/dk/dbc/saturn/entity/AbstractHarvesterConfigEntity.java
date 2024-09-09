@@ -5,8 +5,8 @@
 
 package dk.dbc.saturn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dk.dbc.saturn.ProgressTrackerBean;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,9 +16,11 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
+
 import java.util.Date;
 import java.util.Objects;
 
+@JsonIgnoreProperties(value={ "progress" }, allowGetters=true)
 @MappedSuperclass
 public abstract class AbstractHarvesterConfigEntity {
     @Id

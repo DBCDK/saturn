@@ -110,9 +110,9 @@ public class SFtpHarvesterBeanIT extends AbstractIntegrationTest {
 
         assertThat("result size", fileHarvests.size(), is(3));
         final Set<FileHarvest> expectedFileHarvests = new HashSet<>();
-        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile1, null, null, FileHarvest.Status.SKIPPED_BY_FILENAME));
-        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile2, null, null, FileHarvest.Status.SKIPPED_BY_SEQNO));
-        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD));
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile1, null, null, FileHarvest.Status.SKIPPED_BY_FILENAME, 1));
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile2, null, null, FileHarvest.Status.SKIPPED_BY_SEQNO, 1));
+        expectedFileHarvests.add(new SFtpFileHarvest(ftpDir, putFile3, null, null, FileHarvest.Status.AWAITING_DOWNLOAD, 1));
 
         assertThat(fileHarvests, is(expectedFileHarvests));
         removeFilesAndDir(listAllFiles, Arrays.asList(putFile1, putFile2, putFile3));

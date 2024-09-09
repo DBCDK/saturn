@@ -5,8 +5,6 @@
 
 package dk.dbc.saturn;
 
-import java.io.InputStream;
-
 public interface FileHarvest {
      enum Status {
           SKIPPED_BY_FILENAME,
@@ -15,10 +13,13 @@ public interface FileHarvest {
      }
 
      String getFilename();
+
+     Number getSize();
+     Number getBytesTransferred();
      String getUploadFilename(String prefix);
      Integer getSeqno();
      Status getStatus();
-     InputStream getContent() throws HarvestException;
+     ByteCountingInputStream getContent() throws HarvestException;
      default void setResumePoint(long resumePoint) throws HarvestException {
           throw new HarvestException("Resume point not available for this harvester");
      }

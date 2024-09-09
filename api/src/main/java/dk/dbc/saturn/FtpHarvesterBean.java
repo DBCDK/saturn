@@ -57,7 +57,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                             file,
                             seqnoMatcher.getSeqno(),
                             ftpClient,
-                            FileHarvest.Status.AWAITING_DOWNLOAD);
+                            FileHarvest.Status.AWAITING_DOWNLOAD, fileNameMatcher.getFileSize(filename));
                     fileHarvests.add(fileHarvest);
                 }
             }
@@ -85,7 +85,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                     if (!fileNameMatcher.matches(file)) {
                         fileHarvests.add(new FtpFileHarvest(
                                 ftpHarvesterConfig.getDir(), file, null, ftpClient,
-                                FileHarvest.Status.SKIPPED_BY_FILENAME));
+                                FileHarvest.Status.SKIPPED_BY_FILENAME, allFilesMatcher.getFileSize(file)));
                         continue;
                     }
                     final String filename = Paths.get(file).getFileName().toString().trim();
@@ -95,7 +95,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                     } else {
                         status = FileHarvest.Status.SKIPPED_BY_SEQNO;
                     }
-                    fileHarvests.add(new FtpFileHarvest(ftpHarvesterConfig.getDir(), file, seqnoMatcher.getSeqno(), ftpClient, status));
+                    fileHarvests.add(new FtpFileHarvest(ftpHarvesterConfig.getDir(), file, seqnoMatcher.getSeqno(), ftpClient, status, allFilesMatcher.getFileSize(file)));
                 }
             }
             LOGGER.info("Listing all files from {}@{}:{}/{} took {} ms", ftpHarvesterConfig.getUsername(),

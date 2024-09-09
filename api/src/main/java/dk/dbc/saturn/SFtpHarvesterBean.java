@@ -75,7 +75,7 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                             filename,
                             seqnoMatcher.getSeqno(),
                             sftpClient,
-                            FileHarvest.Status.AWAITING_DOWNLOAD);
+                            FileHarvest.Status.AWAITING_DOWNLOAD, lsEntry.getAttrs().getSize());
                     fileHarvests.add(fileHarvest);
 
                 }
@@ -115,7 +115,7 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                                 filename,
                                 null,
                                 sftpClient,
-                                FileHarvest.Status.SKIPPED_BY_FILENAME));
+                                FileHarvest.Status.SKIPPED_BY_FILENAME, lsEntry.getAttrs().getSize()));
                         continue;
                     }
                     final FileHarvest.Status status;
@@ -125,7 +125,7 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                         status = FileHarvest.Status.SKIPPED_BY_SEQNO;
                     }
                     fileHarvests.add(new SFtpFileHarvest(
-                            sFtpHarvesterConfig.getDir(), filename, seqnoMatcher.getSeqno(), sftpClient, status));
+                            sFtpHarvesterConfig.getDir(), filename, seqnoMatcher.getSeqno(), sftpClient, status, lsEntry.getAttrs().getSize()));
                 }
             }
             LOGGER.info("Listing all files from {}@{}:{}/{} took {} ms", sFtpHarvesterConfig.getUsername(),
