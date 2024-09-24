@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 public class HttpListFilesHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpListFilesHandler.class);
+    Pattern NUMBER_PATTERN = Pattern.compile("\\D*(\\d+)\\D*");
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile(".*filename=[\"\']([^\"\']+)[\"\']");
 
@@ -73,7 +74,7 @@ public class HttpListFilesHandler {
             final Response response = HTTPHarvesterBean.getResponse(client, url, headers);
             if (response.hasEntity()) {
                 String filename = getFilenameFromResponse(response).orElse(getFilenameFromURL(url));
-                FileHarvest fileHarvest = new HttpFileHarvest(filename, client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers, response.getLength());
+                FileHarvest fileHarvest = new HttpFileHarvest(filename, client, url, null, FileHarvest.Status.AWAITING_DOWNLOAD, headers, getLength(response));
                 return Set.of(fileHarvest);
             } else {
                 throw new HarvestException(String.format(
@@ -84,6 +85,17 @@ public class HttpListFilesHandler {
         } finally {
             LOGGER.info("Listing of {} took {} ms", url,
                     stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+        }
+    }
+
+    private Number getLength(Response response) {
+        try {
+            return response.getLength();
+        } catch (RuntimeException e) {
+            String s = response.getHeaderString("Content-Length");
+            Matcher matcher = NUMBER_PATTERN.matcher(s);
+            if(matcher.matches()) return Long.parseLong(matcher.group(1));
+            return null;
         }
     }
 
