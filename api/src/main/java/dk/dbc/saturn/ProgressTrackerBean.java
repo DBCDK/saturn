@@ -1,9 +1,15 @@
 package dk.dbc.saturn;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.ejb.Singleton;
+import jakarta.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Tag;
 
 import java.text.DecimalFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -14,6 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Singleton
 public class ProgressTrackerBean {
     private static final Map<Integer, Progress> progressMap = new ConcurrentHashMap<>();
+    @Inject
+    private MetricRegistry metricRegistry;
 
     public Progress add(Integer configId) {
         Progress progress = new Progress();
@@ -27,10 +35,12 @@ public class ProgressTrackerBean {
 
     public static class Progress {
         private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("0.0");
+        private static final Duration SLOW_JOB_THRESHOLD = Duration.ofHours(1);
         private final AtomicInteger currentFiles = new AtomicInteger(0);
         private final AtomicLong totalBytes = new AtomicLong(0);
         private Set<FileHarvest> harvests;
         private String message = null;
+        private final Instant startTime = Instant.now();
 
         public Progress() {
         }
@@ -42,6 +52,12 @@ public class ProgressTrackerBean {
         public Progress setMessage(String message) {
             this.message = message;
             return this;
+        }
+
+        public void done(int id, MetricRegistry metricRegistry) {
+            Duration age = getAge();
+            setMessage("done in " + age.toSeconds() + "s");
+            if(age.compareTo(SLOW_JOB_THRESHOLD) > 0) metricRegistry.timer("slow_jobs", new Tag("id", Integer.toString(id))).update(age);
         }
 
         public int inc() {
@@ -63,6 +79,11 @@ public class ProgressTrackerBean {
         public Long getBytesTransferred() {
             if(harvests == null) return null;
             return harvests.stream().map(FileHarvest::getBytesTransferred).filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+        }
+
+        @JsonIgnore
+        public Duration getAge() {
+            return Duration.between(startTime, Instant.now());
         }
 
         public String getMessage() {

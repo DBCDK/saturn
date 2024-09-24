@@ -10,7 +10,6 @@ import org.eclipse.microprofile.metrics.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,14 +52,13 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
                 T config = harvesterConfigRepository.getHarvesterConfig(clazz, configId);
                 if (runScheduleBean.shouldSkip(config)) return;
                 progress = trackerBean.add(config.getId());
-                LOGGER.info("Starting harvesting task: " + config);
-                Instant start = Instant.now();
+                LOGGER.info("Starting harvesting task: {}", config);
                 Set<FileHarvest> fileHarvests = listFiles(config);
                 if (!fileHarvests.isEmpty()) {
                     progress.init(fileHarvests);
                     harvest(config, fileHarvests);
                     LOGGER.info("Done harvesting {}", config.getName());
-                    progress.setMessage("done in " + Duration.between(start, Instant.now()).toSeconds() + "s");
+                    progress.done(configId, metricRegistry);
                     metricRegistry.counter("harvests", TAG_OK, new Tag("id", Integer.toString(configId))).inc();
                 } else {
                     LOGGER.info("No files to harvest for {}", config.getName());
