@@ -33,7 +33,7 @@ public class HttpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
 
     public HttpFileHarvest(String filename, Client client, String url,
                            Integer seqno, FileHarvest.Status status,
-                           List<CustomHttpHeader> headers, Integer size) {
+                           List<CustomHttpHeader> headers, Number size) {
         this.filename = filename;
         this.client = client;
         this.url = url;
