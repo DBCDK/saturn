@@ -47,9 +47,9 @@ public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     private int port;
     private String username;
     private String password;
-    @Column(name = "privatekey")
+    @Column(name = "privatekey", updatable = false)
     private byte[] privateKey;
-    @Column(name = "publickey")
+    @Column(name = "publickey", updatable = false)
     private byte[] publicKey;
     private String dir;
     @Column(name = "filespattern")
