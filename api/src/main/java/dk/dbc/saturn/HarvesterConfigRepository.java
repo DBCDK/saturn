@@ -81,7 +81,9 @@ public class HarvesterConfigRepository {
         TypedQuery<T> query = entityManager.createNamedQuery(queryName, type);
         query.setParameter("id", id);
         query.setMaxResults(1);
-        return query.getSingleResult();
+        T result = query.getSingleResult();
+        entityManager.refresh(result);
+        return result;
     }
 
     /**
