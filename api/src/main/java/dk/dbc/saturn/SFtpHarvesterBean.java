@@ -49,14 +49,7 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                 sFtpHarvesterConfig.getFilesPattern());
         LOGGER.info("None proxied hosts {}", String.join(", ", nonProxiedHosts != null ? nonProxiedHosts : Set.of()));
         Set<FileHarvest> fileHarvests = new HashSet<>();
-        SFTPConfig config = new SFTPConfig()
-                .withHost(sFtpHarvesterConfig.getHost())
-                .withUsername(sFtpHarvesterConfig.getUsername())
-                .withPort(sFtpHarvesterConfig.getPort())
-                .withDir(sFtpHarvesterConfig.getDir())
-                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern());
-        if (sFtpHarvesterConfig.getPrivateKey() == null) config.withPassword(sFtpHarvesterConfig.getPassword());
-        else config.withPrivateKey(sFtpHarvesterConfig.getPrivateKey()).withPublicKey(sFtpHarvesterConfig.getPublicKey());
+        SFTPConfig config = makeConfig(sFtpHarvesterConfig);
         try (SFtpClient sftpClient = new SFtpClient(config, proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
@@ -96,14 +89,7 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
         final Stopwatch stopwatch = new Stopwatch();
         Set<FileHarvest> fileHarvests = new HashSet<>();
         LOGGER.info("None proxied hosts {}",proxyBean.getNonProxyHosts() != null ? String.join(", ", proxyBean.getNonProxyHosts()) : "NONE");
-        try (SFtpClient sftpClient = new SFtpClient(new SFTPConfig()
-                .withHost(sFtpHarvesterConfig.getHost())
-                .withUsername(sFtpHarvesterConfig.getUsername())
-                .withPassword(sFtpHarvesterConfig.getPassword())
-                .withPort(sFtpHarvesterConfig.getPort())
-                .withDir(sFtpHarvesterConfig.getDir())
-                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
+        try (SFtpClient sftpClient = new SFtpClient(makeConfig(sFtpHarvesterConfig), proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls("*")) {
                 String filename = lsEntry.getFilename();
                 LOGGER.info("Checking filename:{}", filename);
@@ -134,5 +120,17 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                     stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
             return fileHarvests;
         }
+    }
+
+    private SFTPConfig makeConfig(SFtpHarvesterConfig sFtpHarvesterConfig) {
+        SFTPConfig config = new SFTPConfig()
+                .withHost(sFtpHarvesterConfig.getHost())
+                .withUsername(sFtpHarvesterConfig.getUsername())
+                .withPort(sFtpHarvesterConfig.getPort())
+                .withDir(sFtpHarvesterConfig.getDir())
+                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern());
+        if (sFtpHarvesterConfig.getPrivateKey() == null) config.withPassword(sFtpHarvesterConfig.getPassword());
+        else config.withPrivateKey(sFtpHarvesterConfig.getPrivateKey()).withPublicKey(sFtpHarvesterConfig.getPublicKey());
+        return config;
     }
 }
