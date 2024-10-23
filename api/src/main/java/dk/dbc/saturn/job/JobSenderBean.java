@@ -59,7 +59,7 @@ public class JobSenderBean {
 
 
     public JobSenderBean() {
-        retryPolicy = new RetryPolicy<>().withMaxRetries(5).withDelay(Duration.ofMinutes(1));
+        retryPolicy = new RetryPolicy<>().withMaxRetries(12).withDelay(Duration.ofMinutes(15));
         PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
         poolingHttpClientConnectionManager.setMaxTotal(MAX_HTTP_CONNECTIONS);
         poolingHttpClientConnectionManager.setDefaultMaxPerRoute(MAX_HTTP_CONNECTIONS);
@@ -94,7 +94,7 @@ public class JobSenderBean {
             long totalBytes = files.stream().map(FileHarvest::getSize).filter(Objects::nonNull).mapToLong(Number::longValue).sum();
             progress.setTotalBytes(totalBytes);
             for (FileHarvest fileHarvest : files) {
-                createJob(transfileName, fileHarvest, transfileTemplate);
+                createJob(progress, transfileName, fileHarvest, transfileTemplate);
                 progress.inc();
             }
         } finally {
@@ -102,11 +102,11 @@ public class JobSenderBean {
         }
     }
 
-    private int createJob(String transfileName, FileHarvest fileHarvest, String template) throws HarvestException {
+    private int createJob(ProgressTrackerBean.Progress progress, String transfileName, FileHarvest fileHarvest, String template) throws HarvestException {
         try {
             Map<Character, String> templateMap = JobSpecificationFactory.transfileLineToMap(template);
             templateMap.put('f', fileHarvest.getFilename());
-            String fileStoreId = fileHarvest.isResumable() ? sendToFileStoreResume(fileHarvest) : sendToFileStore(fileHarvest);
+            String fileStoreId = fileHarvest.isResumable() ? sendToFileStoreResume(progress, fileHarvest) : sendToFileStore(progress, fileHarvest);
             LOGGER.info("Added file {} to file store with id {}", fileHarvest.getFilename(), fileStoreId);
             JobSpecification specification = JobSpecificationFactory.createJobSpecification(templateMap, transfileName, fileStoreId, template.getBytes(StandardCharsets.UTF_8));
             JobInfoSnapshot job = jobStore.getConnector().addJob(new JobInputStream(specification, true, 0));
@@ -117,10 +117,11 @@ public class JobSenderBean {
         }
     }
 
-    public String sendToFileStore(FileHarvest fileHarvest) throws Exception {
+    public String sendToFileStore(ProgressTrackerBean.Progress progress, FileHarvest fileHarvest) throws Exception {
         AtomicReference<String> ref = new AtomicReference<>();
-        Failsafe.with(retryPolicy).run(() -> {
+        Failsafe.with(retryPolicy.copy().onFailedAttempt(e -> progress.setMessage("Waiting for retry"))).run(() -> {
             try(InputStream is = fileHarvest.getContent()) {
+                progress.setMessage(null);
                 LOGGER.info("Sending file {} to filestore with size {}", fileHarvest.getFilename(), FileUtils.byteCountToDisplaySize(fileHarvest.getSize()));
                 ref.set(fileStore.addFile(is));
             }
@@ -128,9 +129,10 @@ public class JobSenderBean {
         return ref.get();
     }
 
-    public String sendToFileStoreResume(FileHarvest fileHarvest) throws Exception {
+    public String sendToFileStoreResume(ProgressTrackerBean.Progress progress, FileHarvest fileHarvest) throws Exception {
         String fileStoreId = fileStore.addFile(new ByteArrayInputStream(new byte[0]));
-        Failsafe.with(retryPolicy).run(() -> {
+        Failsafe.with(retryPolicy.copy().onFailedAttempt(e -> progress.setMessage("Waiting for retry"))).run(() -> {
+            progress.setMessage(null);
             long size = fileStore.getByteSize(fileStoreId);
             LOGGER.info("Sending resumable file {} to filestore resume at {}", size, fileHarvest.getFilename());
             fileHarvest.setResumePoint(size);
