@@ -59,7 +59,7 @@ public class JobSenderBean {
 
 
     public JobSenderBean() {
-        retryPolicy = new RetryPolicy<>().withMaxRetries(5).withDelay(Duration.ofMinutes(1)).handle(Exception.class);
+        retryPolicy = new RetryPolicy<>().withMaxRetries(5).withDelay(Duration.ofMinutes(1));
         PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
         poolingHttpClientConnectionManager.setMaxTotal(MAX_HTTP_CONNECTIONS);
         poolingHttpClientConnectionManager.setDefaultMaxPerRoute(MAX_HTTP_CONNECTIONS);
@@ -77,7 +77,7 @@ public class JobSenderBean {
         this.progressTrackerBean = progressTrackerBean;
         this.fileStore = fileStore;
         this.jobStore = jobStore;
-        retryPolicy = new RetryPolicy<>().withMaxRetries(retries).withDelay(Duration.ofMillis(1)).handle(Exception.class);
+        retryPolicy = new RetryPolicy<>().withMaxRetries(retries).withDelay(Duration.ofMillis(1));
     }
 
     /**

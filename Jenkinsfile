@@ -20,6 +20,7 @@ pipeline {
 	}
 	options {
 		timestamps()
+		disableConcurrentBuilds(abortPrevious: true)
 	}
 	stages {
 		stage("docker build saturn-passwordstoresync") {

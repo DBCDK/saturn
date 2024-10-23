@@ -47,6 +47,10 @@ public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
     private int port;
     private String username;
     private String password;
+    @Column(name = "privatekey")
+    private byte[] privateKey;
+    @Column(name = "publickey")
+    private byte[] publicKey;
     private String dir;
     @Column(name = "filespattern")
     private String filesPattern;
@@ -81,6 +85,22 @@ public class SFtpHarvesterConfig extends AbstractHarvesterConfigEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public byte[] getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(byte[] privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    public byte[] getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(byte[] publicKey) {
+        this.publicKey = publicKey;
     }
 
     public String getDir() {

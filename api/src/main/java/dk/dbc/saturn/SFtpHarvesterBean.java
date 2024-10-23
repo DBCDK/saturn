@@ -49,16 +49,15 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
                 sFtpHarvesterConfig.getFilesPattern());
         LOGGER.info("None proxied hosts {}", String.join(", ", nonProxiedHosts != null ? nonProxiedHosts : Set.of()));
         Set<FileHarvest> fileHarvests = new HashSet<>();
-
-        try (SFtpClient sftpClient = new SFtpClient(
-                new SFTPConfig()
+        SFTPConfig config = new SFTPConfig()
                 .withHost(sFtpHarvesterConfig.getHost())
                 .withUsername(sFtpHarvesterConfig.getUsername())
-                .withPassword(sFtpHarvesterConfig.getPassword())
                 .withPort(sFtpHarvesterConfig.getPort())
                 .withDir(sFtpHarvesterConfig.getDir())
-                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern()),
-                proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
+                .withFilesPattern(sFtpHarvesterConfig.getFilesPattern());
+        if (sFtpHarvesterConfig.getPrivateKey() == null) config.withPassword(sFtpHarvesterConfig.getPassword());
+        else config.withPrivateKey(sFtpHarvesterConfig.getPrivateKey()).withPublicKey(sFtpHarvesterConfig.getPublicKey());
+        try (SFtpClient sftpClient = new SFtpClient(config, proxyBean.getProxy(), nonProxiedHosts != null ? nonProxiedHosts : Set.of())) {
             for (ChannelSftp.LsEntry lsEntry : sftpClient.ls(sFtpHarvesterConfig.getFilesPattern())) {
                 String filename = lsEntry.getFilename();
                 if (filename != null && !filename.isEmpty() && seqnoMatcher.shouldFetch(filename.trim())) {
