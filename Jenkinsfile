@@ -23,15 +23,6 @@ pipeline {
 		disableConcurrentBuilds(abortPrevious: true)
 	}
 	stages {
-		stage("docker build saturn-passwordstoresync") {
-			steps {
-				script {
-					sh """
-						passwordstore/build
-					"""
-				}
-			}
-		}
 		stage("build") {
 			steps {
 				withSonarQubeEnv(installationName: 'sonarqube.dbc.dk') {
@@ -79,18 +70,6 @@ pipeline {
                 }
             }
         }
-		stage("docker push saturn-passwordstoresync") {
-			when {
-				branch "master"
-			}
-			steps {
-				script {
-					sh """
-						docker push docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:${env.BRANCH_NAME}-${env.BUILD_NUMBER}
-					"""
-				}
-			}
-		}
 		stage("update staging version") {
 			agent {
 				docker {

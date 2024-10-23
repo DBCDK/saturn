@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-echo "### building saturn-passwordstoresync docker ###"
-cd passwordstore
-docker build --pull --no-cache -f src/docker/Dockerfile  -t docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel . || exit 1
-if [[ ! -z "$BUILD_NUMBER" ]]; then
-    docker tag docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:devel docker-metascrum.artifacts.dbccloud.dk/saturn-passwordstoresync:${BRANCH_NAME}-${BUILD_NUMBER}
-fi
