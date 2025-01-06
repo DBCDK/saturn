@@ -41,6 +41,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                 fileNameMatcher.getPattern());
         Set<FileHarvest> fileHarvests = new HashSet<>();
         FtpClient ftpClient = FtpClientFactory.createFtpClient( ftpHarvesterConfig, proxyBean);
+        String workingDirectory = ftpClient.pwd();
         for (String file : ftpClient.list(fileNameMatcher)) {
             if (file != null && !file.isEmpty()) {
                 /*
@@ -53,7 +54,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                 final String filename = Paths.get(file).getFileName().toString().trim();
                 if (seqnoMatcher.shouldFetch(filename)) {
                     final FileHarvest fileHarvest = new FtpFileHarvest(
-                            ftpHarvesterConfig.getDir(),
+                            workingDirectory + '/' + ftpHarvesterConfig.getDir(),
                             file,
                             seqnoMatcher.getSeqno(),
                             ftpClient,
