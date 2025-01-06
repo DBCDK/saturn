@@ -54,7 +54,7 @@ public class FtpHarvesterBean extends Harvester<FtpHarvesterConfig> {
                 final String filename = Paths.get(file).getFileName().toString().trim();
                 if (seqnoMatcher.shouldFetch(filename)) {
                     final FileHarvest fileHarvest = new FtpFileHarvest(
-                            workingDirectory + '/' + ftpHarvesterConfig.getDir(),
+                            workingDirectory,
                             file,
                             seqnoMatcher.getSeqno(),
                             ftpClient,
