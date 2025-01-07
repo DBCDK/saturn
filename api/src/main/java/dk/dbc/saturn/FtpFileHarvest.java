@@ -48,7 +48,7 @@ public class FtpFileHarvest implements Comparable<FileHarvest>, FileHarvest {
     @Override
     @JsonIgnore
     public ByteCountingInputStream getContent() {
-        if (!dir.isEmpty()){
+        if (!dir.isEmpty()) {
             ftpClient.cd(dir);
         }
         ByteCountingInputStream stream = new ByteCountingInputStream(ftpClient.get(filename, FtpClient.FileType.BINARY));
