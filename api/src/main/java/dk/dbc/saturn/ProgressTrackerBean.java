@@ -41,8 +41,11 @@ public class ProgressTrackerBean {
         private Set<FileHarvest> harvests;
         private String message = null;
         private final Instant startTime = Instant.now();
+        private boolean abort = false;
+        private final Thread thread;
 
         public Progress() {
+            thread = Thread.currentThread();
         }
 
         public void init(Set<FileHarvest> harvests) {
@@ -58,6 +61,16 @@ public class ProgressTrackerBean {
             Duration age = getAge();
             setMessage("done in " + age.toSeconds() + "s");
             if(age.compareTo(SLOW_JOB_THRESHOLD) > 0) metricRegistry.timer("slow_jobs", new Tag("id", Integer.toString(id))).update(age);
+        }
+
+        public void abort() {
+            abort = true;
+            setMessage("aborted");
+            thread.interrupt();
+        }
+
+        public boolean isAbort() {
+            return abort;
         }
 
         public int inc() {

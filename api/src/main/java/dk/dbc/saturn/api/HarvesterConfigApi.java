@@ -48,6 +48,8 @@ import java.util.TreeSet;
 public class HarvesterConfigApi {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarvesterConfigApi.class);
 
+    private static final String ABORT_ENDPOINT = "abort/{id}";
+    private static final String JOB_STATUS = "status/{id}";
     private static final String HTTP_LIST_ENDPOINT = "http/list";
     private static final String HTTP_ADD_ENDPOINT = "http/add";
     private static final String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
@@ -162,6 +164,23 @@ public class HarvesterConfigApi {
     public Response addSFtpHarvesterConfig(@Context UriInfo uriInfo,
                                           String harvesterConfigString) {
         return addHarvesterConfig(SFtpHarvesterConfig.class, harvesterConfigString, uriInfo);
+    }
+
+    @POST
+    @Path(ABORT_ENDPOINT)
+    public Response abort(@PathParam("id") int id) {
+        ProgressTrackerBean.Progress progress = progressTrackerBean.get(id);
+        if(progress == null) return Response.status(Response.Status.NOT_FOUND).build();
+        progress.abort();
+        return Response.ok(progress).build();
+    }
+
+    @GET
+    @Path(JOB_STATUS)
+    public Response getJobStatus(@PathParam("id") int id) {
+        ProgressTrackerBean.Progress progress = progressTrackerBean.get(id);
+        if(progress == null) return Response.ok().build();
+        return Response.ok(progress).build();
     }
 
     /**

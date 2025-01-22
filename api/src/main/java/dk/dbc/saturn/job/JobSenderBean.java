@@ -94,6 +94,7 @@ public class JobSenderBean {
             long totalBytes = files.stream().map(FileHarvest::getSize).filter(Objects::nonNull).mapToLong(Number::longValue).sum();
             progress.setTotalBytes(totalBytes);
             for (FileHarvest fileHarvest : files) {
+                if(progress.isAbort()) return;
                 createJob(transfileName, fileHarvest, transfileTemplate);
                 progress.inc();
             }
