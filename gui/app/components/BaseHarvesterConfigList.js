@@ -13,12 +13,17 @@ class ConfigEntry extends React.Component {
         super(props);
         this.state = { enabled: this.props.enabled };
         this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+        this.handleAbort = this.handleAbort.bind(this);
     }
 
     handleCheckboxChange(event) {
         const active = event.target.checked;
         this.setState({ enabled: active });
         this.props.onEnabledChanged(this.props.id, active);
+    }
+
+    handleAbort(event) {
+        this.props.handleAbort(this.props.id)
     }
 
     render() {
@@ -32,6 +37,9 @@ class ConfigEntry extends React.Component {
                            onChange={this.handleCheckboxChange}/>
                 </td>
                 <td>{this.props.progress}</td>
+                <td>
+                    {this.props.running ? <div onClick={this.handleAbort}>🛑</div> : <div/>}
+                </td>
             </tr>
         )
     }
@@ -44,11 +52,13 @@ ConfigEntry.propTypes = {
     lastHarvested: PropTypes.string,
     onEnabledChanged: PropTypes.func,
     progress: PropTypes.string,
+    handleAbort: PropTypes.func,
     running: PropTypes.bool,
 };
 
 ConfigEntry.defaultProps = {
     onEnabledChanged: (event) => console.log("no-op for ConfigEntry.onEnabledChanged"),
+    handleAbort: (event) => console.log("no-op for ConfigEntry.handleAbort"),
     enabled: true,
 };
 
@@ -65,6 +75,7 @@ class BaseHarvesterConfigList extends React.Component {
                             <th>Sidst høstet</th>
                             <th>Aktiv</th>
                             <th>Overført</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>

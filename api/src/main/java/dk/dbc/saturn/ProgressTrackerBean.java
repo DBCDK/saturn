@@ -42,6 +42,7 @@ public class ProgressTrackerBean {
         private String message = null;
         private final Instant startTime = Instant.now();
         private boolean abort = false;
+        private boolean done = false;
         private final Thread thread;
 
         public Progress() {
@@ -58,14 +59,16 @@ public class ProgressTrackerBean {
         }
 
         public void done(int id, MetricRegistry metricRegistry) {
+            done = true;
             Duration age = getAge();
-            setMessage("done in " + age.toSeconds() + "s");
+            setMessage("Done in " + age.toSeconds() + "s");
             if(age.compareTo(SLOW_JOB_THRESHOLD) > 0) metricRegistry.timer("slow_jobs", new Tag("id", Integer.toString(id))).update(age);
         }
 
         public void abort() {
             abort = true;
-            setMessage("aborted");
+            done = true;
+            setMessage("Aborted");
             thread.interrupt();
         }
 
@@ -101,7 +104,7 @@ public class ProgressTrackerBean {
 
         public String getMessage() {
             if(message != null) return message;
-            if(getTotalFiles() == 0) return "listing";
+            if(getTotalFiles() == 0) return "Listing";
             Long bytesTransferred = getBytesTransferred();
             String transferred = FileUtils.byteCountToDisplaySize(bytesTransferred);
             if(totalBytes.get() != 0) return transferred + " " + PERCENTAGE_FORMAT.format(100d * bytesTransferred / totalBytes.get()) + "%";
@@ -109,7 +112,7 @@ public class ProgressTrackerBean {
         }
 
         public boolean isRunning() {
-            return harvests != null && currentFiles.get() < harvests.size();
+            return !done;
         }
     }
 }

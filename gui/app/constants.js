@@ -4,9 +4,11 @@
  */
 
 const endpoints = {
+    abort: "/api/configs/abort/:id",
     addHttpHarvesterConfig: "/api/configs/http/add",
     addFtpHarvesterConfig: "/api/configs/ftp/add",
     addSFtpHarvesterConfig: "/api/configs/sftp/add",
+    saveAndRunConfig: "/api/configs/saveandrun/:type",
     cronValidate: "/api/fields/cron/validate",
     deleteHttpHarvesterConfig: "/api/configs/http/delete/:id",
     deleteFtpHarvesterConfig: "/api/configs/ftp/delete/:id",

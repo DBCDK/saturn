@@ -82,6 +82,12 @@ public class ScheduledHarvesterBean {
         }
     }
 
+    public <T extends AbstractHarvesterConfigEntity> void runNow(Class<T> clazz, int configId) {
+        if(clazz == FtpHarvesterConfig.class) executorService.submit(() -> ftpHarvesterBean.runHarvest((Class<FtpHarvesterConfig>) clazz, configId, true));
+        if(clazz == SFtpHarvesterConfig.class) executorService.submit(() -> sftpHarvesterBean.runHarvest((Class<SFtpHarvesterConfig>) clazz, configId, true));
+        if(clazz == HttpHarvesterConfig.class) executorService.submit(() -> httpHarvesterBean.runHarvest((Class<HttpHarvesterConfig>) clazz, configId, true));
+    }
+
     public <T extends AbstractHarvesterConfigEntity> void doHarvest(Harvester<T> harvester, T config) {
         if(!config.isEnabled() || runScheduleBean.shouldSkip(config)) return;
             //noinspection unchecked

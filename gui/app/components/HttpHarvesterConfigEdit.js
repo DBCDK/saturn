@@ -69,6 +69,7 @@ class HttpHarvesterConfigEdit extends React.Component {
         };
         this.fetchConfig = this.fetchConfig.bind(this);
         this.onSave = this.onSave.bind(this);
+        this.onSaveAndRun = this.onSaveAndRun.bind(this);
         this.onDelete = this.onDelete.bind(this);
         this.onTest = this.onTest.bind(this);
         this.testConfig = this.testConfig.bind(this);
@@ -93,7 +94,7 @@ class HttpHarvesterConfigEdit extends React.Component {
         this.setState({config});
     }
 
-    onSave(form) {
+    createConfig(form) {
         const config = new HttpHarvesterConfig();
         // if id is undefined, a new entity will be created in the database
         // by the backend
@@ -141,7 +142,22 @@ class HttpHarvesterConfigEdit extends React.Component {
                     break;
             }
         }
+        return config;
+    }
+
+    onSave(form) {
+        const config = this.createConfig(form);
         HttpHarvesterConfig.addHttpHarvesterConfig(config).end().then(() => {
+            const a = document.createElement("a");
+            a.href = "#/http";
+            ReactDOM.findDOMNode(this).appendChild(a);
+            a.click();
+        }).catch(err => console.error("unexpected error when adding config", config, err));
+    }
+
+    onSaveAndRun(form) {
+        const config = this.createConfig(form);
+        HttpHarvesterConfig.saveAndRun("http", config).end().then(() => {
             const a = document.createElement("a");
             a.href = "#/http";
             ReactDOM.findDOMNode(this).appendChild(a);
@@ -188,6 +204,7 @@ class HttpHarvesterConfigEdit extends React.Component {
                                      isWaitingForRemoteResponse={this.state.isWaitingForRemoteResponse}
                                      remoteResponseLabel={this.state.remoteResponseLabel}
                                      onSave={this.onSave}
+                                     onSaveAndRun={this.onSaveAndRun}
                                      onDelete={this.onDelete}
                                      onTest={this.onTest}
                                      onConfigChanged={this.onConfigChanged}

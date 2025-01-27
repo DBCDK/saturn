@@ -14,6 +14,7 @@ import dk.dbc.saturn.HTTPHarvesterBean;
 import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
 import dk.dbc.saturn.MockFileHarvest;
+import dk.dbc.saturn.ScheduledHarvesterBean;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
 import jakarta.ws.rs.core.Response;
@@ -43,6 +44,8 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class HarvesterConfigApiTest {
@@ -140,6 +143,15 @@ public class HarvesterConfigApiTest {
     public void test_add_httpHarvester() throws JSONBException {
         final String harvesterConfig = "{\"url\": \"spongebob\", " + "\"name\":\"headerTester\", \"schedule\": \"!!\", \"transfile\": \"squarepants\", " + "\"httpHeaders\":[{\"key\":\"a\", \"value\":\"b\"}]}";
         Response response = harvesterConfigApi.addHttpHarvesterConfig(mockedUriInfo, harvesterConfig);
+        assertThat("status", response.getStatus(), is(201));
+    }
+
+    @Test
+    public void test_save_and_run() throws JSONBException {
+        String harvesterConfig = "{\"id\": 1,\"url\": \"spongebob\", " + "\"name\":\"headerTester\", \"schedule\": \"!!\", \"transfile\": \"squarepants\", " + "\"httpHeaders\":[{\"key\":\"a\", \"value\":\"b\"}]}";
+        harvesterConfigApi.scheduledHarvesterBean = mock(ScheduledHarvesterBean.class);
+        Response response = harvesterConfigApi.saveAndRunNow(mockedUriInfo, "http",harvesterConfig);
+        verify(harvesterConfigApi.scheduledHarvesterBean, times(1)).runNow(HttpHarvesterConfig.class, 1);
         assertThat("status", response.getStatus(), is(201));
     }
 

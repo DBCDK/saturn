@@ -94,6 +94,7 @@ class SFtpHarvesterConfigEdit extends React.Component {
         };
         this.fetchConfig = this.fetchConfig.bind(this);
         this.onSave = this.onSave.bind(this);
+        this.onSaveAndRun = this.onSaveAndRun.bind(this);
         this.onDelete = this.onDelete.bind(this);
         this.onTest = this.onTest.bind(this);
         this.testConfig = this.testConfig.bind(this);
@@ -114,7 +115,7 @@ class SFtpHarvesterConfigEdit extends React.Component {
         config[name] = value;
         this.setState({config});
     }
-    onSave(form) {
+    createConfig(form) {
         const config = new SFtpHarvesterConfig();
         // if id is undefined, a new entity will be created in the database
         // by the backend
@@ -123,58 +124,71 @@ class SFtpHarvesterConfigEdit extends React.Component {
         for(let i = 0; i < form.length; i++) {
             if(form[i] === undefined) continue;
             switch(form[i].name) {
-            case "host":
-                config.host = form[i].value;
-                break;
-            case "port":
-                config.port = Number.parseInt(form[i].value);
-                break;
-            case "username":
-                config.username = form[i].value;
-                break;
-            case "password":
-                config.password = form[i].value;
-                break;
-            case "dir":
-                config.dir = form[i].value;
-                break;
-            case "filesPattern":
-                config.filesPattern = form[i].value;
-                break;
-            case "name":
-                config.name = form[i].value;
-                break;
-            case "schedule":
-                config.schedule = form[i].value;
-                break;
-            case "transfile":
-                config.transfile = form[i].value;
-                break;
-            case "seqno":
-                config.seqno = form[i].value;
-                break;
-            case "seqnoExtract":
-                config.seqnoExtract = form[i].value;
-                break;
-            case "agency":
-                config.agency = form[i].value;
-                break;
-            case "enabled":
-                config.enabled = form[i].checked;
-                break;
-            case "gzip":
-                config.gzip = form[i].checked;
-                break;
-            default:
-                break;
+                case "host":
+                    config.host = form[i].value;
+                    break;
+                case "port":
+                    config.port = Number.parseInt(form[i].value);
+                    break;
+                case "username":
+                    config.username = form[i].value;
+                    break;
+                case "password":
+                    config.password = form[i].value;
+                    break;
+                case "dir":
+                    config.dir = form[i].value;
+                    break;
+                case "filesPattern":
+                    config.filesPattern = form[i].value;
+                    break;
+                case "name":
+                    config.name = form[i].value;
+                    break;
+                case "schedule":
+                    config.schedule = form[i].value;
+                    break;
+                case "transfile":
+                    config.transfile = form[i].value;
+                    break;
+                case "seqno":
+                    config.seqno = form[i].value;
+                    break;
+                case "seqnoExtract":
+                    config.seqnoExtract = form[i].value;
+                    break;
+                case "agency":
+                    config.agency = form[i].value;
+                    break;
+                case "enabled":
+                    config.enabled = form[i].checked;
+                    break;
+                case "gzip":
+                    config.gzip = form[i].checked;
+                    break;
+                default:
+                    break;
             }
         }
+        return config;
+    }
+    onSave(form) {
+        const config = this.createConfig(form);
         SFtpHarvesterConfig.addSFtpHarvesterConfig(config).end().then(() => {
                 const a = document.createElement("a");
                 a.href = "#/sftp";
                 ReactDOM.findDOMNode(this).appendChild(a);
                 a.click();
             }).catch(err => console.error("unexpected error when adding config", config, err));
+    }
+    onSaveAndRun(form) {
+        const config = this.createConfig(form);
+        SFtpHarvesterConfig.saveAndRun("sftp", config).end().then(() => {
+            const a = document.createElement("a");
+            a.href = "#/sftp";
+            ReactDOM.findDOMNode(this).appendChild(a);
+            a.click();
+        }).catch(err => console.error("unexpected error when adding config", config, err));
     }
     onDelete(id) {
         BaseHarvesterConfig.deleteConfig(constants.endpoints
@@ -209,6 +223,7 @@ class SFtpHarvesterConfigEdit extends React.Component {
                     isWaitingForRemoteResponse={this.state.isWaitingForRemoteResponse}
                     remoteResponseLabel={this.state.remoteResponseLabel}
                     onSave={this.onSave}
+                    onSaveAndRun={this.onSaveAndRun}
                     onDelete={this.onDelete}
                     onTest={this.onTest}
                     onConfigChanged={this.onConfigChanged}

@@ -73,12 +73,20 @@ button:hover {
 button.save-button {
 }
 
+button.saveandrun-button {
+}
+
 button.test-button {
     margin-left: 26em;
 }
 
 button.delete-button {
     background: OrangeRed none;
+}
+
+div.abort-button {
+    font-size: medium;
+    cursor: pointer;
 }
 
 button.action-button {

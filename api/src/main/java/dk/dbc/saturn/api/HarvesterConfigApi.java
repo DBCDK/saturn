@@ -14,6 +14,7 @@ import dk.dbc.saturn.HarvestException;
 import dk.dbc.saturn.HarvesterConfigRepository;
 import dk.dbc.saturn.ProgressTrackerBean;
 import dk.dbc.saturn.SFtpHarvesterBean;
+import dk.dbc.saturn.ScheduledHarvesterBean;
 import dk.dbc.saturn.entity.AbstractHarvesterConfigEntity;
 import dk.dbc.saturn.entity.FtpHarvesterConfig;
 import dk.dbc.saturn.entity.HttpHarvesterConfig;
@@ -50,6 +51,7 @@ public class HarvesterConfigApi {
 
     private static final String ABORT_ENDPOINT = "abort/{id}";
     private static final String JOB_STATUS = "status/{id}";
+    private static final String SAVE_AND_RUN_ENDPOINT = "saveandrun/{type}";
     private static final String HTTP_LIST_ENDPOINT = "http/list";
     private static final String HTTP_ADD_ENDPOINT = "http/add";
     private static final String HTTP_GET_SINGLE_CONFIG_ENDPOINT = "http/get/{id}";
@@ -72,6 +74,7 @@ public class HarvesterConfigApi {
     @EJB SFtpHarvesterBean sFtpHarvesterBean;
     @EJB HTTPHarvesterBean httpHarvesterBean;
     @EJB ProgressTrackerBean progressTrackerBean;
+    @EJB ScheduledHarvesterBean scheduledHarvesterBean;
 
     /**
      * list http harvester configs
@@ -121,6 +124,21 @@ public class HarvesterConfigApi {
         return Response.ok(jsonbContext.marshall(configs)).build();
     }
 
+    @POST
+    @Path(SAVE_AND_RUN_ENDPOINT)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveAndRunNow(@Context UriInfo uriInfo, @PathParam("type") String type, String config) throws JSONBException {
+        HarvesterType harvesterType = HarvesterType.of(type);
+        if(harvesterType == null) return Response.status(Response.Status.BAD_REQUEST).build();
+        Response response = addHarvesterConfig(harvesterType.configClass, config, uriInfo);
+        if(response.getStatus() < 400) {
+            AbstractHarvesterConfigEntity configEntity = jsonbContext.unmarshall(config, harvesterType.configClass);
+            scheduledHarvesterBean.runNow(harvesterType.configClass, configEntity.getId());
+        }
+        return response;
+    }
+
     /**
      * add http harvester config entity to database
      * @param harvesterConfigString http harvester config as json data
@@ -166,7 +184,7 @@ public class HarvesterConfigApi {
         return addHarvesterConfig(SFtpHarvesterConfig.class, harvesterConfigString, uriInfo);
     }
 
-    @POST
+    @GET
     @Path(ABORT_ENDPOINT)
     public Response abort(@PathParam("id") int id) {
         ProgressTrackerBean.Progress progress = progressTrackerBean.get(id);

@@ -18,17 +18,20 @@ class HttpHarvesterConfigList extends React.Component {
         super(props);
         this.state = {"configs": []};
         this.onEnabledChanged = this.onEnabledChanged.bind(this);
+        this.handleAbort = this.handleAbort.bind(this);
     }
+
     componentWillMount() {
         HttpHarvesterConfig.listHttpHarvesterConfigs().end().then(
-                response => {
-            const configs = mapResponseToConfigList(HttpHarvesterConfig, response.text);
-            this.setState({configs});
-        });
+            response => {
+                const configs = mapResponseToConfigList(HttpHarvesterConfig, response.text);
+                this.setState({configs});
+            });
     }
+
     onEnabledChanged(id, active) {
         let config = {};
-        for (let i=0; i<this.state.configs.length; i++) {
+        for (let i = 0; i < this.state.configs.length; i++) {
             if (this.state.configs[i].id == id) {
                 config = this.state.configs[i];
                 break;
@@ -43,25 +46,31 @@ class HttpHarvesterConfigList extends React.Component {
             .catch(err => console.error(`unexpected error when changing enabled flag in HTTP config for id=${id}`,
                 config, err));
     }
+
+    handleAbort(id) {
+        HttpHarvesterConfig.abort(id).end()
+            .then(response => window.location.reload())
+            .catch(err => console.error(`Unable to abort job with  config id=${id}`, err));
+    }
+
     render() {
         return (
             <BaseHarvesterConfigList
-                    newConfigPath={constants.paths.newHttpHarvesterConfig}
-                    title="Hentninger via HTTP" button="Ny HTTP høster">
-                {this.state.configs.
-                    sort((a,b) => a.name.localeCompare(b.name)).
-                    map(item => {
+                newConfigPath={constants.paths.newHttpHarvesterConfig}
+                title="Hentninger via HTTP" button="Ny HTTP høster">
+                {this.state.configs.sort((a, b) => a.name.localeCompare(b.name)).map(item => {
                         const path = new Path(constants.paths.editHttpHarvesterConfig);
                         path.bind("id", item.id);
                         return <ConfigEntry key={item.id} id={item.id}
                                             name={item.name} url={path.path}
                                             enabled={item.enabled}
-                                            lastHarvested={item.lastHarvested==null?"Endnu ikke høstet":formatDate(new Date(item.lastHarvested))}
+                                            lastHarvested={item.lastHarvested == null ? "Endnu ikke høstet" : formatDate(new Date(item.lastHarvested))}
                                             onEnabledChanged={this.onEnabledChanged}
                                             progress={item.progress}
+                                            handleAbort={this.handleAbort}
                                             running={item.running}/>;
-                        }
-                    )
+                    }
+                )
                 }
             </BaseHarvesterConfigList>
         )
