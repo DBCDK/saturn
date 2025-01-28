@@ -58,6 +58,16 @@ public class ProgressTrackerBean {
             return this;
         }
 
+        public void failed(String message) {
+            this.message = message;
+            done = true;
+        }
+
+        public void noFiles() {
+            setMessage("No files");
+            done = true;
+        }
+
         public void done(int id, MetricRegistry metricRegistry) {
             done = true;
             Duration age = getAge();
