@@ -13,10 +13,22 @@ const mapResponseToConfigList = (type, response) => {
 };
 
 class BaseHarvesterConfig {
+    static abort(id) {
+        const params = new Map();
+        params.set("id", id);
+        return new HttpClient().get(constants.endpoints.abort, params);
+    }
     static addHarvesterConfig(endpoint, config) {
         return new HttpClient()
             .addHeaders({"Content-type": "application/json"})
             .post(endpoint, null, null, config);
+    }
+    static saveAndRun(type, config) {
+        const params = new Map();
+        params.set("type", type);
+        return new HttpClient()
+            .addHeaders({"Content-type": "application/json"})
+            .post(constants.endpoints.saveAndRunConfig, params, null, config);
     }
     static fetchConfig(endpoint, id) {
         const params = new Map();

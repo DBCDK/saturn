@@ -183,6 +183,7 @@ class BaseHarvesterConfigEdit extends React.Component {
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
+        this.onSaveAndRun = this.onSaveAndRun.bind(this);
         this.onClickTest = this.onClickTest.bind(this);
         this.onDelete = this.onDelete.bind(this);
         this.onChangeCallback = this.onChangeCallback.bind(this);
@@ -197,6 +198,18 @@ class BaseHarvesterConfigEdit extends React.Component {
             }
         })).then(() => {
             this.props.onSave(event.target.form);
+        })
+            .catch(err => alert(err));
+    }
+    onSaveAndRun(event) {
+        event.preventDefault();
+        event.persist();
+        Promise.all(Object.keys(this.props.config).map(key => {
+            if(this.props.config.hasOwnProperty(key)) {
+                return this.validate(key, this.props.config[key]);
+            }
+        })).then(() => {
+            this.props.onSaveAndRun(event.target.form);
         })
             .catch(err => alert(err));
     }
@@ -286,6 +299,7 @@ class BaseHarvesterConfigEdit extends React.Component {
                 <FormCheckbox label="Aktiv" name="enabled" enabled={config.enabled}
                            onChangeCallback={this.onChangeCallback}/>
                 <button type="submit" className="save-button" onClick={this.onClick}>Gem</button>
+                <button type="submit" className="saveandrun-button" onClick={this.onSaveAndRun}>Gem & Kør</button>
                 {config.id !== undefined ?
                         <button type="submit" className="delete-button" onClick={this.onDelete}>Slet</button>
                     : <div/> }
@@ -303,6 +317,7 @@ class BaseHarvesterConfigEdit extends React.Component {
 BaseHarvesterConfigEdit.propTypes = {
     config: PropTypes.object,
     onSave: PropTypes.func,
+    onSaveAndRun: PropTypes.func,
     onDelete: PropTypes.func,
     onTest: PropTypes.func,
     showTestResult: PropTypes.func,
@@ -315,6 +330,7 @@ BaseHarvesterConfigEdit.defaultProps = {
     isWaitingForRemoteResponse: false,
     remoteResponseLabel: "",
     onSave: (event) => console.log("no-op for BaseHarvesterConfigEdit.onSave"),
+    onSaveAndRun: (event) => console.log("no-op for BaseHarvesterConfigEdit.onSaveAndRun"),
     onDelete: event => console.log("no-op for BaseHarvesterConfigEdit.onDelete"),
     onTest: (event) => console.log("no-op for BaseHarvesterConfigEdit.onTest"),
 };

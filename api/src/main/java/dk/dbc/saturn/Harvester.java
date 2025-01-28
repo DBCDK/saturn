@@ -5,11 +5,15 @@ import dk.dbc.saturn.job.JobSenderBean;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.FailsafeException;
+import net.jodah.failsafe.RetryPolicy;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,6 +23,7 @@ import java.util.Set;
 @Stateless
 public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Harvester.class);
+    private static final RetryPolicy<?> RETRY_FULL_JOB = new RetryPolicy<>().withMaxRetries(12).withDelay(Duration.ofMinutes(15));
     private Tag TAG_OK = new Tag("status", "success");
     private Tag TAG_FAIL = new Tag("status", "failed");
     @EJB
@@ -46,31 +51,51 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
     }
 
     public void runHarvest(Class<T> clazz, int configId) {
+        runHarvest(clazz, configId, false);
+    }
+
+    public void runHarvest(Class<T> clazz, int configId, boolean runNow) {
         runningTasks.run(configId, c -> {
-            ProgressTrackerBean.Progress progress = null;
+            T config = harvesterConfigRepository.getHarvesterConfig(clazz, configId);
+            if (!runNow && runScheduleBean.shouldSkip(config)) return;
+            ProgressTrackerBean.Progress progress = trackerBean.add(config.getId());
             try {
-                T config = harvesterConfigRepository.getHarvesterConfig(clazz, configId);
-                if (runScheduleBean.shouldSkip(config)) return;
-                progress = trackerBean.add(config.getId());
-                LOGGER.info("Starting harvesting task: {}", config);
-                Set<FileHarvest> fileHarvests = listFiles(config);
-                if (!fileHarvests.isEmpty()) {
-                    progress.init(fileHarvests);
-                    harvest(config, fileHarvests);
-                    LOGGER.info("Done harvesting {}", config.getName());
-                    progress.done(configId, metricRegistry);
-                    metricRegistry.counter("harvests", TAG_OK, new Tag("id", Integer.toString(configId))).inc();
+                Failsafe.with(RETRY_FULL_JOB.copy()
+                                .abortIf(e -> progress.isAbort())
+                                .onFailedAttempt(e -> failedHarvestAttempt(config, progress)))
+                        .run(() -> runHarvest(config, progress));
+            } catch (FailsafeException e) {
+                if(e.getCause() instanceof InterruptedException) {
+                    LOGGER.info("Harvester {} was stopped by user", config.getId());
                 } else {
-                    LOGGER.info("No files to harvest for {}", config.getName());
-                    progress.setMessage("no files");
+                    metricRegistry.counter("harvests", TAG_FAIL, new Tag("id", Integer.toString(config.getId()))).inc();
+                    if (progress != null) progress.setMessage("Failed");
+                    LOGGER.error("Error while harvesting: {}", config.getId(), e);
                 }
-                config.setLastHarvested(Date.from(Instant.now()));
-            } catch (HarvestException | RuntimeException e) {
-                metricRegistry.counter("harvests", TAG_FAIL, new Tag("id", Integer.toString(configId))).inc();
-                if(progress != null)  progress.setMessage("failed");
-                LOGGER.error("Error while harvesting: {}", configId, e);
             }
         });
+    }
+
+    private void failedHarvestAttempt(T config, ProgressTrackerBean.Progress progress) {
+        progress.setMessage("Failed, waiting for retry");
+        LOGGER.warn("Harvesting {} failed, waiting for retry", config.getId());
+    }
+
+    private void runHarvest (T config, ProgressTrackerBean.Progress progress) throws HarvestException {
+        LOGGER.info("Starting harvesting task: {}", config);
+        progress.init(Set.of());
+        Set<FileHarvest> fileHarvests = listFiles(config);
+        if (!fileHarvests.isEmpty()) {
+            progress.init(fileHarvests);
+            harvest(config, fileHarvests);
+            LOGGER.info("Done harvesting {}", config.getName());
+            progress.done(config.getId(), metricRegistry);
+            metricRegistry.counter("harvests", TAG_OK, new Tag("id", Integer.toString(config.getId()))).inc();
+        } else {
+            LOGGER.info("No files to harvest for {}", config.getName());
+            progress.setMessage("no files");
+        }
+        config.setLastHarvested(Date.from(Instant.now()));
     }
 
     public void harvest(T config, Set<FileHarvest> fileHarvests) throws HarvestException {

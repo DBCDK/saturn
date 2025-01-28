@@ -20,7 +20,7 @@ import jakarta.persistence.Transient;
 import java.util.Date;
 import java.util.Objects;
 
-@JsonIgnoreProperties(value={ "progress" }, allowGetters=true)
+@JsonIgnoreProperties(value={ "progress", "running" }, allowGetters=true)
 @MappedSuperclass
 public abstract class AbstractHarvesterConfigEntity {
     @Id

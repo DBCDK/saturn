@@ -44,6 +44,12 @@ class FtpHarvesterConfigList extends React.Component {
             .catch(err => console.error(`unexpected error when changing enabled flag in FTP config for id=${id}`,
                 config, err));
     }
+    handleAbort(id) {
+        FtpHarvesterConfig.abort(id).end()
+            .then(response => window.location.reload())
+            .catch(err => console.error(`Unable to abort job with config id=${id}`, err));
+    }
+
     render() {
         return (
             <BaseHarvesterConfigList
@@ -61,6 +67,7 @@ class FtpHarvesterConfigList extends React.Component {
                                             lastHarvested={item.lastHarvested==null?"Endnu ikke høstet":formatDate(new Date(item.lastHarvested))}
                                             onEnabledChanged={this.onEnabledChanged}
                                             progress={item.progress}
+                                            handleAbort={this.handleAbort}
                                             running={item.running}/>;
                         }
                     )
