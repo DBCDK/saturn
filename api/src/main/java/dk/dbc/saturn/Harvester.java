@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
+import net.jodah.failsafe.event.ExecutionAttemptedEvent;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
 import org.slf4j.Logger;
@@ -62,23 +63,23 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
             try {
                 Failsafe.with(RETRY_FULL_JOB.copy()
                                 .abortIf(e -> progress.isAbort())
-                                .onFailedAttempt(e -> failedHarvestAttempt(config, progress)))
+                                .onFailedAttempt(e -> failedHarvestAttempt(e, config, progress)))
                         .run(() -> runHarvest(config, progress));
             } catch (FailsafeException e) {
                 if(e.getCause() instanceof InterruptedException) {
                     LOGGER.info("Harvester {} was stopped by user", config.getId());
                 } else {
                     metricRegistry.counter("harvests", TAG_FAIL, new Tag("id", Integer.toString(config.getId()))).inc();
-                    if (progress != null) progress.setMessage("Failed");
+                    if (progress != null) progress.failed("Failed");
                     LOGGER.error("Error while harvesting: {}", config.getId(), e);
                 }
             }
         });
     }
 
-    private void failedHarvestAttempt(T config, ProgressTrackerBean.Progress progress) {
+    private void failedHarvestAttempt(ExecutionAttemptedEvent<?> e, T config, ProgressTrackerBean.Progress progress) {
         progress.setMessage("Failed, waiting for retry");
-        LOGGER.warn("Harvesting {} failed, waiting for retry", config.getId());
+        LOGGER.warn("Harvesting {} failed, waiting for retry", config.getId(), e.getLastFailure());
     }
 
     private void runHarvest (T config, ProgressTrackerBean.Progress progress) throws HarvestException {
@@ -93,7 +94,7 @@ public abstract class Harvester<T extends AbstractHarvesterConfigEntity> {
             metricRegistry.counter("harvests", TAG_OK, new Tag("id", Integer.toString(config.getId()))).inc();
         } else {
             LOGGER.info("No files to harvest for {}", config.getName());
-            progress.setMessage("no files");
+            progress.noFiles();
         }
         config.setLastHarvested(Date.from(Instant.now()));
     }
