@@ -6,11 +6,13 @@
 package dk.dbc.saturn;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
 import dk.dbc.commons.sftpclient.SFTPConfig;
 import dk.dbc.commons.sftpclient.SFtpClient;
 import dk.dbc.proxy.ProxyBean;
 import dk.dbc.saturn.entity.SFtpHarvesterConfig;
 import dk.dbc.util.Stopwatch;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
@@ -34,8 +36,14 @@ public class SFtpHarvesterBean extends Harvester<SFtpHarvesterConfig> {
     @Inject
     @ConfigProperty(name = "NON_PROXY_HOSTS", defaultValue = "")
     Set<String> nonProxiedHosts;
+    @Inject
+    @ConfigProperty(name = "JSCH_SERVER_HOST_KEY", defaultValue = "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa")
+    private String jschServerHostKey;
 
-
+    @PostConstruct
+    public void init() {
+        JSch.setConfig("server_host_key", jschServerHostKey);
+    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public Set<FileHarvest> listFiles(SFtpHarvesterConfig sFtpHarvesterConfig) {
