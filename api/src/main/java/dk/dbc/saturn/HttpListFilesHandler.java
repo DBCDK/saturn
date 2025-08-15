@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HttpListFilesHandler {
+public class HttpListFilesHandler implements UrlTokensSubstitutor{
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpListFilesHandler.class);
     Pattern NUMBER_PATTERN = Pattern.compile("\\D*(\\d+)\\D*");
 
@@ -51,7 +51,7 @@ public class HttpListFilesHandler {
     }
 
     public Set<FileHarvest> listFiles(HttpHarvesterConfig config) throws HarvestException {
-        final String url = config.getUrl();
+        final String url = substituteRelativeUTC(config.getUrl());
         InvariantUtil.checkNotNullNotEmptyOrThrow(url, "url");
         LOGGER.info("Listing files from {}", url);
         if (config.getUrlPattern() == null || config.getUrlPattern().isEmpty() ){
