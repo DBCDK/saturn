@@ -29,11 +29,6 @@
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>saturn-gui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-json-binding</artifactId>
         </dependency>
         <dependency>
