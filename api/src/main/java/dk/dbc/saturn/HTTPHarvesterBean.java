@@ -5,6 +5,7 @@
 
 package dk.dbc.saturn;
 
+import dk.dbc.commons.useragent.UserAgent;
 import dk.dbc.httpclient.HttpClient;
 import dk.dbc.httpclient.HttpGet;
 import dk.dbc.proxy.ProxyBean;
@@ -57,7 +58,7 @@ public class HTTPHarvesterBean extends Harvester<HttpHarvesterConfig> {
             // Jersey client breaks if '{' or '}' are included in URLs in their decoded form
             url = url.replaceAll("\\{", "%7B");
             url = url.replaceAll("\\}", "%7D");
-            HttpGet httpGet = new HttpGet(HttpClient.create(client))
+            HttpGet httpGet = new HttpGet(HttpClient.create(client, UserAgent.forExternalRequests()))
                     .withBaseUrl(url);
             if (headers != null) {
                 headers.forEach(header -> httpGet.withHeader(header.getKey(), header.getValue()));

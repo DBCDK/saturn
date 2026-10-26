@@ -10,6 +10,8 @@ LABEL PROXY_PASSWORD="password for proxy authentication"
 LABEL JOBSTORE_URL="url for the DataIO Jobstore service"
 LABEL FILESTORE_URL="url for the DataIO Fileservice service"
 
+ENV APP_NAME="saturn-harvester"
+
 COPY target/saturn.war target/docker/saturn.json deployments/
 
 EXPOSE 8080

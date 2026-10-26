@@ -214,8 +214,10 @@ public class HarvesterConfigApi {
     public Response getHttpHarvesterConfig(@PathParam("id") int id)
             throws JSONBException {
         HttpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(HttpHarvesterConfig.class, id);
-        if(config != null) return Response.ok(jsonbContext.marshall(config)).build();
-        return Response.status(Response.Status.NOT_FOUND).build();
+        if (config == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(jsonbContext.marshall(config)).build();
     }
 
     /**
@@ -229,6 +231,9 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response testHttpHarvesterConfig(@PathParam("id") int id) throws JSONBException, HarvestException {
         HttpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(HttpHarvesterConfig.class, id);
+        if (config == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         // sort files using TreeSet
         final Set<FileHarvest> fileHarvests = new TreeSet<>(httpHarvesterBean.listFiles(config));
         fileHarvests.forEach(fileHarvest -> {
@@ -268,6 +273,9 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
         FtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(FtpHarvesterConfig.class, id);
+        if (config == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         return Response.ok(jsonbContext.marshall(config)).build();
     }
 
@@ -282,6 +290,9 @@ public class HarvesterConfigApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response testFtpHarvesterConfig(@PathParam("id") int id) throws JSONBException {
         FtpHarvesterConfig config = harvesterConfigRepository.getHarvesterConfig(FtpHarvesterConfig.class, id);
+        if (config == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         // sort files in reverse
         SortedSet<FileHarvest> sortedSet = new TreeSet<>(Comparator.comparing(FileHarvest::getFilename).reversed());
         sortedSet.addAll(ftpHarvesterBean.listAllFiles(config));

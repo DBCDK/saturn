@@ -5,6 +5,7 @@
 
 package dk.dbc.saturn.job;
 
+import dk.dbc.commons.useragent.UserAgent;
 import dk.dbc.dataio.commons.types.JobSpecification;
 import dk.dbc.dataio.commons.utils.jobstore.ejb.JobStoreServiceConnectorBean;
 import dk.dbc.dataio.commons.utils.jobstore.transfile.JobSpecificationFactory;
@@ -70,7 +71,7 @@ public class JobSenderBean {
                 .property(ApacheClientProperties.CONNECTION_MANAGER, poolingHttpClientConnectionManager)
                 .connectorProvider(new ApacheConnectorProvider());
         Client client = HttpClient.newClient(config);
-        fileStore = new FileStoreServiceConnector(client, System.getenv("FILESTORE_URL"));
+        fileStore = new FileStoreServiceConnector(client, UserAgent.forInternalRequests(), System.getenv("FILESTORE_URL"));
     }
 
     public JobSenderBean(ProgressTrackerBean progressTrackerBean, FileStoreServiceConnector fileStore, JobStoreServiceConnectorBean jobStore, int retries) {
