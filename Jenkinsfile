@@ -1,21 +1,17 @@
 #!groovy
 
-def workerNode = "devel11"
+@Library('dependency-track')
+
+def workerNode = "devel13"
 
 pipeline {
 	agent {label workerNode}
-	tools {
-		// refers to the name set in manage jenkins -> global tool configuration
-		maven "Maven 3"
-	}
 	environment {
 		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
 		GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
 	}
 	triggers {
-		upstream(upstreamProjects: "Docker-payara6-bump-trigger",
-			threshold: hudson.model.Result.SUCCESS)
-		pollSCM("H/03 * * * *")
+		upstream(upstreamProjects: "Docker-payara6-bump-trigger",  threshold: hudson.model.Result.SUCCESS)
 	}
 	options {
 		timestamps()
@@ -57,7 +53,18 @@ pipeline {
 				}
 			}
 		}
-		stage("docker push") {
+        stage("supply-chain gate") {
+            steps {
+                script {
+                    dependencyTrackGate(
+						projectBom: 'target/sbom-java.json',
+                        projectTeam: 'de-team',
+                        projectType: 'java',
+                    )
+                }
+            }
+        }
+        stage("docker push") {
             when {
                 branch "master"
             }

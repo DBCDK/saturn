@@ -25,7 +25,7 @@ Harvested files will be uploaded alongside generated .trans files to a preconfig
 
 ### Development
 
-To build this project JDK 11, Docker and Apache Maven are required:
+To build this project JDK 21, Docker and Apache Maven are required:
 
 ```bash
 mvn clean

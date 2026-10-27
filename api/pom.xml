@@ -5,7 +5,7 @@
     <parent>
         <artifactId>saturn</artifactId>
         <groupId>dk.dbc</groupId>
-        <version>0.1.0</version>
+        <version>21.1.0</version>
     </parent>
 
     <artifactId>saturn-api</artifactId>
@@ -15,26 +15,69 @@
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dataio-commons-utils-job-store-service-connector</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>21.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dataio-commons-utils-file-store-service-connector</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>21.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-proxy</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <version>21.3.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-json-binding</artifactId>
+            <version>21.3.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>invariant-utils</artifactId>
             <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>ftp-client</artifactId>
+            <version>2.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>stopwatch</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-run-schedule</artifactId>
+            <version>21.2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-sftp-client</artifactId>
+            <version>21.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-testcontainers-postgres</artifactId>
+            <version>21.3.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-jpa-converter</artifactId>
+            <version>21.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-httpclient</artifactId>
+            <version>21.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-testcontainers-service</artifactId>
+            <version>21.3.0-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -57,6 +100,7 @@
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
             <version>1.1.4</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -73,27 +117,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>ftp-client</artifactId>
-            <version>2.2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
-            <version>3.0.1</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-testutil-jpa</artifactId>
-            <version>2.0-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -124,11 +149,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.cronutils</groupId>
-            <artifactId>cron-utils</artifactId>
-            <version>9.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-netty</artifactId>
             <version>5.3.0</version>
@@ -141,29 +161,9 @@
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>stopwatch</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>run-schedule</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-sftp-client</artifactId>
-            <version>2.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.mwiede</groupId>
             <artifactId>jsch</artifactId>
             <version>0.2.20</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -176,30 +176,8 @@
             <version>3.6</version>
         </dependency>
         <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-testcontainers-postgres</artifactId>
-            <version>2.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-jpa-converter</artifactId>
-            <version>2.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-httpclient</artifactId>
-            <version>3.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-testcontainers-service</artifactId>
-            <version>1.1-SNAPSHOT</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -213,7 +191,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M1</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
@@ -229,7 +206,6 @@
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>process config</id>
@@ -252,7 +228,6 @@
             <plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
-                <version>1.3.1</version>
                 <executions>
                     <execution>
                         <id>build-docker-image</id>
@@ -272,33 +247,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <!-- skips surefire tests without skipping failsafe tests.
                            Property value seems to magically default to false -->
                     <skipTests>${skip.surefire.tests}</skipTests>
+                    <environmentVariables>
+                        <APP_NAME>saturn-test</APP_NAME>
+                    </environmentVariables>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>1.3.2</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit5.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>maven_central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2/</url>
-        </repository>
-    </repositories>
 </project>
