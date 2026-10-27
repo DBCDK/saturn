@@ -53,18 +53,18 @@ pipeline {
 				}
 			}
 		}
-        script("supply-chain gate") {
+        stage("supply-chain gate") {
             steps {
                 script {
                     dependencyTrackGate(
-                        projectBom:  'target/sbom-java.json',
+						projectBom: 'target/sbom-java.json',
                         projectTeam: 'de-team',
                         projectType: 'java',
                     )
                 }
             }
         }
-		stage("docker push") {
+        stage("docker push") {
             when {
                 branch "master"
             }
