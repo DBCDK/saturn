@@ -1,5 +1,7 @@
 #!groovy
 
+@Library('dependency-track')
+
 def workerNode = "devel13"
 
 pipeline {
@@ -51,6 +53,17 @@ pipeline {
 				}
 			}
 		}
+        script("supply-chain gate") {
+            steps {
+                script {
+                    dependencyTrackGate(
+                        projectBom:  'target/sbom-java.json',
+                        projectTeam: 'de-team',
+                        projectType: 'java',
+                    )
+                }
+            }
+        }
 		stage("docker push") {
             when {
                 branch "master"
