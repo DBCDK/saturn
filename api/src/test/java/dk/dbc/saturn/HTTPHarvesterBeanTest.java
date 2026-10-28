@@ -32,7 +32,7 @@ public class HTTPHarvesterBeanTest {
 
     private static WireMockServer wireMockServer;
     private static String wireMockHost;
-    private static Socks5ProxyServer proxyServer;
+    private static TestSocks5ProxyServer proxyServer;
 
     private final FileHarvest squarepantsFileHarvest =
             new HttpFileHarvest("squarepants.jpg", null, null, null, AWAITING_DOWNLOAD, null, 1);
@@ -48,7 +48,7 @@ public class HTTPHarvesterBeanTest {
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
 
-        proxyServer = new Socks5ProxyServer();
+        proxyServer = new TestSocks5ProxyServer();
     }
 
     @AfterClass

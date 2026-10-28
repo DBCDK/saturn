@@ -31,7 +31,7 @@ public class LitteratursidenHttpListFilesHandlerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LitteratursidenHttpListFilesHandlerTest.class);
     private static WireMockServer wireMockServer;
     private static String wireMockHost;
-    private static Socks5ProxyServer proxyServer;
+    private static TestSocks5ProxyServer proxyServer;
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -39,7 +39,7 @@ public class LitteratursidenHttpListFilesHandlerTest {
         wireMockServer.start();
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
-        proxyServer = new Socks5ProxyServer();
+        proxyServer = new TestSocks5ProxyServer();
     }
 
     @AfterClass

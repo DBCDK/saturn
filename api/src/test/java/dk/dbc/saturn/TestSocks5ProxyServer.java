@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Minimal SOCKS5 proxy (RFC 1928) for tests, listening on an ephemeral
- * loopback port. Each requested destination is recorded as "host:port" and
+ * Test-only SOCKS5 server. Do not use outside of tests: it has no
+ * authentication, no timeouts and no limits on connections or threads.
+ * <p>
+ * Minimal SOCKS5 proxy (RFC 1928), listening on an ephemeral loopback port. Each requested destination is recorded as "host:port" and
  * available through {@link #getDestinations()}.
  * <p>
  * Per client connection the server performs these steps:
@@ -38,7 +40,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * The JDK uses SOCKS5 for a {@link java.net.Proxy.Type#SOCKS} proxy, which is
  * what {@link dk.dbc.proxy.ProxyBean} creates.
  */
-public class Socks5ProxyServer implements AutoCloseable {
+final class TestSocks5ProxyServer implements AutoCloseable {
     private static final int VERSION = 5;
     private static final int NO_AUTHENTICATION = 0;
     private static final int NO_ACCEPTABLE_METHODS = 0xFF;
@@ -53,18 +55,18 @@ public class Socks5ProxyServer implements AutoCloseable {
     private final ServerSocket serverSocket;
     private final List<String> destinations = new CopyOnWriteArrayList<>();
 
-    public Socks5ProxyServer() throws IOException {
+    TestSocks5ProxyServer() throws IOException {
         serverSocket = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
         final Thread acceptor = new Thread(this::acceptLoop, "socks5-proxy-acceptor");
         acceptor.setDaemon(true);
         acceptor.start();
     }
 
-    public int getPort() {
+    int getPort() {
         return serverSocket.getLocalPort();
     }
 
-    public List<String> getDestinations() {
+    List<String> getDestinations() {
         return List.copyOf(destinations);
     }
 
