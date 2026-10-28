@@ -8,12 +8,10 @@ import net.jodah.failsafe.RetryPolicy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockserver.integration.ClientAndProxy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +22,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static dk.dbc.saturn.FileHarvest.Status.AWAITING_DOWNLOAD;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -32,7 +32,7 @@ public class HTTPHarvesterBeanTest {
 
     private static WireMockServer wireMockServer;
     private static String wireMockHost;
-    private static ClientAndProxy mockProxy;
+    private static Socks5ProxyServer proxyServer;
 
     private final FileHarvest squarepantsFileHarvest =
             new HttpFileHarvest("squarepants.jpg", null, null, null, AWAITING_DOWNLOAD, null, 1);
@@ -48,19 +48,13 @@ public class HTTPHarvesterBeanTest {
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
 
-        // mockserver doesn't seem to be able to dynamically allocate an
-        // available port when started with the maven plugin so therefore we
-        // start it manually.
-        final ServerSocket socket = new ServerSocket(0);
-        final int proxyPort = socket.getLocalPort();
-        socket.close();
-        mockProxy = ClientAndProxy.startClientAndProxy(proxyPort);
+        proxyServer = new Socks5ProxyServer();
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws IOException {
         wireMockServer.stop();
-        mockProxy.stop();
+        proxyServer.close();
     }
 
     @Test
@@ -299,6 +293,8 @@ public class HTTPHarvesterBeanTest {
             sb.append(line);
         }
         assertThat(sb.toString(), is("barnacles!"));
+        assertThat("request went through proxy", proxyServer.getDestinations(),
+                hasItem(endsWith(":" + wireMockServer.port())));
     }
 
     @Test
@@ -360,7 +356,7 @@ public class HTTPHarvesterBeanTest {
 
     private static HTTPHarvesterBean getHTTPHarvesterBean() {
         HTTPHarvesterBean httpHarvesterBean = new HTTPHarvesterBean();
-        httpHarvesterBean.proxyBean = new ProxyBean("localhost", mockProxy.getPort())
+        httpHarvesterBean.proxyBean = new ProxyBean("localhost", proxyServer.getPort())
                 .withNonProxyHosts(Set.of("localhost"));
         httpHarvesterBean.RETRY_POLICY = new RetryPolicy();
         return httpHarvesterBean;

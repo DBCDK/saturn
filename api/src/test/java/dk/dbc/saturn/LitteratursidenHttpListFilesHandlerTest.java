@@ -7,12 +7,10 @@ import net.jodah.failsafe.RetryPolicy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockserver.integration.ClientAndProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -26,13 +24,14 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LitteratursidenHttpListFilesHandlerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LitteratursidenHttpListFilesHandlerTest.class);
     private static WireMockServer wireMockServer;
-    private static ClientAndProxy mockProxy;
     private static String wireMockHost;
+    private static Socks5ProxyServer proxyServer;
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -40,20 +39,13 @@ public class LitteratursidenHttpListFilesHandlerTest {
         wireMockServer.start();
         wireMockHost = "http://localhost:" + wireMockServer.port();
         configureFor("localhost", wireMockServer.port());
-
-        // mockserver doesn't seem to be able to dynamically allocate an
-        // available port when started with the maven plugin so therefore we
-        // start it manually.
-        final ServerSocket socket = new ServerSocket(0);
-        final int proxyPort = socket.getLocalPort();
-        socket.close();
-        mockProxy = ClientAndProxy.startClientAndProxy(proxyPort);
+        proxyServer = new Socks5ProxyServer();
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws IOException {
         wireMockServer.stop();
-        mockProxy.stop();
+        proxyServer.close();
     }
 
     @Test
@@ -88,10 +80,11 @@ public class LitteratursidenHttpListFilesHandlerTest {
                 endsWith(".page1"));
         assertThat("2nd file harvest has url", ((HttpFileHarvest)fileHarvests.get(1)).getUrl(),
                 containsString("/rest-output-dbc/24h?page=1"));
+        assertThat("localhost bypasses proxy", proxyServer.getDestinations(), is(empty()));
     }
 
     private static LitteratursidenHttpListFilesHandler getLitteratursidenHttpListFilesHandler() {
-        ProxyBean proxyBean = new ProxyBean("localhost", mockProxy.getPort())
+        ProxyBean proxyBean = new ProxyBean("localhost", proxyServer.getPort())
                 .withNonProxyHosts(Set.of("localhost"));
         return new LitteratursidenHttpListFilesHandler(proxyBean, new RetryPolicy());
     }
